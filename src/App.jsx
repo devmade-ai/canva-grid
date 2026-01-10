@@ -21,6 +21,7 @@ function App() {
     setImage,
     setImageObjectFit,
     setImagePosition,
+    setImageGrayscale,
     setOverlay,
     setText,
     setLayout,
@@ -92,6 +93,8 @@ function App() {
                 onObjectFitChange={setImageObjectFit}
                 position={state.imagePosition}
                 onPositionChange={setImagePosition}
+                grayscale={state.imageGrayscale}
+                onGrayscaleChange={setImageGrayscale}
               />
             )}
 

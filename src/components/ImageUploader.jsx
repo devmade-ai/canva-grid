@@ -1,6 +1,6 @@
 import { useCallback, useRef } from 'react'
 
-export default function ImageUploader({ image, onImageChange, objectFit, onObjectFitChange, position, onPositionChange }) {
+export default function ImageUploader({ image, onImageChange, objectFit, onObjectFitChange, position, onPositionChange, grayscale, onGrayscaleChange }) {
   const fileInputRef = useRef(null)
 
   const handleDrop = useCallback((e) => {
@@ -118,6 +118,19 @@ export default function ImageUploader({ image, onImageChange, objectFit, onObjec
                 </button>
               ))}
             </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              id="grayscale"
+              checked={grayscale}
+              onChange={(e) => onGrayscaleChange(e.target.checked)}
+              className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+            />
+            <label htmlFor="grayscale" className="text-xs font-medium text-gray-600">
+              Grayscale
+            </label>
           </div>
         </>
       )}

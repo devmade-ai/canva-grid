@@ -46,6 +46,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
             backgroundSize: state.imageObjectFit,
             backgroundPosition: state.imagePosition,
             backgroundRepeat: 'no-repeat',
+            filter: state.imageGrayscale ? 'grayscale(100%)' : 'none',
           }}
         />
       )}

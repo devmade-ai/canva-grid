@@ -7,6 +7,7 @@ const defaultState = {
   image: null,
   imageObjectFit: 'cover',
   imagePosition: 'center',
+  imageGrayscale: false,
 
   overlay: {
     type: 'solid',
@@ -53,6 +54,10 @@ export function useAdState() {
 
   const setImagePosition = useCallback((imagePosition) => {
     setState((prev) => ({ ...prev, imagePosition }))
+  }, [])
+
+  const setImageGrayscale = useCallback((imageGrayscale) => {
+    setState((prev) => ({ ...prev, imageGrayscale }))
   }, [])
 
   const setOverlay = useCallback((overlay) => {
@@ -109,6 +114,7 @@ export function useAdState() {
     setImage,
     setImageObjectFit,
     setImagePosition,
+    setImageGrayscale,
     setOverlay,
     setText,
     setLayout,
