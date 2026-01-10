@@ -43,12 +43,19 @@ Social Ad Creator - A browser-based tool for creating social media advertisement
 
 Core features working:
 
-- Image upload with drag-drop, object fit (cover/contain), position, grayscale
-- Flexible layout system (split type, sections, proportions, text overlay on image)
+- Image upload with drag-drop, object fit (cover/contain), position, grayscale, overlay controls
+- Flexible layout system:
+  - Split type (none/columns/rows) with 2-3 sections
+  - Image can span any combination of cells (imageCells array)
+  - Per-cell horizontal and vertical alignment
+- Text groups with cell assignment:
+  - Title + Tagline (paired)
+  - Body Heading + Body Text (paired)
+  - CTA (independent)
+  - Footnote (independent)
 - Logo upload with position (corners, center) and size options
-- 6 text layers with font size controls (title, tagline, body heading, body text, CTA, footnote)
 - Theme system with 4 presets and custom colors
-- Overlay system (solid, gradient up/down, vignette) - applies to image in all layouts
+- Overlay system (solid, gradient up/down, vignette) - integrated in Image tab
 - 15 Google Fonts (sans-serif, serif, display categories)
 - Export to 6 platforms (LinkedIn, Facebook, Instagram, Twitter/X, TikTok)
 - Single download and ZIP batch download
@@ -75,12 +82,11 @@ npm run deploy   # Deploy to GitHub Pages
 ```
 src/
 ├── components/     # React components
-│   ├── AdCanvas.jsx       # Core rendering
-│   ├── ImageUploader.jsx  # Image upload controls
+│   ├── AdCanvas.jsx       # Core rendering (cell-based layout)
+│   ├── ImageUploader.jsx  # Image upload + overlay controls
 │   ├── LogoUploader.jsx   # Logo upload and positioning
-│   ├── OverlayControls.jsx
-│   ├── TextEditor.jsx
-│   ├── LayoutSelector.jsx # Flexible layout configurator
+│   ├── TextEditor.jsx     # Text layer editing
+│   ├── LayoutSelector.jsx # Layout, cell alignment, text placement
 │   ├── ThemePicker.jsx
 │   ├── FontSelector.jsx
 │   ├── PlatformPreview.jsx
@@ -91,9 +97,28 @@ src/
 │   ├── themes.js      # 4 preset themes
 │   └── fonts.js       # 15 Google Fonts
 ├── hooks/
-│   └── useAdState.js  # Central state management
+│   └── useAdState.js  # Central state (includes textGroups, layout.imageCells)
 ├── utils/
 │   └── export.js      # Export utilities
 ├── App.jsx
 └── main.jsx
+```
+
+## Key State Structure
+
+```js
+layout: {
+  splitType: 'none' | 'vertical' | 'horizontal',
+  sections: 2 | 3,
+  imageCells: [0],  // Array of cell indices where image appears
+  textAlign, textVerticalAlign,  // Global defaults
+  cellAlignments: [{textAlign, textVerticalAlign}, ...]  // Per-cell overrides
+}
+
+textGroups: {
+  titleGroup: { cell: null },   // null = auto, number = specific cell
+  bodyGroup: { cell: null },
+  cta: { cell: null },
+  footnote: { cell: null }
+}
 ```

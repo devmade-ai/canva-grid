@@ -3,7 +3,6 @@ import { useAdState } from './hooks/useAdState'
 import AdCanvas from './components/AdCanvas'
 import ImageUploader from './components/ImageUploader'
 import LogoUploader from './components/LogoUploader'
-import OverlayControls from './components/OverlayControls'
 import TextEditor from './components/TextEditor'
 import LayoutSelector from './components/LayoutSelector'
 import ThemePicker from './components/ThemePicker'
@@ -28,6 +27,7 @@ function App() {
     setLogoSize,
     setOverlay,
     setText,
+    setTextGroups,
     setLayout,
     setTheme,
     setThemePreset,
@@ -50,7 +50,6 @@ function App() {
     { id: 'image', label: 'Image' },
     { id: 'logo', label: 'Logo' },
     { id: 'layout', label: 'Layout' },
-    { id: 'overlay', label: 'Overlay' },
     { id: 'text', label: 'Text' },
     { id: 'theme', label: 'Theme' },
     { id: 'fonts', label: 'Fonts' },
@@ -100,6 +99,9 @@ function App() {
                 onPositionChange={setImagePosition}
                 grayscale={state.imageGrayscale}
                 onGrayscaleChange={setImageGrayscale}
+                overlay={state.overlay}
+                onOverlayChange={setOverlay}
+                theme={state.theme}
               />
             )}
 
@@ -111,14 +113,6 @@ function App() {
                 onPositionChange={setLogoPosition}
                 size={state.logoSize}
                 onSizeChange={setLogoSize}
-              />
-            )}
-
-            {activeSection === 'overlay' && (
-              <OverlayControls
-                overlay={state.overlay}
-                onOverlayChange={setOverlay}
-                theme={state.theme}
               />
             )}
 
@@ -134,6 +128,8 @@ function App() {
               <LayoutSelector
                 layout={state.layout}
                 onLayoutChange={setLayout}
+                textGroups={state.textGroups}
+                onTextGroupsChange={setTextGroups}
               />
             )}
 

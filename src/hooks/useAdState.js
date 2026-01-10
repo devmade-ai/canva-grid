@@ -24,6 +24,15 @@ const defaultState = {
     footnote: { content: '', visible: true, color: 'secondary', size: 1 },
   },
 
+  // Text group positioning (which cell each group appears in)
+  // null = auto (follows default behavior), number = specific cell index
+  textGroups: {
+    titleGroup: { cell: null },    // title + tagline
+    bodyGroup: { cell: null },     // bodyHeading + bodyText
+    cta: { cell: null },           // independent
+    footnote: { cell: null },      // independent
+  },
+
   logo: null,
   logoPosition: 'bottom-right',
   logoSize: 0.15, // 15% of canvas width
@@ -32,11 +41,17 @@ const defaultState = {
   layout: {
     splitType: 'none', // 'none' | 'vertical' | 'horizontal'
     sections: 2, // 2 or 3
-    imagePosition: 'first', // 'first' | 'middle' | 'last'
-    imageProportion: 50, // percentage for image section(s)
-    textOnImage: false, // overlay text on image section
-    textAlign: 'center', // 'left' | 'center' | 'right'
-    textVerticalAlign: 'center', // 'start' | 'center' | 'end'
+    // Image can span multiple cells as a layer (array of cell indices)
+    // Empty array = no image, [0] = first cell, [0,1] = spans first two, etc.
+    imageCells: [0], // which cells the image covers
+    textAlign: 'center', // 'left' | 'center' | 'right' - global fallback
+    textVerticalAlign: 'center', // 'start' | 'center' | 'end' - global fallback
+    // Per-cell alignment overrides (index 0 = first section, etc.)
+    cellAlignments: [
+      { textAlign: null, textVerticalAlign: null }, // null = use global
+      { textAlign: null, textVerticalAlign: null },
+      { textAlign: null, textVerticalAlign: null },
+    ],
   },
 
   theme: {
@@ -99,6 +114,13 @@ export function useAdState() {
     }))
   }, [])
 
+  const setTextGroups = useCallback((updates) => {
+    setState((prev) => ({
+      ...prev,
+      textGroups: { ...prev.textGroups, ...updates },
+    }))
+  }, [])
+
   const setLayout = useCallback((updates) => {
     setState((prev) => ({
       ...prev,
@@ -148,6 +170,7 @@ export function useAdState() {
     setLogoSize,
     setOverlay,
     setText,
+    setTextGroups,
     setLayout,
     setTheme,
     setThemePreset,
