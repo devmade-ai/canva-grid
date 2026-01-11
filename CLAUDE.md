@@ -18,6 +18,7 @@
 8. **Follow conventions** - Best practices and consistent patterns
 9. **Capture ideas** - Add lower priority items and improvements I notice to docs/TODO.md so they persist between sessions (AI-managed, user can review)
 10. **Repeatable process** - Follow consistent steps to ensure all the above
+11. **Document user actions** - When manual user action is required (external dashboards, credentials, etc.), add detailed instructions to docs/USER_ACTIONS.md
 
 ## AI Notes
 
