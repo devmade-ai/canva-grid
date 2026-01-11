@@ -1,3 +1,5 @@
+import { layoutPresets } from '../config/layoutPresets'
+
 const splitTypes = [
   { id: 'none', name: 'Full Image', icon: '[]' },
   { id: 'vertical', name: 'Columns', icon: '||' },
@@ -78,9 +80,57 @@ export default function LayoutSelector({ layout, onLayoutChange, textGroups = {}
     onLayoutChange(updates)
   }
 
+  // Apply a preset
+  const applyPreset = (preset) => {
+    onLayoutChange(preset.layout)
+    if (onTextGroupsChange) {
+      // Apply all text group settings at once
+      onTextGroupsChange(preset.textGroups)
+    }
+  }
+
+  // Check if current layout matches a preset
+  const getActivePreset = () => {
+    return layoutPresets.find(preset => {
+      const layoutMatch =
+        preset.layout.splitType === splitType &&
+        preset.layout.sections === sections &&
+        JSON.stringify(preset.layout.imageCells) === JSON.stringify(imageCells)
+      return layoutMatch
+    })
+  }
+
+  const activePreset = getActivePreset()
+
   return (
     <div className="space-y-4">
       <h3 className="text-sm font-semibold text-gray-700">Layout</h3>
+
+      {/* Quick Start Presets */}
+      <div>
+        <label className="block text-xs font-medium text-gray-600 mb-1">Quick Start</label>
+        <div className="grid grid-cols-3 gap-1">
+          {layoutPresets.map((preset) => (
+            <button
+              key={preset.id}
+              onClick={() => applyPreset(preset)}
+              title={preset.description}
+              className={`px-2 py-2 text-xs rounded flex flex-col items-center gap-0.5 ${
+                activePreset?.id === preset.id
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+              }`}
+            >
+              <span className="text-base">{preset.icon}</span>
+              <span className="text-[10px] leading-tight">{preset.name}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="border-t border-gray-200 pt-3">
+        <label className="block text-xs font-medium text-gray-500 mb-2">Fine-tune</label>
+      </div>
 
       {/* Split Type */}
       <div>
