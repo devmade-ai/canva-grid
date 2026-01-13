@@ -2,42 +2,53 @@
 
 ## Current Session
 
-Enhanced layout system with comprehensive improvements to presets and quick-start functionality.
+Redesigned the Layout tab with sub-tabs and improved the preview responsiveness.
 
 ### Changes Made
 
-1. **Expanded Layout Presets** (6 → 17 presets)
-   - Image Focus: Full Bleed Hero, Hero Top/Bottom Text, Large Image Left/Right/Top/Bottom
-   - Balanced: 50-50 splits (left/right/top/bottom), Image Sandwich
-   - Text Focus: Left/Right Accent Strip, Top/Bottom Image Banner, Center Text Focus
+1. **Layout Tab Sub-tabs Architecture**
+   - Split the Layout tab into 4 sub-tabs: Presets, Structure, Alignment, Placement
+   - Each sub-tab focuses on one aspect of layout configuration
+   - Consistent pill-style navigation at the top of the Layout section
 
-2. **Visual SVG Preview Icons**
-   - Replaced Unicode icons with clear SVG diagrams
-   - Blue areas show image placement, gray areas show text placement
-   - Icons adapt colors when preset is active
+2. **Unified Cell Selection Pattern**
+   - Created reusable `CellGrid` component used across all sub-tabs
+   - Click to select, click again to deselect (toggle behavior)
+   - Visual states: Blue (image cell), Purple (selected for editing), Amber (has text assigned)
 
-3. **Category Organization**
-   - Presets organized into: All, Suggested, Image Focus, Text Focus, Balanced
-   - Tab-based navigation for easy browsing
-   - "Suggested" category shows recommendations based on image aspect ratio
+3. **Structure Sub-tab with Contextual Selection**
+   - Added `StructureGrid` component with clickable section labels (R1, R2... or C1, C2...)
+   - Click section label → edit row/column height/width + subdivision count
+   - Click cell in subdivided section → edit that cell's width/height
+   - Shows only relevant controls based on current selection
+   - "Edit Parent Row/Column" button for quick navigation
 
-4. **Smart Layout Suggestions**
-   - Analyzes uploaded image aspect ratio (landscape/portrait/square)
-   - Considers platform type (story formats prioritize horizontal splits)
-   - Suggests 4 best-fit layouts automatically
+4. **Alignment Sub-tab**
+   - Select a cell to edit its alignment, or leave unselected to edit all cells
+   - Horizontal alignment: Left, Center, Right
+   - Vertical alignment: Top, Middle, Bottom
 
-5. **Quick Actions**
-   - Flip: Swaps image/text positions horizontally or vertically
-   - Rotate: Converts between columns and rows layouts
-   - Reset: Returns to default layout settings
+5. **Placement Sub-tab**
+   - Select a cell then assign text groups to it
+   - Quick "+ Add" / "✓ Here" toggle buttons
+   - Dropdown still available for direct cell selection
 
-6. **Improved UX**
-   - Collapsible "Fine-tune Controls" section for advanced options
-   - Better preset naming (e.g., "Left Image" → "Image Left / Text Right")
-   - Hover tooltips with detailed descriptions
+6. **Responsive Preview Canvas**
+   - Preview now adapts to container width using ResizeObserver
+   - Fills available horizontal space while maintaining aspect ratio
+   - Respects max height (60% viewport or 600px)
 
 ### Files Modified
 
-- `src/config/layoutPresets.js` - Complete rewrite with categories, icons, helpers
-- `src/components/LayoutSelector.jsx` - New UI with categories, SVG icons, quick actions
-- `src/App.jsx` - Added image aspect ratio calculation and props passing
+- `src/components/LayoutSelector.jsx` - Complete rewrite with sub-tabs and new grid components
+- `src/App.jsx` - Added responsive preview with ResizeObserver
+- `CLAUDE.md` - Updated architecture docs and added Layout Tab section
+- `docs/SESSION_NOTES.md` - This file
+- `docs/TODO.md` - Added responsive preview as completed
+
+### UX Improvements
+
+- Reduced cognitive load by showing one concern at a time
+- Consistent interaction patterns across all sub-tabs
+- Contextual controls that appear only when relevant
+- Visual feedback for all selection states

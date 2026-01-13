@@ -39,11 +39,25 @@ Future enhancements and ideas for the Social Ad Creator.
 - [x] Update rendering to position text within assigned cells
 - [x] Handle multiple text groups in same cell (stacking)
 
+### 6. Layout Tab Sub-tabs (Completed)
+
+- [x] Split Layout tab into sub-tabs (Presets, Structure, Alignment, Placement)
+- [x] Add unified cell selector grid component
+- [x] Structure tab with contextual section/cell selection
+- [x] Alignment tab with per-cell editing
+- [x] Placement tab with text group assignment
+
+---
+
+## Responsive & Display (Completed)
+
+- [x] Responsive preview canvas that adapts to device width
+- [x] Add undo/redo functionality (with Ctrl+Z / Ctrl+Y shortcuts)
+
 ---
 
 ## Potential Improvements
 
-- [x] Add undo/redo functionality (with Ctrl+Z / Ctrl+Y shortcuts)
 - [ ] Save/load designs to localStorage
 - [ ] Add more overlay types (diagonal gradient, radial from corner)
 - [ ] Add text shadow/stroke options
