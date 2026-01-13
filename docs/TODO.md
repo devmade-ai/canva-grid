@@ -72,6 +72,17 @@ Future enhancements and ideas for the Social Ad Creator.
 - [ ] Improve cell references - "row then column" naming isn't user-friendly
 - [ ] Make cell selector smaller on wider devices (doesn't need to be so large)
 - [ ] Use fixed units for padding (px or rem) instead of percentages for consistency across cell sizes
+- [ ] Make sub-tabs more prominent - they are the main navigation where most edits happen
+
+#### Placement Tab Enhancements
+
+- [ ] Separate text into individual elements instead of groups (Title, Tagline, Body Heading, Body Text, CTA, Footnote)
+- [ ] Per-element editing: color and text content inline
+- [ ] Image in placement area with quick controls: contain/cover toggle, grayscale toggle, overlay %
+
+### Text Tab
+
+- [ ] Remove sub-tabs - simplify to single tab (content and style together)
 
 ---
 
