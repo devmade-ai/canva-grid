@@ -61,6 +61,18 @@ Future enhancements and ideas for the Social Ad Creator.
 - [ ] Make sections collapsible and/or start collapsed
 - [ ] Fix remove image placement issue
 
+### Layout Tab
+
+- [ ] Remove "type" from presets (unnecessary complexity)
+- [ ] Default presets filter to "All" instead of "Suggested"
+- [ ] Consolidate placement sub-tabs: move image placement to unified "Placement" tab
+- [ ] Merge text alignments and placements into same tab
+- [ ] Use standard alignment icons (not custom/unusual ones)
+- [ ] Better cell assignment UX - current dropdown naming is confusing
+- [ ] Improve cell references - "row then column" naming isn't user-friendly
+- [ ] Make cell selector smaller on wider devices (doesn't need to be so large)
+- [ ] Use fixed units for padding (px or rem) instead of percentages for consistency across cell sizes
+
 ---
 
 ## Potential Improvements
