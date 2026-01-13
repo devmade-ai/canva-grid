@@ -71,6 +71,7 @@ Future enhancements and ideas for the Social Ad Creator.
 - [ ] Better cell assignment UX - current dropdown naming is confusing
 - [ ] Improve cell references - "row then column" naming isn't user-friendly
 - [ ] Make cell selector smaller on wider devices (doesn't need to be so large)
+- [ ] Cell selector should match selected platform's aspect ratio/shape for consistency
 - [ ] Use fixed units for padding (px or rem) instead of percentages for consistency across cell sizes
 - [ ] Make sub-tabs more prominent - they are the main navigation where most edits happen
 
