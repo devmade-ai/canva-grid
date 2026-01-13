@@ -51,6 +51,39 @@ Future enhancements and ideas for the Social Ad Creator.
 
 ## In Progress / Planned
 
+### Image Tab (formerly Media)
+
+- [x] Rename "Media" tab to "Image" (clearer naming)
+- [x] Make default platform Instagram Square (most common use case)
+- [x] Reorder platforms: Instagram Square, TikTok, LinkedIn, Instagram Story as first 4
+- [ ] Better quick layout suggestions (smarter, more useful presets)
+- [ ] More logical section ordering within tab
+- [ ] Make sections collapsible and/or start collapsed
+- [ ] Fix remove image placement issue
+
+### Layout Tab
+
+- [x] Remove "type" from presets (unnecessary complexity)
+- [x] Default presets filter to "All" instead of "Suggested"
+- [x] Consolidate placement sub-tabs: move image placement to unified "Placement" tab
+- [x] Merge text alignments and placements into same tab
+- [x] Use standard alignment icons (SVG-based, clear visual indicators)
+- [x] Improve cell references - simple numbers (1, 2, 3) instead of row/column naming
+- [x] Make cell selector smaller on wider devices (max-width constrained)
+- [x] Cell selector matches selected platform's aspect ratio
+- [x] Make sub-tabs more prominent - larger, bolder styling
+- [ ] Use fixed units for padding (px or rem) instead of percentages for consistency across cell sizes
+
+#### Placement Tab Enhancements
+
+- [x] Separate text into individual elements instead of groups (Title, Tagline, Body Heading, Body Text, CTA, Footnote)
+- [x] Per-element editing: visibility, color, text content inline
+- [x] Image quick controls: contain/cover toggle, grayscale toggle, overlay slider
+
+### Text Tab
+
+- [x] Remove sub-tabs - simplify to single tab (content and style together)
+
 ---
 
 ## Potential Improvements

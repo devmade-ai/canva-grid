@@ -113,7 +113,7 @@ function App() {
   }, [platform, containerWidth])
 
   const sections = [
-    { id: 'image', label: 'Media' },
+    { id: 'image', label: 'Image' },
     { id: 'layout', label: 'Layout' },
     { id: 'text', label: 'Text' },
     { id: 'theme', label: 'Theme' },
@@ -214,9 +214,6 @@ function App() {
                 text={state.text}
                 onTextChange={setText}
                 theme={state.theme}
-                textGroups={state.textGroups}
-                onTextGroupsChange={setTextGroups}
-                layout={state.layout}
               />
             )}
 
@@ -226,12 +223,18 @@ function App() {
                 onLayoutChange={setLayout}
                 textGroups={state.textGroups}
                 onTextGroupsChange={setTextGroups}
+                text={state.text}
+                onTextChange={setText}
                 imageAspectRatio={imageAspectRatio}
                 platform={state.platform}
                 overlay={state.overlay}
                 theme={state.theme}
                 padding={state.padding}
                 onPaddingChange={setPadding}
+                imageObjectFit={state.imageObjectFit}
+                onImageObjectFitChange={setImageObjectFit}
+                imageFilters={state.imageFilters}
+                onImageFiltersChange={setImageFilters}
               />
             )}
 
