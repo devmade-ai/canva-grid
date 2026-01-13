@@ -2,39 +2,52 @@
 
 ## Current Session
 
-Extended the sub-tab pattern to the Text tab, added more theme presets, and updated documentation.
+Implemented all remaining "In Progress / Planned" features from TODO.md.
 
 ### Changes Made
 
-1. **Text Tab Sub-tabs**
-   - Split Text tab into 3 sub-tabs: Content, Style, Placement
-   - Content: Text input fields with visibility toggles
-   - Style: Color and size controls for each text layer
-   - Placement: Assign text groups to layout cells (mirrors Layout > Placement)
+1. **Image Style Presets**
+   - 8 presets: None, Dramatic Dark, Light & Airy, Vintage, Cinematic, Soft Focus, Noir, Warm Glow
+   - Each preset combines overlay settings + image filters
+   - Added to `src/config/layouts.js`
 
-2. **Theme Presets Expanded**
-   - Increased from 4 to 12 preset themes
-   - Categories: Core (Dark, Light), Professional (Corporate, Minimal, Slate), Vibrant (Vibrant, Sunset, Ocean), Nature (Forest, Earth), Bold (Neon, Candy)
+2. **Image Filters**
+   - Replaced `imageGrayscale` with comprehensive `imageFilters` object
+   - Controls: grayscale (toggle), sepia (%), blur (px), contrast (%), brightness (%)
+   - Sliders in Image tab under "Image Filters" section
 
-3. **Documentation Updates**
-   - TODO.md reorganized with clear sections (Completed, In Progress, Potential, Technical)
-   - Added new planned features:
-     - Image tab: quick presets with overlays, sample images
-     - Layout tab: per-cell/section overlay controls
-     - Padding & spacing controls
-     - Consider merging Logo and Image tabs
+3. **Per-Cell Overlay Controls**
+   - Added `cellOverlays` to layout state
+   - New "Overlay" sub-tab in Layout tab
+   - Enable/disable overlay per cell, or customize type/color/opacity per cell
 
-### Previous Session Changes (kept for context)
+4. **Padding & Spacing Controls**
+   - Added `padding` to state with global setting and per-cell overrides
+   - New "Spacing" sub-tab in Layout tab
+   - Global padding slider (0-15%)
+   - Per-cell custom padding
 
-- Layout Tab sub-tabs (Presets, Structure, Alignment, Placement)
-- Structure sub-tab with contextual section/cell selection
-- Responsive preview canvas with ResizeObserver
-- Unified cell selector pattern across tabs
+5. **Merged Logo and Image Tabs**
+   - Combined into unified "Media" tab
+   - Logo section appears at bottom of Image tab
+   - Removed LogoUploader.jsx (functionality merged into ImageUploader.jsx)
 
 ### Files Modified
 
-- `src/components/TextEditor.jsx` - Added sub-tabs and placement controls
-- `src/config/themes.js` - Expanded to 12 presets
-- `src/App.jsx` - Pass additional props to TextEditor
-- `docs/TODO.md` - Reorganized and added new ideas
+- `src/config/layouts.js` - Added imagePresets config
+- `src/hooks/useAdState.js` - Added imageFilters, padding, renamed setImageGrayscale to setImageFilters
+- `src/components/ImageUploader.jsx` - Added presets, filters, logo controls
+- `src/components/AdCanvas.jsx` - Dynamic image filters, per-cell overlays, per-cell padding
+- `src/components/LayoutSelector.jsx` - Added Overlay and Spacing sub-tabs
+- `src/App.jsx` - Updated props, removed LogoUploader import, renamed tab to "Media"
+- `docs/TODO.md` - Marked features complete
 - `docs/SESSION_NOTES.md` - This file
+
+### User Action Required
+
+Add sample images to `public/samples/`:
+- `tree-cube.png`
+- `globe-tech.png`
+- `circuit-tree.png`
+- `circuit-spiral.png`
+- `dm-cube.png`

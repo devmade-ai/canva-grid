@@ -6,6 +6,7 @@ import {
   getPresetsByCategory,
   getSuggestedLayouts,
 } from '../config/layoutPresets'
+import { overlayTypes } from '../config/layouts'
 import { defaultState } from '../hooks/useAdState'
 
 const layoutTypes = [
@@ -37,8 +38,16 @@ const textGroupDefs = [
 const subTabs = [
   { id: 'presets', name: 'Presets', icon: '⊞' },
   { id: 'structure', name: 'Structure', icon: '⊟' },
-  { id: 'alignment', name: 'Alignment', icon: '≡' },
-  { id: 'placement', name: 'Placement', icon: '¶' },
+  { id: 'alignment', name: 'Align', icon: '≡' },
+  { id: 'placement', name: 'Text', icon: '¶' },
+  { id: 'overlay', name: 'Overlay', icon: '◐' },
+  { id: 'spacing', name: 'Spacing', icon: '⊡' },
+]
+
+const overlayColorOptions = [
+  { id: 'primary', name: 'Primary' },
+  { id: 'secondary', name: 'Secondary' },
+  { id: 'accent', name: 'Accent' },
 ]
 
 // Helper to count total cells in structure
@@ -364,8 +373,12 @@ export default function LayoutSelector({
   onTextGroupsChange,
   imageAspectRatio,
   platform,
+  overlay,
+  theme,
+  padding = { global: 5, cellOverrides: {} },
+  onPaddingChange,
 }) {
-  const { type = 'fullbleed', structure = [], imageCell = 0, textAlign, textVerticalAlign, cellAlignments = [] } = layout
+  const { type = 'fullbleed', structure = [], imageCell = 0, textAlign, textVerticalAlign, cellAlignments = [], cellOverlays = {} } = layout
 
   // Sub-tab state
   const [activeSubTab, setActiveSubTab] = useState('presets')
@@ -1125,6 +1138,356 @@ export default function LayoutSelector({
                   </div>
                 )}
               </>
+            )}
+          </div>
+        )
+
+      case 'overlay':
+        // Helper to get current cell overlay config
+        const getCellOverlayConfig = (cellIndex) => {
+          return cellOverlays[cellIndex] || null
+        }
+
+        // Helper to update cell overlay
+        const updateCellOverlay = (cellIndex, updates) => {
+          const newCellOverlays = { ...cellOverlays }
+          if (updates === null) {
+            delete newCellOverlays[cellIndex]
+          } else {
+            newCellOverlays[cellIndex] = { ...(cellOverlays[cellIndex] || {}), ...updates }
+          }
+          onLayoutChange({ cellOverlays: newCellOverlays })
+        }
+
+        // Check if a cell has overlay enabled
+        const isCellOverlayEnabled = (cellIndex) => {
+          const config = cellOverlays[cellIndex]
+          if (config === undefined) {
+            // Default: image cell has overlay, others don't
+            return cellIndex === imageCell
+          }
+          return config.enabled !== false
+        }
+
+        return (
+          <div className="space-y-3">
+            {type === 'fullbleed' ? (
+              <div className="text-xs text-gray-500 text-center py-4">
+                Full image layout has a single cell.
+                <br />
+                Overlay is controlled in the Image tab.
+              </div>
+            ) : (
+              <>
+                {/* Cell Selector Grid */}
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Select Cell <span className="text-gray-400 font-normal">(to configure overlay)</span>
+                  </label>
+                  <CellGrid
+                    layout={layout}
+                    imageCell={imageCell}
+                    selectedCell={selectedCell}
+                    mode="alignment"
+                    onSelectCell={handleCellSelect}
+                  />
+                </div>
+
+                {/* Selection indicator */}
+                <div className="text-xs text-center py-1 bg-gray-50 rounded">
+                  {selectedCell === null ? (
+                    <span className="text-gray-600">Select a cell to configure its overlay</span>
+                  ) : (
+                    <span className="text-purple-600">
+                      Editing: <strong>{cellInfoList.find(c => c.index === selectedCell)?.label || `Cell ${selectedCell}`}</strong>
+                      {selectedCell === imageCell && <span className="text-blue-500 ml-1">(image)</span>}
+                    </span>
+                  )}
+                </div>
+
+                {/* Cell Overlay Controls */}
+                {selectedCell !== null && (
+                  <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
+                    {/* Enable/Disable */}
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={`overlay-enabled-${selectedCell}`}
+                        checked={isCellOverlayEnabled(selectedCell)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateCellOverlay(selectedCell, { enabled: true })
+                          } else {
+                            updateCellOverlay(selectedCell, { enabled: false })
+                          }
+                        }}
+                        className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+                      />
+                      <label htmlFor={`overlay-enabled-${selectedCell}`} className="text-xs font-medium text-gray-700">
+                        Enable Overlay
+                      </label>
+                    </div>
+
+                    {/* Overlay options - only show if enabled */}
+                    {isCellOverlayEnabled(selectedCell) && (
+                      <>
+                        {/* Use global or custom */}
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            id={`overlay-custom-${selectedCell}`}
+                            checked={getCellOverlayConfig(selectedCell)?.type !== undefined}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                // Enable custom settings with current global values
+                                updateCellOverlay(selectedCell, {
+                                  enabled: true,
+                                  type: overlay?.type || 'solid',
+                                  color: overlay?.color || 'primary',
+                                  opacity: overlay?.opacity ?? 50,
+                                })
+                              } else {
+                                // Reset to use global
+                                updateCellOverlay(selectedCell, { enabled: true, type: undefined, color: undefined, opacity: undefined })
+                              }
+                            }}
+                            className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+                          />
+                          <label htmlFor={`overlay-custom-${selectedCell}`} className="text-xs text-gray-600">
+                            Custom settings (otherwise uses global)
+                          </label>
+                        </div>
+
+                        {/* Custom overlay settings */}
+                        {getCellOverlayConfig(selectedCell)?.type !== undefined && (
+                          <div className="space-y-3 pt-2 border-t border-gray-200">
+                            {/* Type */}
+                            <div className="space-y-1">
+                              <label className="block text-xs font-medium text-gray-600">Type</label>
+                              <div className="grid grid-cols-2 gap-1">
+                                {overlayTypes.map((t) => (
+                                  <button
+                                    key={t.id}
+                                    onClick={() => updateCellOverlay(selectedCell, { type: t.id })}
+                                    className={`px-2 py-1 text-[10px] rounded ${
+                                      getCellOverlayConfig(selectedCell)?.type === t.id
+                                        ? 'bg-blue-500 text-white'
+                                        : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                                    }`}
+                                  >
+                                    {t.name}
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Color */}
+                            <div className="space-y-1">
+                              <label className="block text-xs font-medium text-gray-600">Color</label>
+                              <div className="flex gap-1">
+                                {overlayColorOptions.map((c) => (
+                                  <button
+                                    key={c.id}
+                                    onClick={() => updateCellOverlay(selectedCell, { color: c.id })}
+                                    className={`flex-1 px-2 py-1.5 text-[10px] rounded ${
+                                      getCellOverlayConfig(selectedCell)?.color === c.id
+                                        ? 'ring-2 ring-blue-500 ring-offset-1'
+                                        : ''
+                                    }`}
+                                    style={{ backgroundColor: theme?.[c.id] || '#000' }}
+                                  >
+                                    <span style={{ color: c.id === 'primary' ? theme?.secondary : theme?.primary }}>
+                                      {c.name}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Opacity */}
+                            <div className="space-y-1">
+                              <div className="flex justify-between">
+                                <label className="text-xs font-medium text-gray-600">Opacity</label>
+                                <span className="text-xs text-gray-500">{getCellOverlayConfig(selectedCell)?.opacity ?? 50}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={getCellOverlayConfig(selectedCell)?.opacity ?? 50}
+                                onChange={(e) => updateCellOverlay(selectedCell, { opacity: parseInt(e.target.value, 10) })}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              />
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )}
+
+                    {/* Reset cell to default */}
+                    <button
+                      onClick={() => updateCellOverlay(selectedCell, null)}
+                      className="w-full px-2 py-1.5 text-xs bg-gray-200 text-gray-600 hover:bg-gray-300 rounded"
+                    >
+                      Reset to Default
+                    </button>
+                  </div>
+                )}
+
+                {/* Quick overview */}
+                {selectedCell === null && (
+                  <div className="space-y-2">
+                    <label className="block text-xs font-medium text-gray-600">Cell Overlays</label>
+                    <div className="space-y-1">
+                      {cellInfoList.map((cell) => (
+                        <div
+                          key={cell.index}
+                          className="flex items-center justify-between px-2 py-1.5 bg-gray-50 rounded text-xs"
+                        >
+                          <span className="text-gray-600">
+                            {cell.label}
+                            {cell.index === imageCell && <span className="text-blue-500 ml-1">(img)</span>}
+                          </span>
+                          <span className={isCellOverlayEnabled(cell.index) ? 'text-green-600' : 'text-gray-400'}>
+                            {isCellOverlayEnabled(cell.index) ? 'On' : 'Off'}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+        )
+
+      case 'spacing':
+        // Helper to get cell padding value
+        const getCellPaddingValue = (cellIndex) => {
+          return padding.cellOverrides?.[cellIndex] ?? padding.global
+        }
+
+        // Helper to update cell padding
+        const updateCellPadding = (cellIndex, value) => {
+          if (value === null || value === padding.global) {
+            // Reset to global
+            const newOverrides = { ...padding.cellOverrides }
+            delete newOverrides[cellIndex]
+            onPaddingChange?.({ cellOverrides: newOverrides })
+          } else {
+            onPaddingChange?.({ cellOverrides: { ...padding.cellOverrides, [cellIndex]: value } })
+          }
+        }
+
+        return (
+          <div className="space-y-3">
+            {/* Global Padding */}
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <label className="text-xs font-medium text-gray-600">Global Padding</label>
+                <span className="text-xs text-gray-500">{padding.global}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="15"
+                value={padding.global}
+                onChange={(e) => onPaddingChange?.({ global: parseInt(e.target.value, 10) })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+              <div className="flex justify-between text-[10px] text-gray-400">
+                <span>0%</span>
+                <span>15%</span>
+              </div>
+            </div>
+
+            {/* Per-cell padding */}
+            {type !== 'fullbleed' && cellInfoList.length > 1 && (
+              <div className="pt-3 border-t border-gray-200 space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Cell Padding <span className="text-gray-400 font-normal">(overrides global)</span>
+                  </label>
+                  <CellGrid
+                    layout={layout}
+                    imageCell={imageCell}
+                    selectedCell={selectedCell}
+                    mode="alignment"
+                    onSelectCell={handleCellSelect}
+                  />
+                </div>
+
+                {/* Selected cell padding */}
+                {selectedCell !== null && (
+                  <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-medium text-gray-700">
+                        {cellInfoList.find(c => c.index === selectedCell)?.label || `Cell ${selectedCell}`}
+                      </span>
+                      <button
+                        onClick={() => setSelectedCell(null)}
+                        className="text-[10px] text-gray-500 hover:text-gray-700"
+                      >
+                        ✕ Deselect
+                      </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        id={`padding-custom-${selectedCell}`}
+                        checked={padding.cellOverrides?.[selectedCell] !== undefined}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            updateCellPadding(selectedCell, padding.global)
+                          } else {
+                            updateCellPadding(selectedCell, null)
+                          }
+                        }}
+                        className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+                      />
+                      <label htmlFor={`padding-custom-${selectedCell}`} className="text-xs text-gray-600">
+                        Custom padding for this cell
+                      </label>
+                    </div>
+
+                    {padding.cellOverrides?.[selectedCell] !== undefined && (
+                      <div className="space-y-1">
+                        <div className="flex justify-between">
+                          <label className="text-xs text-gray-600">Padding</label>
+                          <span className="text-xs text-gray-500">{getCellPaddingValue(selectedCell)}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="0"
+                          max="15"
+                          value={getCellPaddingValue(selectedCell)}
+                          onChange={(e) => updateCellPadding(selectedCell, parseInt(e.target.value, 10))}
+                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Overview when no cell selected */}
+                {selectedCell === null && (
+                  <div className="space-y-1">
+                    {cellInfoList.map((cell) => (
+                      <div
+                        key={cell.index}
+                        className="flex items-center justify-between px-2 py-1.5 bg-gray-50 rounded text-xs"
+                      >
+                        <span className="text-gray-600">{cell.label}</span>
+                        <span className={padding.cellOverrides?.[cell.index] !== undefined ? 'text-purple-600' : 'text-gray-400'}>
+                          {getCellPaddingValue(cell.index)}%
+                          {padding.cellOverrides?.[cell.index] !== undefined && ' (custom)'}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             )}
           </div>
         )

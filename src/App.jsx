@@ -2,7 +2,6 @@ import { useRef, useMemo, useState, useEffect, useCallback } from 'react'
 import { useAdState } from './hooks/useAdState'
 import AdCanvas from './components/AdCanvas'
 import ImageUploader from './components/ImageUploader'
-import LogoUploader from './components/LogoUploader'
 import TextEditor from './components/TextEditor'
 import LayoutSelector from './components/LayoutSelector'
 import ThemePicker from './components/ThemePicker'
@@ -24,7 +23,7 @@ function App() {
     setImage,
     setImageObjectFit,
     setImagePosition,
-    setImageGrayscale,
+    setImageFilters,
     setLogo,
     setLogoPosition,
     setLogoSize,
@@ -35,6 +34,7 @@ function App() {
     setTheme,
     setThemePreset,
     setFonts,
+    setPadding,
     setPlatform,
     undo,
     redo,
@@ -113,8 +113,7 @@ function App() {
   }, [platform, containerWidth])
 
   const sections = [
-    { id: 'image', label: 'Image' },
-    { id: 'logo', label: 'Logo' },
+    { id: 'image', label: 'Media' },
     { id: 'layout', label: 'Layout' },
     { id: 'text', label: 'Text' },
     { id: 'theme', label: 'Theme' },
@@ -191,8 +190,8 @@ function App() {
                 onObjectFitChange={setImageObjectFit}
                 position={state.imagePosition}
                 onPositionChange={setImagePosition}
-                grayscale={state.imageGrayscale}
-                onGrayscaleChange={setImageGrayscale}
+                filters={state.imageFilters}
+                onFiltersChange={setImageFilters}
                 overlay={state.overlay}
                 onOverlayChange={setOverlay}
                 theme={state.theme}
@@ -201,17 +200,12 @@ function App() {
                 onTextGroupsChange={setTextGroups}
                 imageAspectRatio={imageAspectRatio}
                 platform={state.platform}
-              />
-            )}
-
-            {activeSection === 'logo' && (
-              <LogoUploader
                 logo={state.logo}
                 onLogoChange={setLogo}
-                position={state.logoPosition}
-                onPositionChange={setLogoPosition}
-                size={state.logoSize}
-                onSizeChange={setLogoSize}
+                logoPosition={state.logoPosition}
+                onLogoPositionChange={setLogoPosition}
+                logoSize={state.logoSize}
+                onLogoSizeChange={setLogoSize}
               />
             )}
 
@@ -234,6 +228,10 @@ function App() {
                 onTextGroupsChange={setTextGroups}
                 imageAspectRatio={imageAspectRatio}
                 platform={state.platform}
+                overlay={state.overlay}
+                theme={state.theme}
+                padding={state.padding}
+                onPaddingChange={setPadding}
               />
             )}
 

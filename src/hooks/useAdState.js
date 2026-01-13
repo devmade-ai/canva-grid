@@ -8,7 +8,13 @@ export const defaultState = {
   image: null,
   imageObjectFit: 'cover',
   imagePosition: 'center',
-  imageGrayscale: false,
+  imageFilters: {
+    grayscale: false,
+    sepia: 0,
+    blur: 0,
+    contrast: 100,
+    brightness: 100,
+  },
 
   overlay: {
     type: 'solid',
@@ -55,6 +61,9 @@ export const defaultState = {
     textVerticalAlign: 'center', // 'start' | 'center' | 'end' - global fallback
     // Per-cell alignment overrides (flat cell index)
     cellAlignments: [],
+    // Per-cell overlay overrides (flat cell index -> { enabled, type, color, opacity })
+    // If not set for a cell, uses global overlay settings for image cell, none for others
+    cellOverlays: {},
   },
 
   theme: {
@@ -67,6 +76,12 @@ export const defaultState = {
   fonts: {
     title: 'montserrat',
     body: 'inter',
+  },
+
+  // Padding settings (percentage of canvas size)
+  padding: {
+    global: 5, // 5% padding for all cells
+    cellOverrides: {}, // { cellIndex: paddingValue } for per-cell overrides
   },
 
   platform: 'linkedin',
@@ -87,8 +102,8 @@ export function useAdState() {
     setState((prev) => ({ ...prev, imagePosition }))
   }, [])
 
-  const setImageGrayscale = useCallback((imageGrayscale) => {
-    setState((prev) => ({ ...prev, imageGrayscale }))
+  const setImageFilters = useCallback((filters) => {
+    setState((prev) => ({ ...prev, imageFilters: { ...prev.imageFilters, ...filters } }))
   }, [])
 
   const setLogo = useCallback((logo) => {
@@ -154,6 +169,10 @@ export function useAdState() {
     setState((prev) => ({ ...prev, fonts: { ...prev.fonts, ...fonts } }))
   }, [])
 
+  const setPadding = useCallback((padding) => {
+    setState((prev) => ({ ...prev, padding: { ...prev.padding, ...padding } }))
+  }, [])
+
   const setPlatform = useCallback((platform) => {
     setState((prev) => ({ ...prev, platform }))
   }, [])
@@ -167,7 +186,7 @@ export function useAdState() {
     setImage,
     setImageObjectFit,
     setImagePosition,
-    setImageGrayscale,
+    setImageFilters,
     setLogo,
     setLogoPosition,
     setLogoSize,
@@ -178,6 +197,7 @@ export function useAdState() {
     setTheme,
     setThemePreset,
     setFonts,
+    setPadding,
     setPlatform,
     resetState,
     undo,

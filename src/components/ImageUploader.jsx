@@ -1,10 +1,11 @@
-import { useCallback, useRef, useMemo } from 'react'
-import { overlayTypes } from '../config/layouts'
+import { useCallback, useRef, useMemo, useState } from 'react'
+import { overlayTypes, imagePresets } from '../config/layouts'
 import {
   layoutPresets,
   presetIcons,
   getSuggestedLayouts,
 } from '../config/layoutPresets'
+import { sampleImages } from '../config/sampleImages'
 
 const overlayColorOptions = [
   { id: 'primary', name: 'Primary' },
@@ -37,6 +38,22 @@ function PresetIcon({ presetId, isActive }) {
   )
 }
 
+const logoPositionOptions = [
+  { id: 'top-left', name: 'Top Left' },
+  { id: 'top-right', name: 'Top Right' },
+  { id: 'bottom-left', name: 'Bot Left' },
+  { id: 'bottom-right', name: 'Bot Right' },
+  { id: 'center', name: 'Center' },
+]
+
+const logoSizeOptions = [
+  { id: 0.08, name: 'XS' },
+  { id: 0.12, name: 'S' },
+  { id: 0.15, name: 'M' },
+  { id: 0.20, name: 'L' },
+  { id: 0.25, name: 'XL' },
+]
+
 export default function ImageUploader({
   image,
   onImageChange,
@@ -44,19 +61,53 @@ export default function ImageUploader({
   onObjectFitChange,
   position,
   onPositionChange,
-  grayscale,
-  onGrayscaleChange,
+  filters,
+  onFiltersChange,
   overlay,
   onOverlayChange,
   theme,
-  // New props for layout presets
+  // Layout presets
   layout,
   onLayoutChange,
   onTextGroupsChange,
   imageAspectRatio,
   platform,
+  // Logo props
+  logo,
+  onLogoChange,
+  logoPosition,
+  onLogoPositionChange,
+  logoSize,
+  onLogoSizeChange,
 }) {
   const fileInputRef = useRef(null)
+  const logoInputRef = useRef(null)
+  const [loadingSample, setLoadingSample] = useState(null)
+  const [sampleError, setSampleError] = useState(null)
+
+  // Load a sample image
+  const loadSampleImage = useCallback(async (sample) => {
+    setLoadingSample(sample.id)
+    setSampleError(null)
+    try {
+      const response = await fetch(sample.file)
+      if (!response.ok) throw new Error('Image not found')
+      const blob = await response.blob()
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        onImageChange(event.target.result)
+        setLoadingSample(null)
+      }
+      reader.onerror = () => {
+        setSampleError('Failed to load image')
+        setLoadingSample(null)
+      }
+      reader.readAsDataURL(blob)
+    } catch {
+      setSampleError(`Add ${sample.name} to public/samples/`)
+      setLoadingSample(null)
+    }
+  }, [onImageChange])
 
   // Get suggested layout presets
   const suggestedIds = useMemo(() => {
@@ -153,6 +204,49 @@ export default function ImageUploader({
         />
       </div>
 
+      {/* Sample Images - shown when no image uploaded */}
+      {!image && (
+        <div className="space-y-2">
+          <label className="block text-xs font-medium text-gray-600">
+            Or try a sample
+          </label>
+          <div className="grid grid-cols-5 gap-1">
+            {sampleImages.map((sample) => (
+              <button
+                key={sample.id}
+                onClick={() => loadSampleImage(sample)}
+                disabled={loadingSample === sample.id}
+                title={sample.name}
+                className={`aspect-square rounded overflow-hidden border-2 transition-colors ${
+                  loadingSample === sample.id
+                    ? 'border-blue-400 opacity-50'
+                    : 'border-gray-200 hover:border-blue-400'
+                }`}
+              >
+                <img
+                  src={sample.file}
+                  alt={sample.name}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.target.style.display = 'none'
+                    e.target.nextSibling.style.display = 'flex'
+                  }}
+                />
+                <div
+                  className="w-full h-full bg-gray-100 items-center justify-center text-gray-400 text-[8px] text-center p-0.5"
+                  style={{ display: 'none' }}
+                >
+                  {sample.name}
+                </div>
+              </button>
+            ))}
+          </div>
+          {sampleError && (
+            <p className="text-xs text-amber-600">{sampleError}</p>
+          )}
+        </div>
+      )}
+
       {/* Quick Layout Presets - shown when layout controls available */}
       {onLayoutChange && suggestedPresets.length > 0 && (
         <div className="space-y-2">
@@ -226,17 +320,102 @@ export default function ImageUploader({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <input
-              type="checkbox"
-              id="grayscale"
-              checked={grayscale}
-              onChange={(e) => onGrayscaleChange(e.target.checked)}
-              className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
-            />
-            <label htmlFor="grayscale" className="text-xs font-medium text-gray-600">
-              Grayscale
-            </label>
+          {/* Style Presets */}
+          <div className="pt-3 border-t border-gray-200 space-y-3">
+            <h4 className="text-xs font-semibold text-gray-700">Style Presets</h4>
+            <div className="flex flex-wrap gap-1">
+              {imagePresets.map((preset) => (
+                <button
+                  key={preset.id}
+                  onClick={() => {
+                    onOverlayChange(preset.overlay)
+                    onFiltersChange(preset.filters)
+                  }}
+                  className="px-2 py-1 text-xs rounded bg-gray-100 text-gray-700 hover:bg-gray-200"
+                >
+                  {preset.name}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Image Filters */}
+          <div className="pt-3 border-t border-gray-200 space-y-3">
+            <h4 className="text-xs font-semibold text-gray-700">Image Filters</h4>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="grayscale"
+                checked={filters.grayscale}
+                onChange={(e) => onFiltersChange({ grayscale: e.target.checked })}
+                className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+              />
+              <label htmlFor="grayscale" className="text-xs font-medium text-gray-600">
+                Grayscale
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <label className="text-xs font-medium text-gray-600">Sepia</label>
+                <span className="text-xs text-gray-500">{filters.sepia}%</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={filters.sepia}
+                onChange={(e) => onFiltersChange({ sepia: parseInt(e.target.value, 10) })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <label className="text-xs font-medium text-gray-600">Blur</label>
+                <span className="text-xs text-gray-500">{filters.blur}px</span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="10"
+                step="0.5"
+                value={filters.blur}
+                onChange={(e) => onFiltersChange({ blur: parseFloat(e.target.value) })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <label className="text-xs font-medium text-gray-600">Contrast</label>
+                <span className="text-xs text-gray-500">{filters.contrast}%</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="150"
+                value={filters.contrast}
+                onChange={(e) => onFiltersChange({ contrast: parseInt(e.target.value, 10) })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <label className="text-xs font-medium text-gray-600">Brightness</label>
+                <span className="text-xs text-gray-500">{filters.brightness}%</span>
+              </div>
+              <input
+                type="range"
+                min="50"
+                max="150"
+                value={filters.brightness}
+                onChange={(e) => onFiltersChange({ brightness: parseInt(e.target.value, 10) })}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+            </div>
           </div>
 
           {/* Overlay Controls */}
@@ -305,6 +484,95 @@ export default function ImageUploader({
             </div>
           </div>
         </>
+      )}
+
+      {/* Logo Section */}
+      {onLogoChange && (
+        <div className="pt-3 border-t border-gray-200 space-y-3">
+          <h4 className="text-xs font-semibold text-gray-700">Logo</h4>
+
+          {!logo ? (
+            <div
+              className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center cursor-pointer hover:border-blue-400 transition-colors"
+              onClick={() => logoInputRef.current?.click()}
+            >
+              <svg className="w-6 h-6 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-xs text-gray-500">Click to upload logo</p>
+              <input
+                ref={logoInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader()
+                    reader.onload = (event) => onLogoChange(event.target.result)
+                    reader.readAsDataURL(file)
+                  }
+                }}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Logo preview */}
+              <div className="relative bg-gray-100 rounded-lg p-2">
+                <img src={logo} alt="Logo" className="max-h-16 mx-auto object-contain" />
+                <button
+                  onClick={() => {
+                    onLogoChange(null)
+                    if (logoInputRef.current) logoInputRef.current.value = ''
+                  }}
+                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+
+              {/* Logo position */}
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-gray-600">Position</label>
+                <div className="grid grid-cols-3 gap-1">
+                  {logoPositionOptions.map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => onLogoPositionChange(opt.id)}
+                      className={`px-1.5 py-1 text-[10px] rounded ${
+                        logoPosition === opt.id
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {opt.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Logo size */}
+              <div className="space-y-1">
+                <label className="block text-xs font-medium text-gray-600">Size</label>
+                <div className="flex gap-1">
+                  {logoSizeOptions.map((opt) => (
+                    <button
+                      key={opt.id}
+                      onClick={() => onLogoSizeChange(opt.id)}
+                      className={`flex-1 px-1.5 py-1 text-[10px] rounded ${
+                        logoSize === opt.id
+                          ? 'bg-blue-500 text-white'
+                          : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                      }`}
+                    >
+                      {opt.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+        </div>
       )}
     </div>
   )
