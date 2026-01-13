@@ -90,7 +90,7 @@ export default function ImageUploader({
     setLoadingSample(sample.id)
     setSampleError(null)
     try {
-      const response = await fetch(sample.file)
+      const response = await fetch(import.meta.env.BASE_URL + sample.file.slice(1))
       if (!response.ok) throw new Error('Image not found')
       const blob = await response.blob()
       const reader = new FileReader()
@@ -224,7 +224,7 @@ export default function ImageUploader({
                 }`}
               >
                 <img
-                  src={sample.file}
+                  src={import.meta.env.BASE_URL + sample.file.slice(1)}
                   alt={sample.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
