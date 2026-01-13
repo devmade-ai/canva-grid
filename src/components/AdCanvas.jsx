@@ -11,6 +11,14 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   const textGroups = state.textGroups || {}
   const titleFont = fonts.find((f) => f.id === state.fonts.title) || fonts[0]
   const bodyFont = fonts.find((f) => f.id === state.fonts.body) || fonts[0]
+  const paddingConfig = state.padding || { global: 5, cellOverrides: {} }
+
+  // Get padding for a specific cell (returns percentage string like "5%")
+  const getCellPadding = (cellIndex) => {
+    const override = paddingConfig.cellOverrides?.[cellIndex]
+    const value = override !== undefined ? override : paddingConfig.global
+    return `${value}%`
+  }
 
   const themeColors = useMemo(() => ({
     primary: state.theme.primary,
@@ -18,9 +26,35 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     accent: state.theme.accent,
   }), [state.theme])
 
-  const overlayColor = themeColors[state.overlay.color] || themeColors.primary
-  const overlayType = overlayTypes.find((o) => o.id === state.overlay.type) || overlayTypes[0]
-  const overlayStyle = overlayType.getCss(hexToRgb(overlayColor), state.overlay.opacity)
+  // Get overlay style for a given config
+  const getOverlayStyle = (overlayConfig) => {
+    const color = themeColors[overlayConfig.color] || themeColors.primary
+    const type = overlayTypes.find((o) => o.id === overlayConfig.type) || overlayTypes[0]
+    return type.getCss(hexToRgb(color), overlayConfig.opacity)
+  }
+
+  // Global overlay style (for backward compatibility)
+  const overlayStyle = getOverlayStyle(state.overlay)
+
+  // Get overlay config for a specific cell
+  const getCellOverlay = (cellIndex, hasImage) => {
+    const cellOverlays = layout.cellOverlays || {}
+    const cellConfig = cellOverlays[cellIndex]
+
+    // If cell has explicit config
+    if (cellConfig !== undefined) {
+      if (cellConfig.enabled === false) return null
+      return {
+        type: cellConfig.type || state.overlay.type,
+        color: cellConfig.color || state.overlay.color,
+        opacity: cellConfig.opacity ?? state.overlay.opacity,
+      }
+    }
+
+    // Default: image cells get global overlay, non-image cells get none
+    if (hasImage) return state.overlay
+    return null
+  }
 
   const getTextColor = (colorKey) => themeColors[colorKey] || themeColors.secondary
   const getTextLayer = (layerId) => state.text?.[layerId] || defaultTextLayer
@@ -105,6 +139,18 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     )
   }
 
+  // Build image filter string from state
+  const imageFilterStyle = useMemo(() => {
+    const filters = state.imageFilters || {}
+    const parts = []
+    if (filters.grayscale) parts.push('grayscale(100%)')
+    if (filters.sepia > 0) parts.push(`sepia(${filters.sepia}%)`)
+    if (filters.blur > 0) parts.push(`blur(${filters.blur}px)`)
+    if (filters.contrast !== 100) parts.push(`contrast(${filters.contrast}%)`)
+    if (filters.brightness !== 100) parts.push(`brightness(${filters.brightness}%)`)
+    return parts.length > 0 ? parts.join(' ') : 'none'
+  }, [state.imageFilters])
+
   // Render image with overlay (for fullbleed or image cells)
   const renderImage = (style = {}) => (
     <div style={{ position: 'relative', backgroundColor: themeColors.primary, ...style }}>
@@ -117,7 +163,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
             backgroundSize: state.imageObjectFit,
             backgroundPosition: state.imagePosition,
             backgroundRepeat: 'no-repeat',
-            filter: state.imageGrayscale ? 'grayscale(100%)' : 'none',
+            filter: imageFilterStyle,
           }}
         />
       )}
@@ -395,7 +441,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           flexDirection: 'column',
           justifyContent: getJustifyContent(layout.textVerticalAlign),
           alignItems: getAlignItems(layout.textAlign),
-          padding: '5%',
+          padding: getCellPadding(0),
           textAlign: layout.textAlign,
         }}
       >
@@ -411,6 +457,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     const hasImage = isImageCell(cellIndex)
     const textGroupsOnImage = hasImage ? getGroupsForCell(cellIndex, true) : []
     const textGroupsOnBackground = getGroupsForCell(cellIndex, false)
+    const cellOverlay = getCellOverlay(cellIndex, hasImage)
 
     return (
       <>
@@ -422,6 +469,17 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
         {/* Image for image cells */}
         {hasImage && renderImage({ position: 'absolute', inset: 0 })}
 
+        {/* Overlay for non-image cells (if enabled) */}
+        {!hasImage && cellOverlay && (
+          <div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              background: getOverlayStyle(cellOverlay),
+            }}
+          />
+        )}
+
         {/* Text on image layer */}
         {hasImage && textGroupsOnImage.length > 0 && (
           <div
@@ -432,7 +490,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
               flexDirection: 'column',
               justifyContent: getJustifyContent(cellVerticalAlign),
               alignItems: getAlignItems(cellTextAlign),
-              padding: '5%',
+              padding: getCellPadding(cellIndex),
               textAlign: cellTextAlign,
               zIndex: 2,
             }}
@@ -451,8 +509,9 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
               flexDirection: 'column',
               justifyContent: getJustifyContent(cellVerticalAlign),
               alignItems: getAlignItems(cellTextAlign),
-              padding: '5%',
+              padding: getCellPadding(cellIndex),
               textAlign: cellTextAlign,
+              zIndex: 1,
             }}
           >
             {renderTextGroupsForCell(cellIndex, false)}

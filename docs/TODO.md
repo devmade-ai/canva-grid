@@ -32,32 +32,24 @@ Future enhancements and ideas for the Social Ad Creator.
 
 ---
 
-## In Progress / Planned
+## Recently Completed
 
-### Image Tab Enhancements
+### Image/Media Tab
 
-- [ ] Quick presets with overlay combinations (e.g., "Dramatic Dark", "Light & Airy", "Vintage")
+- [x] Quick presets with overlay combinations (Dramatic Dark, Light & Airy, Vintage, etc.)
 - [x] Sample images for quick testing (5 devMade samples in public/samples/)
-- [ ] Image filters beyond grayscale (sepia, blur, contrast)
+- [x] Image filters (grayscale, sepia, blur, contrast, brightness)
+- [x] Merged Logo and Image tabs into unified Media tab
 
 ### Layout Tab Enhancements
 
-- [ ] Per-cell/section overlay controls (apply overlays to specific cells)
-- [ ] Allow overlays on rows/columns independently
-- [ ] Consider overlay intensity per cell
+- [x] Per-cell overlay controls (enable/disable, custom settings per cell)
+- [x] Overlay sub-tab in Layout for cell-specific configuration
+- [x] Spacing sub-tab with global and per-cell padding controls
 
-### Padding & Spacing
+---
 
-- [ ] Investigate consistent padding controls
-- [ ] Global padding setting
-- [ ] Per-cell padding overrides
-- [ ] Text margin controls
-
-### Tab Consolidation
-
-- [ ] Consider merging Logo and Image tabs
-- [ ] Unified media controls (position, size, fit options)
-- [ ] Similar sub-tab pattern for combined tab
+## In Progress / Planned
 
 ---
 

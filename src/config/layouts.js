@@ -36,3 +36,55 @@ export function hexToRgb(hex) {
   if (!result) return 'rgb(0, 0, 0)'
   return `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})`
 }
+
+// Image style presets combining overlay + filters
+export const imagePresets = [
+  {
+    id: 'none',
+    name: 'None',
+    overlay: { type: 'solid', color: 'primary', opacity: 0 },
+    filters: { grayscale: false, sepia: 0, blur: 0, contrast: 100, brightness: 100 },
+  },
+  {
+    id: 'dramatic-dark',
+    name: 'Dramatic Dark',
+    overlay: { type: 'vignette', color: 'primary', opacity: 70 },
+    filters: { grayscale: false, sepia: 0, blur: 0, contrast: 110, brightness: 90 },
+  },
+  {
+    id: 'light-airy',
+    name: 'Light & Airy',
+    overlay: { type: 'solid', color: 'secondary', opacity: 20 },
+    filters: { grayscale: false, sepia: 0, blur: 0, contrast: 90, brightness: 110 },
+  },
+  {
+    id: 'vintage',
+    name: 'Vintage',
+    overlay: { type: 'vignette', color: 'primary', opacity: 40 },
+    filters: { grayscale: false, sepia: 30, blur: 0, contrast: 95, brightness: 95 },
+  },
+  {
+    id: 'cinematic',
+    name: 'Cinematic',
+    overlay: { type: 'gradient-up', color: 'primary', opacity: 60 },
+    filters: { grayscale: false, sepia: 10, blur: 0, contrast: 115, brightness: 95 },
+  },
+  {
+    id: 'soft-focus',
+    name: 'Soft Focus',
+    overlay: { type: 'solid', color: 'secondary', opacity: 15 },
+    filters: { grayscale: false, sepia: 0, blur: 1, contrast: 90, brightness: 105 },
+  },
+  {
+    id: 'noir',
+    name: 'Noir',
+    overlay: { type: 'vignette', color: 'primary', opacity: 50 },
+    filters: { grayscale: true, sepia: 0, blur: 0, contrast: 120, brightness: 90 },
+  },
+  {
+    id: 'warm-glow',
+    name: 'Warm Glow',
+    overlay: { type: 'gradient-down', color: 'accent', opacity: 30 },
+    filters: { grayscale: false, sepia: 20, blur: 0, contrast: 100, brightness: 105 },
+  },
+]
