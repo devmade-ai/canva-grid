@@ -53,9 +53,9 @@ Future enhancements and ideas for the Social Ad Creator.
 
 ### Image Tab (formerly Media)
 
-- [ ] Rename "Media" tab to "Image" (clearer naming)
-- [ ] Make default platform Instagram Square (most common use case)
-- [ ] Reorder platforms: Instagram Square, TikTok, LinkedIn, Instagram Story as first 4
+- [x] Rename "Media" tab to "Image" (clearer naming)
+- [x] Make default platform Instagram Square (most common use case)
+- [x] Reorder platforms: Instagram Square, TikTok, LinkedIn, Instagram Story as first 4
 - [ ] Better quick layout suggestions (smarter, more useful presets)
 - [ ] More logical section ordering within tab
 - [ ] Make sections collapsible and/or start collapsed
@@ -63,8 +63,8 @@ Future enhancements and ideas for the Social Ad Creator.
 
 ### Layout Tab
 
-- [ ] Remove "type" from presets (unnecessary complexity)
-- [ ] Default presets filter to "All" instead of "Suggested"
+- [x] Remove "type" from presets (unnecessary complexity)
+- [x] Default presets filter to "All" instead of "Suggested"
 - [ ] Consolidate placement sub-tabs: move image placement to unified "Placement" tab
 - [ ] Merge text alignments and placements into same tab
 - [ ] Use standard alignment icons (not custom/unusual ones)

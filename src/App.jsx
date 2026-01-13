@@ -113,7 +113,7 @@ function App() {
   }, [platform, containerWidth])
 
   const sections = [
-    { id: 'image', label: 'Media' },
+    { id: 'image', label: 'Image' },
     { id: 'layout', label: 'Layout' },
     { id: 'text', label: 'Text' },
     { id: 'theme', label: 'Theme' },

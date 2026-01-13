@@ -387,7 +387,7 @@ export default function LayoutSelector({
   // Structure selection state: { type: 'section', index } | { type: 'cell', cellIndex, sectionIndex, subIndex } | null
   const [structureSelection, setStructureSelection] = useState(null)
   // Preset category state
-  const [activeCategory, setActiveCategory] = useState('suggested')
+  const [activeCategory, setActiveCategory] = useState('all')
 
   const totalCells = useMemo(() => getTotalCells(structure), [structure])
   const cellInfoList = useMemo(() => getCellInfo(layout), [layout])
@@ -632,27 +632,6 @@ export default function LayoutSelector({
       case 'presets':
         return (
           <div className="space-y-3">
-            {/* Layout Type Quick Select */}
-            <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Type</label>
-              <div className="flex gap-1">
-                {layoutTypes.map((lt) => (
-                  <button
-                    key={lt.id}
-                    onClick={() => handleTypeChange(lt.id)}
-                    className={`flex-1 px-2 py-2 text-xs rounded flex flex-col items-center gap-0.5 ${
-                      type === lt.id
-                        ? 'bg-blue-500 text-white'
-                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                    }`}
-                  >
-                    <span className="text-sm">{lt.icon}</span>
-                    <span>{lt.name}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
             {/* Category Tabs */}
             <div className="flex flex-wrap gap-1">
               {categoryTabs.map((cat) => (

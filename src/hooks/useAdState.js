@@ -84,7 +84,7 @@ export const defaultState = {
     cellOverrides: {}, // { cellIndex: paddingValue } for per-cell overrides
   },
 
-  platform: 'linkedin',
+  platform: 'instagram-square',
 }
 
 export function useAdState() {
