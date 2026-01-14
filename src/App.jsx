@@ -167,7 +167,7 @@ function App() {
       <div className="flex flex-col lg:flex-row lg:items-stretch">
         {/* Sidebar Controls */}
         <aside className="w-full lg:w-96 p-4 lg:p-6 lg:pr-0">
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 h-full lg:max-h-[calc(100vh-57px-48px)] overflow-y-auto">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
           {/* Section Tabs */}
           <div className="flex flex-wrap gap-1 mb-4 pb-3 border-b border-gray-100">
             {sections.map((section) => (
