@@ -68,20 +68,16 @@ Future enhancements and ideas for the Social Ad Creator.
 
 - [x] Loading states during export with progress indicator
 
+### Image Tab UX Overhaul
+
+- [x] Reorganize section order: Upload → Remove → Settings → Effects → Logo
+- [x] Collapsible sections with sensible defaults (Settings open, effects collapsed)
+- [x] Remove Quick Layout from Image tab (belongs in Layout tab)
+- [x] Clear visual hierarchy for first-time users
+
 ---
 
 ## In Progress / Planned
-
-### Image Tab UX Overhaul (Priority)
-
-The Image tab is the landing page and needs significant UX improvements:
-
-- [ ] **Reorganize section order** - Current layout is confusing:
-  - Remove button is separated from upload area by quick presets
-  - Sections appear in illogical order
-  - Need clear visual hierarchy: Upload → Controls → Effects
-- [ ] **Make sections collapsible** - Reduce visual overwhelm, start some collapsed
-- [ ] **Simplify the flow** - First-time users should understand immediately what to do
 
 ### Layout Tab
 
