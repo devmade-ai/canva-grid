@@ -1482,29 +1482,33 @@ export default function LayoutSelector({
       <h3 className="text-sm font-semibold text-gray-700">Layout</h3>
 
       {/* Sub-tabs - prominent navigation with horizontal scroll on mobile */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
-        {subTabs.map((tab) => (
-          <button
-            key={tab.id}
-            onClick={() => {
-              setActiveSubTab(tab.id)
-              // Reset selections when switching tabs
-              if (tab.id !== 'placement' && tab.id !== 'overlay' && tab.id !== 'spacing') {
-                setSelectedCell(null)
-              }
-              if (tab.id !== 'structure') {
-                setStructureSelection(null)
-              }
-            }}
-            className={`flex-1 min-w-[70px] px-2 py-2 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
-              activeSubTab === tab.id
-                ? 'bg-blue-500 text-white shadow-sm'
-                : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'
-            }`}
-          >
-            {tab.name}
-          </button>
-        ))}
+      <div className="relative">
+        <div className="flex gap-2 bg-gray-100 p-1.5 rounded-lg overflow-x-auto scrollbar-hide">
+          {subTabs.map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveSubTab(tab.id)
+                // Reset selections when switching tabs
+                if (tab.id !== 'placement' && tab.id !== 'overlay' && tab.id !== 'spacing') {
+                  setSelectedCell(null)
+                }
+                if (tab.id !== 'structure') {
+                  setStructureSelection(null)
+                }
+              }}
+              className={`flex-1 min-w-[70px] px-3 py-2 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
+                activeSubTab === tab.id
+                  ? 'bg-blue-500 text-white shadow-sm'
+                  : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'
+              }`}
+            >
+              {tab.name}
+            </button>
+          ))}
+        </div>
+        {/* Fade indicator for scrollable content */}
+        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-gray-100 to-transparent rounded-r-lg pointer-events-none sm:hidden" />
       </div>
 
       {/* Sub-tab content */}
