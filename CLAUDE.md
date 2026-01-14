@@ -22,27 +22,87 @@
 
 ## Documentation
 
-Keep these documents up to date:
+**These documents are maintained every session.** Keep them up to date as you work.
 
 ### `CLAUDE.md`
 
 **Purpose:** AI preferences, project overview, architecture, key state structures.
-**When to update:** When project architecture changes, state structure changes, or preferences evolve. Update Project Status and Key State Structure when features change.
+**When to update:** When project architecture changes, state structure changes, or preferences evolve.
+**What to include:**
+
+- Process, Principles, AI Notes: Update when learning new patterns or preferences
+- Project Status: Current working features (bullet list)
+- Architecture: File structure with brief descriptions
+- Key State Structure: Important state shapes with comments
+- Any section that becomes outdated after feature changes
+
+**Why:** This is the primary context for AI assistants. Accurate info here prevents mistakes.
 
 ### `docs/SESSION_NOTES.md`
 
-**Purpose:** Compact context summary for session continuity (like `/compact` output). A handoff note containing: what was worked on, what was accomplished, current state, key context for the next session.
-**When to update:** Rewrite at session end with a fresh summary. Clear previous content - this is not a changelog, it's a snapshot.
+**Purpose:** Compact context summary for session continuity (like `/compact` output).
+**When to update:** Rewrite at session end with a fresh summary. Clear previous content.
+**What to include:**
+
+- **Worked on:** Brief description of focus area
+- **Accomplished:** Bullet list of completions
+- **Current state:** Where things stand (working/broken/in-progress)
+- **Key context:** Important info the next session needs to know
+
+**Why:** Enables quick resumption without re-reading entire codebase. Not a changelog - a snapshot.
 
 ### `docs/TODO.md`
 
-**Purpose:** AI-managed backlog of ideas and potential improvements. User can review for prioritization.
-**When to update:** When noticing potential improvements during work. Mark items complete (don't delete) when finishing features.
+**Purpose:** AI-managed backlog of ideas and potential improvements.
+**When to update:** When noticing potential improvements. Mark items `[x]` when complete (don't delete).
+**What to include:**
+
+- Group by category (Features, UX, Technical, etc.)
+- Use `- [ ]` for pending, `- [x]` for complete
+- Brief description of what and why
+- Keep completed items for historical context
+
+**Why:** User reviews this to prioritize work. Captures ideas that arise during development.
 
 ### `docs/USER_ACTIONS.md`
 
-**Purpose:** Manual actions requiring user intervention (external dashboards, credentials, manual configuration).
-**When to update:** When tasks need user action outside the codebase. Clear when actions are completed; keep empty if nothing pending.
+**Purpose:** Manual actions requiring user intervention outside the codebase.
+**When to update:** When tasks need external action. Clear when completed.
+**What to include:**
+
+- Action title and description
+- Why it's needed
+- Steps to complete
+- Keep empty when nothing pending (with placeholder text)
+
+**Why:** Some tasks require credentials, dashboards, or manual config the AI can't do.
+
+### `docs/AI_MISTAKES.md`
+
+**Purpose:** Record significant AI mistakes and learnings to prevent repetition.
+**When to update:** After making a mistake that wasted time or broke things.
+**What to include:**
+
+- What went wrong
+- Why it happened
+- How to prevent it
+- Date (for context)
+
+**Why:** AI assistants repeat mistakes across sessions. This document builds institutional memory.
+
+### `README.md`
+
+**Purpose:** User-facing guide for the application.
+**When to update:** When features change that affect how users interact with the tool.
+**What to include:**
+
+- What the tool does (overview)
+- Current features (keep in sync with actual functionality)
+- How to use each feature (user guide)
+- Getting started / installation
+- Tech stack and deployment info
+
+**Why:** Users and contributors read this first. Must accurately reflect the current state.
 
 ### REMINDER: READ AND FOLLOW THE FUCKING DOCUMENTATION EVERY TIME
 
