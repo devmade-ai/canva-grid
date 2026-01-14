@@ -71,11 +71,11 @@ const verticalAlignOptions = [
 
 // Sub-tabs for the Layout section
 const subTabs = [
-  { id: 'presets', name: 'Presets', icon: '⊞' },
   { id: 'structure', name: 'Structure', icon: '⊟' },
   { id: 'placement', name: 'Placement', icon: '◫' },
   { id: 'overlay', name: 'Overlay', icon: '◐' },
   { id: 'spacing', name: 'Spacing', icon: '⊡' },
+  { id: 'presets', name: 'Presets', icon: '⊞' },
 ]
 
 // SVG Preview Icon Component for presets
@@ -404,7 +404,7 @@ export default function LayoutSelector({
   const { type = 'fullbleed', structure = [], imageCell = 0, textAlign, textVerticalAlign, cellAlignments = [], cellOverlays = {} } = layout
 
   // Sub-tab state
-  const [activeSubTab, setActiveSubTab] = useState('presets')
+  const [activeSubTab, setActiveSubTab] = useState('structure')
   // Preset category filter
   const [presetCategory, setPresetCategory] = useState('all')
   // Cell selection state for alignment/placement tabs (null = all cells)
@@ -1481,8 +1481,8 @@ export default function LayoutSelector({
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-gray-700">Layout</h3>
 
-      {/* Sub-tabs - prominent navigation */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+      {/* Sub-tabs - prominent navigation with horizontal scroll on mobile */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg overflow-x-auto">
         {subTabs.map((tab) => (
           <button
             key={tab.id}
@@ -1496,7 +1496,7 @@ export default function LayoutSelector({
                 setStructureSelection(null)
               }
             }}
-            className={`flex-1 px-2 py-2 text-xs font-medium rounded-md transition-all ${
+            className={`flex-1 min-w-[70px] px-2 py-2 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
               activeSubTab === tab.id
                 ? 'bg-blue-500 text-white shadow-sm'
                 : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'
