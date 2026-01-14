@@ -238,7 +238,7 @@ function UnifiedCellGrid({
   // Render grid cells
   const renderCells = () => (
     <div
-      className={`${showSectionLabels ? 'flex-1 rounded-r' : 'rounded'} overflow-hidden border border-gray-300 flex h-full ${isRows || isFullbleed ? 'flex-col' : 'flex-row'}`}
+      className={`flex-1 ${showSectionLabels ? 'rounded-r' : 'rounded'} overflow-hidden border border-gray-300 flex h-full ${isRows || isFullbleed ? 'flex-col' : 'flex-row'}`}
     >
       {normalizedStructure.map((section, sectionIndex) => {
         const sectionSize = section.size || (100 / normalizedStructure.length)
