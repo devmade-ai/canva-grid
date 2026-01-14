@@ -164,9 +164,10 @@ function App() {
         </div>
       </header>
 
-      <div className="flex flex-col lg:flex-row">
+      <div className="flex flex-col lg:flex-row lg:items-start">
         {/* Sidebar Controls */}
-        <aside className="w-full lg:w-80 bg-white border-r border-gray-200 p-4 lg:min-h-[calc(100vh-57px)] lg:max-h-[calc(100vh-57px)] lg:overflow-y-auto">
+        <aside className="w-full lg:w-96 p-4 lg:p-6 lg:pr-0 lg:self-stretch">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 h-full lg:max-h-[calc(100vh-57px-48px)] overflow-y-auto">
           {/* Section Tabs */}
           <div className="flex flex-wrap gap-1 mb-4 pb-3 border-b border-gray-100">
             {sections.map((section) => (
@@ -258,6 +259,7 @@ function App() {
                 />
               )}
             </ErrorBoundary>
+          </div>
           </div>
         </aside>
 
