@@ -69,13 +69,53 @@ const verticalAlignOptions = [
   { id: 'end', name: 'Bottom', Icon: AlignBottomIcon },
 ]
 
+// Sub-tab icon components
+const StructureIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="1" width="6" height="14" rx="1" opacity="0.4" />
+    <rect x="9" y="1" width="6" height="6" rx="1" />
+    <rect x="9" y="9" width="6" height="6" rx="1" />
+  </svg>
+)
+const PlacementIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="1" width="14" height="14" rx="1" opacity="0.2" />
+    <rect x="3" y="4" width="10" height="2" rx="0.5" />
+    <rect x="4" y="7" width="8" height="1.5" rx="0.5" opacity="0.6" />
+    <rect x="5" y="10" width="6" height="1.5" rx="0.5" opacity="0.4" />
+  </svg>
+)
+const OverlayIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="1" width="14" height="14" rx="1" opacity="0.3" />
+    <path d="M1 8 L1 14 Q1 15 2 15 L14 15 Q15 15 15 14 L15 8 Z" opacity="0.7" />
+  </svg>
+)
+const SpacingIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="4" y="4" width="8" height="8" rx="1" />
+    <rect x="1" y="6" width="2" height="4" rx="0.5" opacity="0.4" />
+    <rect x="13" y="6" width="2" height="4" rx="0.5" opacity="0.4" />
+    <rect x="6" y="1" width="4" height="2" rx="0.5" opacity="0.4" />
+    <rect x="6" y="13" width="4" height="2" rx="0.5" opacity="0.4" />
+  </svg>
+)
+const PresetsIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor">
+    <rect x="1" y="1" width="6" height="6" rx="1" />
+    <rect x="9" y="1" width="6" height="6" rx="1" opacity="0.5" />
+    <rect x="1" y="9" width="6" height="6" rx="1" opacity="0.5" />
+    <rect x="9" y="9" width="6" height="6" rx="1" opacity="0.3" />
+  </svg>
+)
+
 // Sub-tabs for the Layout section
 const subTabs = [
-  { id: 'structure', name: 'Structure', icon: '⊟' },
-  { id: 'placement', name: 'Placement', icon: '◫' },
-  { id: 'overlay', name: 'Overlay', icon: '◐' },
-  { id: 'spacing', name: 'Spacing', icon: '⊡' },
-  { id: 'presets', name: 'Presets', icon: '⊞' },
+  { id: 'structure', name: 'Structure', Icon: StructureIcon },
+  { id: 'placement', name: 'Placement', Icon: PlacementIcon },
+  { id: 'overlay', name: 'Overlay', Icon: OverlayIcon },
+  { id: 'spacing', name: 'Spacing', Icon: SpacingIcon },
+  { id: 'presets', name: 'Presets', Icon: PresetsIcon },
 ]
 
 // SVG Preview Icon Component for presets
@@ -1481,34 +1521,31 @@ export default function LayoutSelector({
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-gray-700">Layout</h3>
 
-      {/* Sub-tabs - prominent navigation with horizontal scroll on mobile */}
-      <div className="relative">
-        <div className="flex gap-2 bg-gray-100 p-1.5 rounded-lg overflow-x-auto scrollbar-hide">
-          {subTabs.map((tab) => (
-            <button
-              key={tab.id}
-              onClick={() => {
-                setActiveSubTab(tab.id)
-                // Reset selections when switching tabs
-                if (tab.id !== 'placement' && tab.id !== 'overlay' && tab.id !== 'spacing') {
-                  setSelectedCell(null)
-                }
-                if (tab.id !== 'structure') {
-                  setStructureSelection(null)
-                }
-              }}
-              className={`flex-1 min-w-[70px] px-3 py-2 text-xs font-medium rounded-md transition-all whitespace-nowrap ${
-                activeSubTab === tab.id
-                  ? 'bg-blue-500 text-white shadow-sm'
-                  : 'text-gray-600 hover:bg-gray-200 hover:text-gray-800'
-              }`}
-            >
-              {tab.name}
-            </button>
-          ))}
-        </div>
-        {/* Fade indicator for scrollable content */}
-        <div className="absolute right-0 top-0 bottom-0 w-6 bg-gradient-to-l from-gray-100 to-transparent rounded-r-lg pointer-events-none sm:hidden" />
+      {/* Sub-tabs - icon-only navigation */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+        {subTabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => {
+              setActiveSubTab(tab.id)
+              // Reset selections when switching tabs
+              if (tab.id !== 'placement' && tab.id !== 'overlay' && tab.id !== 'spacing') {
+                setSelectedCell(null)
+              }
+              if (tab.id !== 'structure') {
+                setStructureSelection(null)
+              }
+            }}
+            title={tab.name}
+            className={`flex-1 px-3 py-2 rounded-md transition-all flex items-center justify-center ${
+              activeSubTab === tab.id
+                ? 'bg-blue-500 text-white shadow-sm'
+                : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
+            }`}
+          >
+            <tab.Icon />
+          </button>
+        ))}
       </div>
 
       {/* Sub-tab content */}
