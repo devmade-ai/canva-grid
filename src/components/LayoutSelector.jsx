@@ -147,12 +147,18 @@ function UnifiedCellGrid({
   }, [textCells])
 
   // Size configurations
-  const maxWidthPx = size === 'large' ? 280 : size === 'small' ? 100 : 180
+  const sizeConfig = {
+    small: { maxWidth: 60, minHeight: 40 },
+    normal: { maxWidth: 180, minHeight: 100 },
+    large: { maxWidth: 280, minHeight: 160 },
+  }
+  const { maxWidth: maxWidthPx, minHeight: minHeightPx } = sizeConfig[size] || sizeConfig.normal
 
-  // Dynamic aspect ratio style
+  // Dynamic aspect ratio style - use minHeight to ensure visibility
   const containerStyle = {
     aspectRatio: aspectRatio,
-    maxWidth: aspectRatio >= 1 ? `${maxWidthPx}px` : `${maxWidthPx * aspectRatio}px`,
+    maxWidth: `${maxWidthPx}px`,
+    minHeight: `${minHeightPx}px`,
     width: '100%',
   }
 
@@ -226,7 +232,7 @@ function UnifiedCellGrid({
   // Render grid cells
   const renderCells = () => (
     <div
-      className={`${showSectionLabels ? 'flex-1 rounded-r' : 'rounded'} overflow-hidden border border-gray-300 flex ${isRows || isFullbleed ? 'flex-col' : 'flex-row'}`}
+      className={`${showSectionLabels ? 'flex-1 rounded-r' : 'rounded'} overflow-hidden border border-gray-300 flex h-full ${isRows || isFullbleed ? 'flex-col' : 'flex-row'}`}
     >
       {normalizedStructure.map((section, sectionIndex) => {
         const sectionSize = section.size || (100 / normalizedStructure.length)
@@ -250,10 +256,10 @@ function UnifiedCellGrid({
           sectionCells.push(
             <div
               key={`cell-${currentCellIndex}`}
-              className={`relative cursor-pointer transition-colors ${bgClass} ${
+              className={`relative cursor-pointer transition-colors min-h-[20px] ${bgClass} ${
                 mode === 'structure' && subdivisions > 1 ? 'border border-gray-200' : ''
               }`}
-              style={{ flex: `0 0 ${subSizes[subIndex]}%` }}
+              style={{ flex: `1 1 ${subSizes[subIndex]}%` }}
               onClick={(e) => {
                 e.stopPropagation()
                 if (mode === 'structure') {
@@ -274,7 +280,7 @@ function UnifiedCellGrid({
           <div
             key={`section-${sectionIndex}`}
             className={`flex ${isRows || isFullbleed ? 'flex-row' : 'flex-col'}`}
-            style={{ flex: `0 0 ${sectionSize}%` }}
+            style={{ flex: `1 1 ${sectionSize}%` }}
           >
             {sectionCells}
           </div>
