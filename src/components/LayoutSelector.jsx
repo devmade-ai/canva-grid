@@ -91,9 +91,9 @@ function getTotalCells(structure) {
 
 // Helper to get cell info for display
 function getCellInfo(layout) {
-  const { type, structure } = layout
-  if (type === 'fullbleed' || !structure) {
-    return [{ index: 0, label: 'All', sectionIndex: 0, subIndex: 0 }]
+  const { structure } = layout
+  if (!structure || structure.length === 0) {
+    return [{ index: 0, label: '1', sectionIndex: 0, subIndex: 0 }]
   }
 
   const cells = []
@@ -102,7 +102,6 @@ function getCellInfo(layout) {
   structure.forEach((section, sectionIndex) => {
     const subdivisions = section.subdivisions || 1
     for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
-      // Simple numbered labels
       cells.push({
         index: cellIndex,
         label: `${cellIndex + 1}`,
@@ -116,20 +115,32 @@ function getCellInfo(layout) {
   return cells
 }
 
-// Visual grid preview for cell selection - supports multiple modes
-function CellGrid({
+// Unified grid component for all cell selection needs
+// Supports: structure editing (with section labels), image placement, text group placement, overlay/spacing selection
+function UnifiedCellGrid({
   layout,
   imageCell,
   selectedCell = null,
-  mode = 'image', // 'image' | 'alignment' | 'placement'
+  mode = 'cell', // 'cell' | 'image' | 'structure' | 'textGroup'
   onSelectCell,
-  textGroups = {},
-  aspectRatio = 1, // width / height
-  size = 'normal', // 'normal' | 'large'
+  onSelectSection, // Only used when mode='structure'
+  structureSelection, // Only used when mode='structure': { type: 'section', index } | { type: 'cell', cellIndex, sectionIndex, subIndex } | null
+  highlightCell = null, // For text group mode - which cell this group is assigned to
+  textGroups = {}, // For showing text group assignments
+  aspectRatio = 1,
+  size = 'normal', // 'normal' | 'large' | 'small'
 }) {
   const { type, structure } = layout
 
-  // Get cells that have text groups assigned
+  // Normalize structure - treat fullbleed as single-cell grid
+  const normalizedStructure = (!structure || structure.length === 0)
+    ? [{ size: 100, subdivisions: 1, subSizes: [100] }]
+    : structure
+  const isFullbleed = type === 'fullbleed'
+  const isRows = type === 'rows'
+  const showSectionLabels = mode === 'structure' && !isFullbleed && normalizedStructure.length > 1
+
+  // Get cells that have text groups assigned (for visual feedback)
   const textGroupCells = useMemo(() => {
     const cellMap = {}
     textGroupDefs.forEach(group => {
@@ -143,7 +154,7 @@ function CellGrid({
   }, [textGroups])
 
   // Size configurations
-  const maxWidthPx = size === 'large' ? 280 : 180
+  const maxWidthPx = size === 'large' ? 280 : size === 'small' ? 100 : 180
 
   // Dynamic aspect ratio style
   const containerStyle = {
@@ -152,104 +163,112 @@ function CellGrid({
     width: '100%',
   }
 
-  if (type === 'fullbleed' || !structure) {
-    const isSelected = selectedCell === 0
-    return (
-      <div
-        className={`rounded cursor-pointer border-2 transition-all ${
-          mode === 'image'
-            ? 'bg-blue-500 border-blue-600'
-            : isSelected
-              ? 'bg-purple-500 border-purple-600'
-              : 'bg-gray-200 border-gray-300 hover:bg-gray-300'
-        }`}
-        style={containerStyle}
-        onClick={() => onSelectCell(0)}
-        title={mode === 'image' ? 'Image covers full area' : 'Click to select'}
-      >
-        <div className={`w-full h-full flex items-center justify-center text-xs font-medium ${
-          mode === 'image' || isSelected ? 'text-white' : 'text-gray-500'
-        }`}>
-          {mode === 'image' ? '📷' : isSelected ? '✓' : 'All'}
-        </div>
-      </div>
-    )
+  // Render cell content based on mode
+  const getCellContent = (cellIndex, isImage, isSelected, isSectionSelected, subdivisions, subSize) => {
+    let bgClass, textClass, content
+
+    if (mode === 'image') {
+      bgClass = isImage
+        ? 'bg-blue-500 hover:bg-blue-600'
+        : 'bg-gray-200 hover:bg-gray-300'
+      textClass = isImage ? 'text-white' : 'text-gray-500'
+      content = isImage ? '📷' : cellIndex + 1
+    } else if (mode === 'structure') {
+      if (isSelected) {
+        bgClass = 'bg-purple-500 hover:bg-purple-600'
+        textClass = 'text-white'
+      } else if (isSectionSelected) {
+        bgClass = 'bg-purple-200 hover:bg-purple-300'
+        textClass = 'text-purple-700'
+      } else if (isImage) {
+        bgClass = 'bg-blue-400 hover:bg-blue-500'
+        textClass = 'text-white'
+      } else {
+        bgClass = 'bg-gray-100 hover:bg-gray-200'
+        textClass = 'text-gray-500'
+      }
+      content = isImage ? '📷' : (subdivisions > 1 ? `${Math.round(subSize)}%` : '')
+    } else if (mode === 'textGroup') {
+      const isHighlighted = highlightCell === cellIndex
+      if (isHighlighted) {
+        bgClass = 'bg-amber-400 hover:bg-amber-500'
+        textClass = 'text-white'
+        content = '✓'
+      } else if (isImage) {
+        bgClass = 'bg-blue-400 hover:bg-blue-500'
+        textClass = 'text-white'
+        content = '📷'
+      } else {
+        bgClass = 'bg-gray-200 hover:bg-gray-300'
+        textClass = 'text-gray-500'
+        content = cellIndex + 1
+      }
+    } else {
+      // Default 'cell' mode (for overlay, spacing, etc.)
+      const assignedGroups = textGroupCells[cellIndex]
+      if (isSelected) {
+        bgClass = 'bg-purple-500 hover:bg-purple-600'
+        textClass = 'text-white'
+        content = '✓'
+      } else if (isImage) {
+        bgClass = 'bg-blue-400 hover:bg-blue-500'
+        textClass = 'text-white'
+        content = '📷'
+      } else if (assignedGroups) {
+        bgClass = 'bg-amber-100 hover:bg-amber-200'
+        textClass = 'text-amber-700'
+        content = assignedGroups.join(', ')
+      } else {
+        bgClass = 'bg-gray-200 hover:bg-gray-300'
+        textClass = 'text-gray-500'
+        content = cellIndex + 1
+      }
+    }
+
+    return { bgClass, textClass, content }
   }
 
-  const isRows = type === 'rows'
   let cellIndex = 0
 
-  return (
+  // Render grid cells
+  const renderCells = () => (
     <div
-      className={`rounded overflow-hidden border border-gray-300 flex ${isRows ? 'flex-col' : 'flex-row'}`}
-      style={containerStyle}
+      className={`${showSectionLabels ? 'flex-1 rounded-r' : 'rounded'} overflow-hidden border border-gray-300 flex ${isRows || isFullbleed ? 'flex-col' : 'flex-row'}`}
     >
-      {structure.map((section, sectionIndex) => {
-        const sectionSize = section.size || (100 / structure.length)
+      {normalizedStructure.map((section, sectionIndex) => {
+        const sectionSize = section.size || (100 / normalizedStructure.length)
         const subdivisions = section.subdivisions || 1
         const subSizes = section.subSizes || Array(subdivisions).fill(100 / subdivisions)
+        const isSectionSelected = mode === 'structure' && structureSelection?.type === 'section' && structureSelection.index === sectionIndex
 
         const sectionCells = []
         for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
           const currentCellIndex = cellIndex
           const isImage = currentCellIndex === imageCell
-          const isSelected = currentCellIndex === selectedCell
+          const isCellSelected = mode === 'structure'
+            ? structureSelection?.type === 'cell' && structureSelection.cellIndex === currentCellIndex
+            : selectedCell === currentCellIndex
           cellIndex++
 
-          // Determine cell styling based on mode
-          let bgClass, textClass, content
-
-          if (mode === 'image') {
-            bgClass = isImage
-              ? 'bg-blue-500 hover:bg-blue-600'
-              : 'bg-gray-200 hover:bg-gray-300'
-            textClass = isImage ? 'text-white' : 'text-gray-500'
-            content = isImage ? '📷' : currentCellIndex
-          } else if (mode === 'alignment') {
-            if (isSelected) {
-              bgClass = 'bg-purple-500 hover:bg-purple-600'
-              textClass = 'text-white'
-              content = '✓'
-            } else if (isImage) {
-              bgClass = 'bg-blue-400 hover:bg-blue-500'
-              textClass = 'text-white'
-              content = '📷'
-            } else {
-              bgClass = 'bg-gray-200 hover:bg-gray-300'
-              textClass = 'text-gray-500'
-              content = currentCellIndex
-            }
-          } else if (mode === 'placement') {
-            const assignedGroups = textGroupCells[currentCellIndex]
-            if (isSelected) {
-              bgClass = 'bg-purple-500 hover:bg-purple-600'
-              textClass = 'text-white'
-              content = '✓'
-            } else if (isImage) {
-              bgClass = 'bg-blue-400 hover:bg-blue-500'
-              textClass = 'text-white'
-              content = '📷'
-            } else if (assignedGroups) {
-              bgClass = 'bg-amber-100 hover:bg-amber-200'
-              textClass = 'text-amber-700'
-              content = assignedGroups.join(', ')
-            } else {
-              bgClass = 'bg-gray-200 hover:bg-gray-300'
-              textClass = 'text-gray-500'
-              content = currentCellIndex
-            }
-          }
+          const { bgClass, textClass, content } = getCellContent(
+            currentCellIndex, isImage, isCellSelected, isSectionSelected, subdivisions, subSizes[subIndex]
+          )
 
           sectionCells.push(
             <div
               key={`cell-${currentCellIndex}`}
-              className={`relative cursor-pointer transition-colors ${bgClass}`}
+              className={`relative cursor-pointer transition-colors ${bgClass} ${
+                mode === 'structure' && subdivisions > 1 ? 'border border-gray-200' : ''
+              }`}
               style={{ flex: `0 0 ${subSizes[subIndex]}%` }}
-              onClick={() => onSelectCell(currentCellIndex)}
-              title={mode === 'image'
-                ? (isImage ? 'Image cell (click another to move)' : 'Click to place image here')
-                : (isSelected ? 'Click to deselect' : 'Click to edit this cell')
-              }
+              onClick={(e) => {
+                e.stopPropagation()
+                if (mode === 'structure') {
+                  onSelectCell?.(currentCellIndex, sectionIndex, subIndex)
+                } else {
+                  onSelectCell?.(currentCellIndex)
+                }
+              }}
             >
               <div className={`absolute inset-0 flex items-center justify-center text-[10px] font-medium ${textClass}`}>
                 {content}
@@ -261,7 +280,7 @@ function CellGrid({
         return (
           <div
             key={`section-${sectionIndex}`}
-            className={`flex ${isRows ? 'flex-row' : 'flex-col'}`}
+            className={`flex ${isRows || isFullbleed ? 'flex-row' : 'flex-col'}`}
             style={{ flex: `0 0 ${sectionSize}%` }}
           >
             {sectionCells}
@@ -270,61 +289,28 @@ function CellGrid({
       })}
     </div>
   )
-}
 
-// Structure grid with clickable section labels and cells
-function StructureGrid({
-  layout,
-  imageCell,
-  structureSelection, // { type: 'section', index } | { type: 'cell', cellIndex, sectionIndex, subIndex } | null
-  onSelectSection,
-  onSelectCell,
-  aspectRatio = 1, // width / height
-  size = 'normal', // 'normal' | 'large'
-}) {
-  const { type, structure } = layout
+  // Render section labels (only for structure mode with multiple sections)
+  const renderSectionLabels = () => {
+    if (!showSectionLabels) return null
 
-  // Size configurations
-  const maxWidthPx = size === 'large' ? 280 : 180
-
-  // Dynamic aspect ratio style - matches CellGrid
-  const containerStyle = {
-    aspectRatio: aspectRatio,
-    maxWidth: aspectRatio >= 1 ? `${maxWidthPx}px` : `${maxWidthPx * aspectRatio}px`,
-    width: '100%',
-  }
-
-  if (type === 'fullbleed' || !structure) {
     return (
-      <div
-        className="rounded border-2 border-gray-300 bg-gray-100 flex items-center justify-center"
-        style={containerStyle}
-      >
-        <span className="text-xs text-gray-500">Single cell layout</span>
-      </div>
-    )
-  }
-
-  const isRows = type === 'rows'
-  let cellIndex = 0
-
-  return (
-    <div className={`flex ${isRows ? 'flex-row' : 'flex-col'}`} style={containerStyle}>
-      {/* Section labels */}
       <div className={`flex ${isRows ? 'flex-col w-8' : 'flex-row h-6'} shrink-0`}>
-        {structure.map((section, sectionIndex) => {
-          const sectionSize = section.size || (100 / structure.length)
+        {normalizedStructure.map((section, sectionIndex) => {
+          const sectionSize = section.size || (100 / normalizedStructure.length)
           const isSelected = structureSelection?.type === 'section' && structureSelection.index === sectionIndex
           return (
             <div
               key={`label-${sectionIndex}`}
-              className={`flex items-center justify-center cursor-pointer text-[10px] font-medium transition-colors rounded-l ${
+              className={`flex items-center justify-center cursor-pointer text-[10px] font-medium transition-colors ${
+                isRows ? 'rounded-l' : 'rounded-t'
+              } ${
                 isSelected
                   ? 'bg-purple-500 text-white'
                   : 'bg-gray-200 text-gray-600 hover:bg-gray-300'
               }`}
               style={{ flex: `0 0 ${sectionSize}%` }}
-              onClick={() => onSelectSection(sectionIndex)}
+              onClick={() => onSelectSection?.(sectionIndex)}
               title={`Click to edit ${isRows ? 'row' : 'column'} ${sectionIndex + 1}`}
             >
               {isRows ? `R${sectionIndex + 1}` : `C${sectionIndex + 1}`}
@@ -332,71 +318,16 @@ function StructureGrid({
           )
         })}
       </div>
+    )
+  }
 
-      {/* Grid cells */}
-      <div className={`flex-1 rounded-r overflow-hidden border border-gray-300 flex ${isRows ? 'flex-col' : 'flex-row'}`}>
-        {structure.map((section, sectionIndex) => {
-          const sectionSize = section.size || (100 / structure.length)
-          const subdivisions = section.subdivisions || 1
-          const subSizes = section.subSizes || Array(subdivisions).fill(100 / subdivisions)
-          const isSectionSelected = structureSelection?.type === 'section' && structureSelection.index === sectionIndex
-
-          const sectionCells = []
-          for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
-            const currentCellIndex = cellIndex
-            const isImage = currentCellIndex === imageCell
-            const isCellSelected = structureSelection?.type === 'cell' && structureSelection.cellIndex === currentCellIndex
-            cellIndex++
-
-            let bgClass, textClass
-            if (isCellSelected) {
-              bgClass = 'bg-purple-500 hover:bg-purple-600'
-              textClass = 'text-white'
-            } else if (isSectionSelected) {
-              bgClass = 'bg-purple-200 hover:bg-purple-300'
-              textClass = 'text-purple-700'
-            } else if (isImage) {
-              bgClass = 'bg-blue-400 hover:bg-blue-500'
-              textClass = 'text-white'
-            } else {
-              bgClass = 'bg-gray-100 hover:bg-gray-200'
-              textClass = 'text-gray-500'
-            }
-
-            sectionCells.push(
-              <div
-                key={`cell-${currentCellIndex}`}
-                className={`relative cursor-pointer transition-colors ${bgClass} ${
-                  subdivisions > 1 ? 'border border-gray-200' : ''
-                }`}
-                style={{ flex: `0 0 ${subSizes[subIndex]}%` }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  onSelectCell(currentCellIndex, sectionIndex, subIndex)
-                }}
-                title={subdivisions > 1
-                  ? `Click to resize this ${isRows ? 'column' : 'row'}`
-                  : `Click to edit ${isRows ? 'row' : 'column'} ${sectionIndex + 1}`
-                }
-              >
-                <div className={`absolute inset-0 flex items-center justify-center text-[10px] font-medium ${textClass}`}>
-                  {isImage ? '📷' : (subdivisions > 1 ? `${Math.round(subSizes[subIndex])}%` : '')}
-                </div>
-              </div>
-            )
-          }
-
-          return (
-            <div
-              key={`section-${sectionIndex}`}
-              className={`flex ${isRows ? 'flex-row' : 'flex-col'}`}
-              style={{ flex: `0 0 ${sectionSize}%` }}
-            >
-              {sectionCells}
-            </div>
-          )
-        })}
-      </div>
+  return (
+    <div
+      className={`flex ${showSectionLabels ? (isRows ? 'flex-row' : 'flex-col') : ''}`}
+      style={containerStyle}
+    >
+      {renderSectionLabels()}
+      {renderCells()}
     </div>
   )
 }
@@ -681,211 +612,214 @@ export default function LayoutSelector({
               </div>
             </div>
 
-            {type === 'fullbleed' ? (
-              <div className="text-xs text-gray-500 text-center py-4">
-                Full image layout has a single cell.
-                <br />
-                Switch to Rows or Columns for more structure options.
-              </div>
-            ) : (
-              <>
-                {/* Structure Grid */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-600 text-center">
-                    Select Cell <span className="text-gray-400 font-normal">(to configure structure)</span>
-                  </label>
-                  <div className="flex justify-center">
-                    <StructureGrid
-                      layout={layout}
-                      imageCell={imageCell}
-                      structureSelection={structureSelection}
-                      aspectRatio={platformAspectRatio}
-                      size="large"
-                      onSelectSection={(index) => {
-                      if (structureSelection?.type === 'section' && structureSelection.index === index) {
+            {/* Structure Grid - same for all layout types */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-gray-600 text-center">
+                Select Cell <span className="text-gray-400 font-normal">(to configure structure)</span>
+              </label>
+              <div className="flex justify-center">
+                <UnifiedCellGrid
+                  layout={layout}
+                  imageCell={imageCell}
+                  mode="structure"
+                  structureSelection={structureSelection}
+                  aspectRatio={platformAspectRatio}
+                  size="large"
+                  onSelectSection={(index) => {
+                    if (structureSelection?.type === 'section' && structureSelection.index === index) {
+                      setStructureSelection(null)
+                    } else {
+                      setStructureSelection({ type: 'section', index })
+                    }
+                  }}
+                  onSelectCell={(cellIndex, sectionIndex, subIndex) => {
+                    const normalizedStructure = (!structure || structure.length === 0)
+                      ? [{ size: 100, subdivisions: 1, subSizes: [100] }]
+                      : structure
+                    const section = normalizedStructure[sectionIndex]
+                    // If only 1 subdivision, selecting cell = selecting section
+                    if ((section.subdivisions || 1) === 1) {
+                      if (structureSelection?.type === 'section' && structureSelection.index === sectionIndex) {
                         setStructureSelection(null)
                       } else {
-                        setStructureSelection({ type: 'section', index })
+                        setStructureSelection({ type: 'section', index: sectionIndex })
                       }
-                    }}
-                    onSelectCell={(cellIndex, sectionIndex, subIndex) => {
-                      const section = structure[sectionIndex]
-                      // If only 1 subdivision, selecting cell = selecting section
-                      if ((section.subdivisions || 1) === 1) {
-                        if (structureSelection?.type === 'section' && structureSelection.index === sectionIndex) {
-                          setStructureSelection(null)
-                        } else {
-                          setStructureSelection({ type: 'section', index: sectionIndex })
-                        }
+                    } else {
+                      if (structureSelection?.type === 'cell' && structureSelection.cellIndex === cellIndex) {
+                        setStructureSelection(null)
                       } else {
-                        if (structureSelection?.type === 'cell' && structureSelection.cellIndex === cellIndex) {
-                          setStructureSelection(null)
-                        } else {
-                          setStructureSelection({ type: 'cell', cellIndex, sectionIndex, subIndex })
-                        }
+                        setStructureSelection({ type: 'cell', cellIndex, sectionIndex, subIndex })
                       }
-                    }}
-                  />
+                    }
+                  }}
+                />
+              </div>
+              {/* Selection indicator */}
+              <div className="text-xs text-center py-1 bg-gray-50 rounded">
+                {structureSelection === null ? (
+                  <span className="text-gray-600">
+                    {type === 'fullbleed' ? 'Single cell layout' : `Select a ${type === 'rows' ? 'row' : 'column'} or cell to edit`}
+                  </span>
+                ) : structureSelection.type === 'section' ? (
+                  <span className="text-purple-600">
+                    Editing: <strong>{type === 'rows' || type === 'fullbleed' ? `Row ${structureSelection.index + 1}` : `Column ${structureSelection.index + 1}`}</strong>
+                  </span>
+                ) : (
+                  <span className="text-purple-600">
+                    Editing: <strong>Cell {structureSelection.cellIndex + 1}</strong>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {/* Selection Controls */}
+            {type !== 'fullbleed' && structureSelection === null && (
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-gray-600">{structure.length} {type === 'rows' ? 'rows' : 'columns'}</span>
+                <button
+                  onClick={addSection}
+                  disabled={structure.length >= 4}
+                  className={`px-2 py-1 text-xs rounded ${
+                    structure.length >= 4
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                  }`}
+                >
+                  + Add {type === 'rows' ? 'Row' : 'Column'}
+                </button>
+              </div>
+            )}
+
+            {/* Section editing controls */}
+            {type !== 'fullbleed' && structureSelection?.type === 'section' && selectedSection && (
+              <div className="space-y-3 p-3 bg-purple-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-purple-700">
+                    {type === 'rows' ? `Row ${selectedSectionIndex + 1}` : `Column ${selectedSectionIndex + 1}`}
+                  </span>
+                  <button
+                    onClick={() => setStructureSelection(null)}
+                    className="text-[10px] text-purple-500 hover:text-purple-700"
+                  >
+                    ✕ Deselect
+                  </button>
+                </div>
+
+                {/* Section size (height for rows, width for columns) */}
+                {structure.length > 1 && (
+                  <div>
+                    <label className="block text-[10px] text-purple-600 mb-1">
+                      {type === 'rows' ? 'Height' : 'Width'}
+                    </label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="range"
+                        min="20"
+                        max="80"
+                        value={selectedSection.size}
+                        onChange={(e) => updateSectionSize(selectedSectionIndex, Number(e.target.value))}
+                        className="flex-1 h-1.5 accent-purple-500"
+                      />
+                      <span className="text-xs text-purple-700 w-10 text-right">{Math.round(selectedSection.size)}%</span>
+                    </div>
                   </div>
-                  {/* Selection indicator - consistent with other tabs */}
-                  <div className="text-xs text-center py-1 bg-gray-50 rounded">
-                    {structureSelection === null ? (
-                      <span className="text-gray-600">Select a {type === 'rows' ? 'row' : 'column'} or cell to edit</span>
-                    ) : structureSelection.type === 'section' ? (
-                      <span className="text-purple-600">
-                        Editing: <strong>{type === 'rows' ? `Row ${structureSelection.index + 1}` : `Column ${structureSelection.index + 1}`}</strong>
-                      </span>
-                    ) : (
-                      <span className="text-purple-600">
-                        Editing: <strong>Cell {structureSelection.cellIndex + 1}</strong>
-                      </span>
-                    )}
+                )}
+
+                {/* Subdivisions */}
+                <div>
+                  <label className="block text-[10px] text-purple-600 mb-1">
+                    Split into {type === 'rows' ? 'columns' : 'rows'}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => removeSubdivision(selectedSectionIndex)}
+                      disabled={(selectedSection.subdivisions || 1) <= 1}
+                      className={`w-8 h-8 text-sm rounded ${
+                        (selectedSection.subdivisions || 1) <= 1
+                          ? 'bg-purple-100 text-purple-300 cursor-not-allowed'
+                          : 'bg-purple-200 text-purple-700 hover:bg-purple-300'
+                      }`}
+                    >
+                      −
+                    </button>
+                    <span className="text-sm font-medium text-purple-700 w-8 text-center">
+                      {selectedSection.subdivisions || 1}
+                    </span>
+                    <button
+                      onClick={() => addSubdivision(selectedSectionIndex)}
+                      disabled={(selectedSection.subdivisions || 1) >= 3}
+                      className={`w-8 h-8 text-sm rounded ${
+                        (selectedSection.subdivisions || 1) >= 3
+                          ? 'bg-purple-100 text-purple-300 cursor-not-allowed'
+                          : 'bg-purple-200 text-purple-700 hover:bg-purple-300'
+                      }`}
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
 
-                {/* Selection Controls */}
-                {structureSelection === null ? (
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs text-gray-600">{structure.length} {type === 'rows' ? 'rows' : 'columns'}</span>
-                    <button
-                      onClick={addSection}
-                      disabled={structure.length >= 4}
-                      className={`px-2 py-1 text-xs rounded ${
-                        structure.length >= 4
-                          ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                          : 'bg-blue-500 text-white hover:bg-blue-600'
-                      }`}
-                    >
-                      + Add {type === 'rows' ? 'Row' : 'Column'}
-                    </button>
-                  </div>
-                ) : structureSelection.type === 'section' ? (
-                  <div className="space-y-3 p-3 bg-purple-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-purple-700">
-                        {type === 'rows' ? `Row ${selectedSectionIndex + 1}` : `Column ${selectedSectionIndex + 1}`}
-                      </span>
-                      <button
-                        onClick={() => setStructureSelection(null)}
-                        className="text-[10px] text-purple-500 hover:text-purple-700"
-                      >
-                        ✕ Deselect
-                      </button>
-                    </div>
-
-                    {/* Section size (height for rows, width for columns) */}
-                    <div>
-                      <label className="block text-[10px] text-purple-600 mb-1">
-                        {type === 'rows' ? 'Height' : 'Width'}
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="range"
-                          min="20"
-                          max="80"
-                          value={selectedSection.size}
-                          onChange={(e) => updateSectionSize(selectedSectionIndex, Number(e.target.value))}
-                          className="flex-1 h-1.5 accent-purple-500"
-                        />
-                        <span className="text-xs text-purple-700 w-10 text-right">{Math.round(selectedSection.size)}%</span>
-                      </div>
-                    </div>
-
-                    {/* Subdivisions */}
-                    <div>
-                      <label className="block text-[10px] text-purple-600 mb-1">
-                        Split into {type === 'rows' ? 'columns' : 'rows'}
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={() => removeSubdivision(selectedSectionIndex)}
-                          disabled={(selectedSection.subdivisions || 1) <= 1}
-                          className={`w-8 h-8 text-sm rounded ${
-                            (selectedSection.subdivisions || 1) <= 1
-                              ? 'bg-purple-100 text-purple-300 cursor-not-allowed'
-                              : 'bg-purple-200 text-purple-700 hover:bg-purple-300'
-                          }`}
-                        >
-                          −
-                        </button>
-                        <span className="text-sm font-medium text-purple-700 w-8 text-center">
-                          {selectedSection.subdivisions || 1}
-                        </span>
-                        <button
-                          onClick={() => addSubdivision(selectedSectionIndex)}
-                          disabled={(selectedSection.subdivisions || 1) >= 3}
-                          className={`w-8 h-8 text-sm rounded ${
-                            (selectedSection.subdivisions || 1) >= 3
-                              ? 'bg-purple-100 text-purple-300 cursor-not-allowed'
-                              : 'bg-purple-200 text-purple-700 hover:bg-purple-300'
-                          }`}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-
-                    {/* Delete section */}
-                    {structure.length > 1 && (
-                      <button
-                        onClick={() => {
-                          removeSection(selectedSectionIndex)
-                          setStructureSelection(null)
-                        }}
-                        className="w-full px-3 py-1.5 text-xs bg-red-100 text-red-600 hover:bg-red-200 rounded"
-                      >
-                        Delete {type === 'rows' ? 'Row' : 'Column'}
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  // Cell selected (subdivision size)
-                  <div className="space-y-3 p-3 bg-purple-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-purple-700">
-                        {type === 'rows'
-                          ? `Row ${selectedCellInfo.sectionIndex + 1}, Column ${selectedCellInfo.subIndex + 1}`
-                          : `Column ${selectedCellInfo.sectionIndex + 1}, Row ${selectedCellInfo.subIndex + 1}`
-                        }
-                      </span>
-                      <button
-                        onClick={() => setStructureSelection(null)}
-                        className="text-[10px] text-purple-500 hover:text-purple-700"
-                      >
-                        ✕ Deselect
-                      </button>
-                    </div>
-
-                    {/* Cell size (width for cells in rows, height for cells in columns) */}
-                    <div>
-                      <label className="block text-[10px] text-purple-600 mb-1">
-                        {type === 'rows' ? 'Width' : 'Height'}
-                      </label>
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="range"
-                          min="20"
-                          max="80"
-                          value={selectedCellSection?.subSizes?.[selectedCellInfo.subIndex] || 50}
-                          onChange={(e) => updateSubSize(selectedCellInfo.sectionIndex, selectedCellInfo.subIndex, Number(e.target.value))}
-                          className="flex-1 h-1.5 accent-purple-500"
-                        />
-                        <span className="text-xs text-purple-700 w-10 text-right">
-                          {Math.round(selectedCellSection?.subSizes?.[selectedCellInfo.subIndex] || 50)}%
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Quick link to edit parent section */}
-                    <button
-                      onClick={() => setStructureSelection({ type: 'section', index: selectedCellInfo.sectionIndex })}
-                      className="w-full px-3 py-1.5 text-xs bg-purple-200 text-purple-700 hover:bg-purple-300 rounded"
-                    >
-                      Edit Parent {type === 'rows' ? 'Row' : 'Column'}
-                    </button>
-                  </div>
+                {/* Delete section */}
+                {structure.length > 1 && (
+                  <button
+                    onClick={() => {
+                      removeSection(selectedSectionIndex)
+                      setStructureSelection(null)
+                    }}
+                    className="w-full px-3 py-1.5 text-xs bg-red-100 text-red-600 hover:bg-red-200 rounded"
+                  >
+                    Delete {type === 'rows' ? 'Row' : 'Column'}
+                  </button>
                 )}
-              </>
+              </div>
+            )}
+
+            {/* Cell editing controls (subdivision size) */}
+            {type !== 'fullbleed' && structureSelection?.type === 'cell' && selectedCellInfo && (
+              <div className="space-y-3 p-3 bg-purple-50 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-medium text-purple-700">
+                    {type === 'rows'
+                      ? `Row ${selectedCellInfo.sectionIndex + 1}, Column ${selectedCellInfo.subIndex + 1}`
+                      : `Column ${selectedCellInfo.sectionIndex + 1}, Row ${selectedCellInfo.subIndex + 1}`
+                    }
+                  </span>
+                  <button
+                    onClick={() => setStructureSelection(null)}
+                    className="text-[10px] text-purple-500 hover:text-purple-700"
+                  >
+                    ✕ Deselect
+                  </button>
+                </div>
+
+                {/* Cell size (width for cells in rows, height for cells in columns) */}
+                <div>
+                  <label className="block text-[10px] text-purple-600 mb-1">
+                    {type === 'rows' ? 'Width' : 'Height'}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="range"
+                      min="20"
+                      max="80"
+                      value={selectedCellSection?.subSizes?.[selectedCellInfo.subIndex] || 50}
+                      onChange={(e) => updateSubSize(selectedCellInfo.sectionIndex, selectedCellInfo.subIndex, Number(e.target.value))}
+                      className="flex-1 h-1.5 accent-purple-500"
+                    />
+                    <span className="text-xs text-purple-700 w-10 text-right">
+                      {Math.round(selectedCellSection?.subSizes?.[selectedCellInfo.subIndex] || 50)}%
+                    </span>
+                  </div>
+                </div>
+
+                {/* Quick link to edit parent section */}
+                <button
+                  onClick={() => setStructureSelection({ type: 'section', index: selectedCellInfo.sectionIndex })}
+                  className="w-full px-3 py-1.5 text-xs bg-purple-200 text-purple-700 hover:bg-purple-300 rounded"
+                >
+                  Edit Parent {type === 'rows' ? 'Row' : 'Column'}
+                </button>
+              </div>
             )}
 
             {/* Reset */}
@@ -922,7 +856,7 @@ export default function LayoutSelector({
             <div className="space-y-2">
               <label className="block text-xs font-medium text-gray-600">📷 Image Cell</label>
               <div className="flex gap-3">
-                <CellGrid
+                <UnifiedCellGrid
                   layout={layout}
                   imageCell={imageCell}
                   mode="image"
@@ -992,117 +926,20 @@ export default function LayoutSelector({
                   <label className="block text-xs font-medium text-gray-600">{group.name}</label>
                   <div className="flex gap-3">
                     {/* Cell selector for this text group */}
-                    {type !== 'fullbleed' && cellInfoList.length > 1 ? (
-                      <div className="space-y-1">
-                        <div
-                          className="rounded overflow-hidden border border-gray-300 flex"
-                          style={{
-                            aspectRatio: platformAspectRatio,
-                            maxWidth: platformAspectRatio >= 1 ? '100px' : `${100 * platformAspectRatio}px`,
-                            width: '100%',
-                          }}
-                        >
-                          {type === 'rows' ? (
-                            <div className="flex flex-col w-full">
-                              {structure.map((section, sectionIndex) => {
-                                const sectionSize = section.size || (100 / structure.length)
-                                const subdivisions = section.subdivisions || 1
-                                const subSizes = section.subSizes || Array(subdivisions).fill(100 / subdivisions)
-                                let cellIdx = structure.slice(0, sectionIndex).reduce((sum, s) => sum + (s.subdivisions || 1), 0)
-
-                                return (
-                                  <div
-                                    key={sectionIndex}
-                                    className="flex flex-row"
-                                    style={{ flex: `0 0 ${sectionSize}%` }}
-                                  >
-                                    {Array.from({ length: subdivisions }).map((_, subIndex) => {
-                                      const thisCellIdx = cellIdx + subIndex
-                                      const isImage = thisCellIdx === imageCell
-                                      const isSelected = currentCell === thisCellIdx
-
-                                      return (
-                                        <div
-                                          key={thisCellIdx}
-                                          className={`relative cursor-pointer transition-colors ${
-                                            isSelected
-                                              ? 'bg-amber-400 hover:bg-amber-500'
-                                              : isImage
-                                                ? 'bg-blue-400 hover:bg-blue-500'
-                                                : 'bg-gray-200 hover:bg-gray-300'
-                                          }`}
-                                          style={{ flex: `0 0 ${subSizes[subIndex]}%` }}
-                                          onClick={() => updateGroupAlignment(group.id, { cell: thisCellIdx })}
-                                          title={isSelected ? 'Currently selected' : `Place in cell ${thisCellIdx + 1}`}
-                                        >
-                                          <div className={`absolute inset-0 flex items-center justify-center text-[8px] font-medium ${
-                                            isSelected || isImage ? 'text-white' : 'text-gray-500'
-                                          }`}>
-                                            {isImage ? '📷' : isSelected ? '✓' : thisCellIdx + 1}
-                                          </div>
-                                        </div>
-                                      )
-                                    })}
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          ) : (
-                            <div className="flex flex-row w-full">
-                              {structure.map((section, sectionIndex) => {
-                                const sectionSize = section.size || (100 / structure.length)
-                                const subdivisions = section.subdivisions || 1
-                                const subSizes = section.subSizes || Array(subdivisions).fill(100 / subdivisions)
-                                let cellIdx = structure.slice(0, sectionIndex).reduce((sum, s) => sum + (s.subdivisions || 1), 0)
-
-                                return (
-                                  <div
-                                    key={sectionIndex}
-                                    className="flex flex-col"
-                                    style={{ flex: `0 0 ${sectionSize}%` }}
-                                  >
-                                    {Array.from({ length: subdivisions }).map((_, subIndex) => {
-                                      const thisCellIdx = cellIdx + subIndex
-                                      const isImage = thisCellIdx === imageCell
-                                      const isSelected = currentCell === thisCellIdx
-
-                                      return (
-                                        <div
-                                          key={thisCellIdx}
-                                          className={`relative cursor-pointer transition-colors ${
-                                            isSelected
-                                              ? 'bg-amber-400 hover:bg-amber-500'
-                                              : isImage
-                                                ? 'bg-blue-400 hover:bg-blue-500'
-                                                : 'bg-gray-200 hover:bg-gray-300'
-                                          }`}
-                                          style={{ flex: `0 0 ${subSizes[subIndex]}%` }}
-                                          onClick={() => updateGroupAlignment(group.id, { cell: thisCellIdx })}
-                                          title={isSelected ? 'Currently selected' : `Place in cell ${thisCellIdx + 1}`}
-                                        >
-                                          <div className={`absolute inset-0 flex items-center justify-center text-[8px] font-medium ${
-                                            isSelected || isImage ? 'text-white' : 'text-gray-500'
-                                          }`}>
-                                            {isImage ? '📷' : isSelected ? '✓' : thisCellIdx + 1}
-                                          </div>
-                                        </div>
-                                      )
-                                    })}
-                                  </div>
-                                )
-                              })}
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-[9px] text-gray-400 block text-center">
-                          {currentCell !== null ? `Cell ${currentCell + 1}` : 'Auto'}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="w-[60px] flex items-center justify-center">
-                        <span className="text-[10px] text-gray-400">All</span>
-                      </div>
-                    )}
+                    <div className="space-y-1">
+                      <UnifiedCellGrid
+                        layout={layout}
+                        imageCell={imageCell}
+                        mode="textGroup"
+                        highlightCell={currentCell}
+                        onSelectCell={(idx) => updateGroupAlignment(group.id, { cell: idx })}
+                        aspectRatio={platformAspectRatio}
+                        size="small"
+                      />
+                      <span className="text-[9px] text-gray-400 block text-center">
+                        {currentCell !== null ? `Cell ${currentCell + 1}` : 'Auto'}
+                      </span>
+                    </div>
 
                     {/* Alignment controls for this text group */}
                     <div className="flex-1 space-y-2">
@@ -1257,46 +1094,38 @@ export default function LayoutSelector({
 
         return (
           <div className="space-y-3">
-            {type === 'fullbleed' ? (
-              <div className="text-xs text-gray-500 text-center py-4">
-                Full image layout has a single cell.
-                <br />
-                Overlay is controlled in the Image tab.
+            {/* Cell Selector Grid */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-gray-600 text-center">
+                Select Cell <span className="text-gray-400 font-normal">(to configure overlay)</span>
+              </label>
+              <div className="flex justify-center">
+                <UnifiedCellGrid
+                  layout={layout}
+                  imageCell={imageCell}
+                  selectedCell={selectedCell}
+                  mode="cell"
+                  onSelectCell={handleCellSelect}
+                  aspectRatio={platformAspectRatio}
+                  size="large"
+                />
               </div>
-            ) : (
-              <>
-                {/* Cell Selector Grid */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-600 text-center">
-                    Select Cell <span className="text-gray-400 font-normal">(to configure overlay)</span>
-                  </label>
-                  <div className="flex justify-center">
-                    <CellGrid
-                      layout={layout}
-                      imageCell={imageCell}
-                      selectedCell={selectedCell}
-                      mode="alignment"
-                      onSelectCell={handleCellSelect}
-                      aspectRatio={platformAspectRatio}
-                      size="large"
-                    />
-                  </div>
-                </div>
+            </div>
 
-                {/* Selection indicator */}
-                <div className="text-xs text-center py-1 bg-gray-50 rounded">
-                  {selectedCell === null ? (
-                    <span className="text-gray-600">Select a cell to configure its overlay</span>
-                  ) : (
-                    <span className="text-purple-600">
-                      Editing: <strong>{cellInfoList.find(c => c.index === selectedCell)?.label || `Cell ${selectedCell}`}</strong>
-                      {selectedCell === imageCell && <span className="text-blue-500 ml-1">(image)</span>}
-                    </span>
-                  )}
-                </div>
+            {/* Selection indicator */}
+            <div className="text-xs text-center py-1 bg-gray-50 rounded">
+              {selectedCell === null ? (
+                <span className="text-gray-600">Select a cell to configure its overlay</span>
+              ) : (
+                <span className="text-purple-600">
+                  Editing: <strong>Cell {selectedCell + 1}</strong>
+                  {selectedCell === imageCell && <span className="text-blue-500 ml-1">(image)</span>}
+                </span>
+              )}
+            </div>
 
-                {/* Cell Overlay Controls */}
-                {selectedCell !== null && (
+            {/* Cell Overlay Controls */}
+            {selectedCell !== null && (
                   <div className="space-y-3 p-3 bg-gray-50 rounded-lg">
                     {/* Enable/Disable */}
                     <div className="flex items-center gap-2">
@@ -1424,29 +1253,27 @@ export default function LayoutSelector({
                   </div>
                 )}
 
-                {/* Quick overview */}
-                {selectedCell === null && (
-                  <div className="space-y-2">
-                    <label className="block text-xs font-medium text-gray-600">Cell Overlays</label>
-                    <div className="space-y-1">
-                      {cellInfoList.map((cell) => (
-                        <div
-                          key={cell.index}
-                          className="flex items-center justify-between px-2 py-1.5 bg-gray-50 rounded text-xs"
-                        >
-                          <span className="text-gray-600">
-                            {cell.label}
-                            {cell.index === imageCell && <span className="text-blue-500 ml-1">(img)</span>}
-                          </span>
-                          <span className={isCellOverlayEnabled(cell.index) ? 'text-green-600' : 'text-gray-400'}>
-                            {isCellOverlayEnabled(cell.index) ? 'On' : 'Off'}
-                          </span>
-                        </div>
-                      ))}
+            {/* Quick overview */}
+            {selectedCell === null && (
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-gray-600">Cell Overlays</label>
+                <div className="space-y-1">
+                  {cellInfoList.map((cell) => (
+                    <div
+                      key={cell.index}
+                      className="flex items-center justify-between px-2 py-1.5 bg-gray-50 rounded text-xs"
+                    >
+                      <span className="text-gray-600">
+                        Cell {cell.index + 1}
+                        {cell.index === imageCell && <span className="text-blue-500 ml-1">(img)</span>}
+                      </span>
+                      <span className={isCellOverlayEnabled(cell.index) ? 'text-green-600' : 'text-gray-400'}>
+                        {isCellOverlayEnabled(cell.index) ? 'On' : 'Off'}
+                      </span>
                     </div>
-                  </div>
-                )}
-              </>
+                  ))}
+                </div>
+              </div>
             )}
           </div>
         )
@@ -1493,98 +1320,96 @@ export default function LayoutSelector({
             </div>
 
             {/* Per-cell padding */}
-            {type !== 'fullbleed' && cellInfoList.length > 1 && (
-              <div className="pt-3 border-t border-gray-200 space-y-3">
-                <div className="space-y-2">
-                  <label className="block text-xs font-medium text-gray-600 text-center">
-                    Cell Padding <span className="text-gray-400 font-normal">(overrides global)</span>
-                  </label>
-                  <div className="flex justify-center">
-                    <CellGrid
-                      layout={layout}
-                      imageCell={imageCell}
-                      selectedCell={selectedCell}
-                      mode="alignment"
-                      onSelectCell={handleCellSelect}
-                      aspectRatio={platformAspectRatio}
-                      size="large"
-                    />
-                  </div>
+            <div className="pt-3 border-t border-gray-200 space-y-3">
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-gray-600 text-center">
+                  Cell Padding <span className="text-gray-400 font-normal">(overrides global)</span>
+                </label>
+                <div className="flex justify-center">
+                  <UnifiedCellGrid
+                    layout={layout}
+                    imageCell={imageCell}
+                    selectedCell={selectedCell}
+                    mode="cell"
+                    onSelectCell={handleCellSelect}
+                    aspectRatio={platformAspectRatio}
+                    size="large"
+                  />
                 </div>
-
-                {/* Selected cell padding */}
-                {selectedCell !== null && (
-                  <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-700">
-                        {cellInfoList.find(c => c.index === selectedCell)?.label || `Cell ${selectedCell}`}
-                      </span>
-                      <button
-                        onClick={() => setSelectedCell(null)}
-                        className="text-[10px] text-gray-500 hover:text-gray-700"
-                      >
-                        ✕ Deselect
-                      </button>
-                    </div>
-
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        id={`padding-custom-${selectedCell}`}
-                        checked={padding.cellOverrides?.[selectedCell] !== undefined}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            updateCellPadding(selectedCell, padding.global)
-                          } else {
-                            updateCellPadding(selectedCell, null)
-                          }
-                        }}
-                        className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
-                      />
-                      <label htmlFor={`padding-custom-${selectedCell}`} className="text-xs text-gray-600">
-                        Custom padding for this cell
-                      </label>
-                    </div>
-
-                    {padding.cellOverrides?.[selectedCell] !== undefined && (
-                      <div className="space-y-1">
-                        <div className="flex justify-between">
-                          <label className="text-xs text-gray-600">Padding</label>
-                          <span className="text-xs text-gray-500">{getCellPaddingValue(selectedCell)}px</span>
-                        </div>
-                        <input
-                          type="range"
-                          min="0"
-                          max="60"
-                          step="4"
-                          value={getCellPaddingValue(selectedCell)}
-                          onChange={(e) => updateCellPadding(selectedCell, parseInt(e.target.value, 10))}
-                          className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {/* Overview when no cell selected */}
-                {selectedCell === null && (
-                  <div className="space-y-1">
-                    {cellInfoList.map((cell) => (
-                      <div
-                        key={cell.index}
-                        className="flex items-center justify-between px-2 py-1.5 bg-gray-50 rounded text-xs"
-                      >
-                        <span className="text-gray-600">{cell.label}</span>
-                        <span className={padding.cellOverrides?.[cell.index] !== undefined ? 'text-purple-600' : 'text-gray-400'}>
-                          {getCellPaddingValue(cell.index)}px
-                          {padding.cellOverrides?.[cell.index] !== undefined && ' (custom)'}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                )}
               </div>
-            )}
+
+              {/* Selected cell padding */}
+              {selectedCell !== null && (
+                <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-medium text-gray-700">
+                      Cell {selectedCell + 1}
+                    </span>
+                    <button
+                      onClick={() => setSelectedCell(null)}
+                      className="text-[10px] text-gray-500 hover:text-gray-700"
+                    >
+                      ✕ Deselect
+                    </button>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="checkbox"
+                      id={`padding-custom-${selectedCell}`}
+                      checked={padding.cellOverrides?.[selectedCell] !== undefined}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          updateCellPadding(selectedCell, padding.global)
+                        } else {
+                          updateCellPadding(selectedCell, null)
+                        }
+                      }}
+                      className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
+                    />
+                    <label htmlFor={`padding-custom-${selectedCell}`} className="text-xs text-gray-600">
+                      Custom padding for this cell
+                    </label>
+                  </div>
+
+                  {padding.cellOverrides?.[selectedCell] !== undefined && (
+                    <div className="space-y-1">
+                      <div className="flex justify-between">
+                        <label className="text-xs text-gray-600">Padding</label>
+                        <span className="text-xs text-gray-500">{getCellPaddingValue(selectedCell)}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="60"
+                        step="4"
+                        value={getCellPaddingValue(selectedCell)}
+                        onChange={(e) => updateCellPadding(selectedCell, parseInt(e.target.value, 10))}
+                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                      />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Overview when no cell selected */}
+              {selectedCell === null && (
+                <div className="space-y-1">
+                  {cellInfoList.map((cell) => (
+                    <div
+                      key={cell.index}
+                      className="flex items-center justify-between px-2 py-1.5 bg-gray-50 rounded text-xs"
+                    >
+                      <span className="text-gray-600">Cell {cell.index + 1}</span>
+                      <span className={padding.cellOverrides?.[cell.index] !== undefined ? 'text-purple-600' : 'text-gray-400'}>
+                        {getCellPaddingValue(cell.index)}px
+                        {padding.cellOverrides?.[cell.index] !== undefined && ' (custom)'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         )
 
