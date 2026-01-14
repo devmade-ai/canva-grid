@@ -24,23 +24,27 @@
 
 Keep these documents up to date:
 
-| Document | Purpose | When to Update |
-|----------|---------|----------------|
-| `CLAUDE.md` | AI preferences, project overview, architecture, state structure | When project architecture changes, state structure changes, or preferences evolve |
-| `docs/SESSION_NOTES.md` | Track current session progress | At session start (clear previous), during session (note changes), at end (summarize) |
-| `docs/TODO.md` | Backlog of ideas and improvements | When noticing potential improvements, when completing features (mark done) |
-| `docs/USER_ACTIONS.md` | Manual actions requiring user intervention | When tasks need external dashboards, credentials, or manual configuration |
+### `CLAUDE.md`
+
+**Purpose:** AI preferences, project overview, architecture, key state structures.
+**When to update:** When project architecture changes, state structure changes, or preferences evolve. Update Project Status and Key State Structure when features change.
+
+### `docs/SESSION_NOTES.md`
+
+**Purpose:** Compact context summary for session continuity (like `/compact` output). A handoff note containing: what was worked on, what was accomplished, current state, key context for the next session.
+**When to update:** Rewrite at session end with a fresh summary. Clear previous content - this is not a changelog, it's a snapshot.
+
+### `docs/TODO.md`
+
+**Purpose:** AI-managed backlog of ideas and potential improvements. User can review for prioritization.
+**When to update:** When noticing potential improvements during work. Mark items complete (don't delete) when finishing features.
+
+### `docs/USER_ACTIONS.md`
+
+**Purpose:** Manual actions requiring user intervention (external dashboards, credentials, manual configuration).
+**When to update:** When tasks need user action outside the codebase. Clear when actions are completed; keep empty if nothing pending.
 
 ### REMINDER: READ AND FOLLOW THE FUCKING DOCUMENTATION EVERY TIME
-
-**Documentation Guidelines:**
-
-- `SESSION_NOTES.md`: Keep lean - remove previous session notes once no longer relevant
-- `TODO.md`: AI-managed backlog - user can review; mark items complete, don't delete them
-- `USER_ACTIONS.md`: Clear when actions are completed; keep empty if no pending actions
-- `CLAUDE.md`: Update Project Status and Key State Structure when features change
-
-### REMINDER: READ AND FOLLOW THE FUCKING  DOCUMENTATION GUIDELINES EVERY TIME
 
 ## AI Notes
 
@@ -49,7 +53,6 @@ Keep these documents up to date:
 - Always read a file before attempting to edit it
 - Check for existing patterns in the codebase before creating new ones
 - Commit and push changes before ending a session
-- Keep SESSION_NOTES.md lean - remove previous session notes once no longer relevant
 - Clean up completed or obsolete docs/files and remove references to them
 
 ### REMINDER: READ AND FOLLOW THE FUCKING AI NOTES EVERY TIME
