@@ -1519,7 +1519,9 @@ export default function LayoutSelector({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-700">Layout</h3>
+      <h3 className="text-sm font-semibold text-gray-700">
+        {subTabs.find(tab => tab.id === activeSubTab)?.name || 'Layout'}
+      </h3>
 
       {/* Sub-tabs - icon-only navigation */}
       <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
