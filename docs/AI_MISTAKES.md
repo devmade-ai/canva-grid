@@ -4,17 +4,18 @@ Record of significant AI mistakes to prevent repetition across sessions.
 
 ---
 
-## 2025-01 | Layout Presets Used Wrong Data Format
+## 2025-01 | Presets Used Wrong Data Format (Happened Twice)
 
-**What went wrong:** Layout presets were using the old `textGroups` format (`titleGroup: { cell: 1 }`) but the app state had been refactored to use `textCells` format (`title: 1, tagline: 1`). Presets appeared to work (icons showed correct layout) but text ended up in wrong cells.
+**What went wrong:** Both layout presets and style presets were using the old `textGroups` format (`titleGroup: { cell: 1 }`) but the app state had been refactored to use `textCells` format (`title: 1, tagline: 1`). Presets appeared to work (icons showed correct layout) but text cell assignments weren't applied.
 
-**Why it happened:** During a refactor, the state structure changed but the preset configurations weren't updated to match. No validation caught the mismatch.
+**Why it happened:** During a refactor, the state structure changed but preset configurations weren't updated to match. Layout presets were fixed first, but style presets (`stylePresets.js`) were missed and had to be fixed in a later session.
 
 **How to prevent:**
 
-- When refactoring state structures, search for ALL usages of the old format
+- When refactoring state structures, search for ALL usages of the old format across ALL config files
 - Preset configs must match the current state shape exactly
 - Test presets after any state structure changes
+- Remember: there are TWO preset types (layout and style) that both need updating
 
 ---
 

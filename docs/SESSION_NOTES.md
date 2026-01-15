@@ -6,16 +6,18 @@ Compact context summary for session continuity. Rewrite at session end.
 
 ## Previous Session Summary
 
-**Worked on:** Fixed layout presets and restored missing Placement tab features.
+**Worked on:** Fixed style presets using wrong data format, improved Layout tab UI.
 
 **Accomplished:**
 
-- Converted all 20 layout presets from old `textGroups` format to `textCells` format
-- Restored Presets tab with category filters (All, Suggested, Image Focus, etc.)
-- Added `applyLayoutPreset` function in useAdState.js
-- Restored per-cell text alignment controls in Placement tab
-- Restored text visibility toggle and color picker for each text element
+- Replaced Layout sub-tab text labels with SVG icons (tabs were too narrow for "Placement", "Structure" etc.)
+- Fixed style presets using old `textGroups` format - converted all 16 presets to `textCells` format
+- Same bug as layout presets (documented in AI_MISTAKES.md) but for style presets
 
-**Current state:** All layout preset and placement features working. App is stable.
+**Current state:** All preset features working correctly. When selecting a style preset like "Hero Banner", text elements now correctly assign to their designated cells instead of all showing "Auto".
 
-**Key context:** Layout presets define both `layout` structure and `textCells` placement. The `textCells` format uses individual keys (`title`, `tagline`, `bodyHeading`, `bodyText`, `cta`, `footnote`) with cell index values.
+**Key context:**
+
+- Style presets in `stylePresets.js` define `textCells` (not `textGroups`)
+- Layout presets in `layoutPresets.js` also use `textCells` format
+- Both must match the state shape in `useAdState.js`

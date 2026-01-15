@@ -185,7 +185,7 @@ export function useAdState() {
     setState(defaultState)
   }, [])
 
-  // Apply a complete style preset (theme, fonts, layout, overlay, filters, textGroups)
+  // Apply a complete style preset (theme, fonts, layout, overlay, filters, textCells)
   // Preserves: image, logo, text content, platform
   const applyStylePreset = useCallback((preset) => {
     if (!preset || !preset.settings) return
