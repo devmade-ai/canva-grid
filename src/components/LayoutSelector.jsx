@@ -640,14 +640,14 @@ export default function LayoutSelector({
     switch (activeSubTab) {
       case 'presets':
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {/* Category Filter */}
-            <div className="flex flex-wrap gap-1">
+            <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => setPresetCategory('all')}
-                className={`px-2 py-1 text-xs rounded ${
+                className={`px-3 py-1.5 text-xs rounded-lg font-medium ${
                   presetCategory === 'all'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-blue-500 text-white shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -655,9 +655,9 @@ export default function LayoutSelector({
               </button>
               <button
                 onClick={() => setPresetCategory('suggested')}
-                className={`px-2 py-1 text-xs rounded ${
+                className={`px-3 py-1.5 text-xs rounded-lg font-medium ${
                   presetCategory === 'suggested'
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-blue-500 text-white shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -667,9 +667,9 @@ export default function LayoutSelector({
                 <button
                   key={cat.id}
                   onClick={() => setPresetCategory(cat.id)}
-                  className={`px-2 py-1 text-xs rounded ${
+                  className={`px-3 py-1.5 text-xs rounded-lg font-medium ${
                     presetCategory === cat.id
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-blue-500 text-white shadow-sm'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -688,15 +688,15 @@ export default function LayoutSelector({
                   <button
                     key={preset.id}
                     onClick={() => onApplyLayoutPreset?.(preset)}
-                    className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1 ${
+                    className={`p-2.5 rounded-xl border-2 transition-all flex flex-col items-center gap-1.5 ${
                       isActive
-                        ? 'border-blue-500 bg-blue-500 text-white'
+                        ? 'border-blue-500 bg-blue-500 text-white shadow-sm'
                         : 'border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50'
                     }`}
                     title={preset.description}
                   >
                     <PresetIcon presetId={preset.id} isActive={isActive} />
-                    <span className="text-[10px] font-medium leading-tight text-center">
+                    <span className="text-xs font-medium leading-tight text-center">
                       {preset.name}
                     </span>
                   </button>
@@ -705,7 +705,7 @@ export default function LayoutSelector({
             </div>
 
             {filteredPresets.length === 0 && (
-              <p className="text-xs text-gray-500 text-center py-4">
+              <p className="text-sm text-gray-500 text-center py-6">
                 No presets match the current filter
               </p>
             )}
@@ -720,11 +720,11 @@ export default function LayoutSelector({
         const selectedCellSection = selectedCellInfo ? structure[selectedCellInfo.sectionIndex] : null
 
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {/* Layout Type */}
             <div>
-              <label className="block text-xs font-medium text-gray-600 mb-1">Layout Type</label>
-              <div className="flex gap-1">
+              <label className="block text-sm font-medium text-gray-600 mb-2">Layout Type</label>
+              <div className="flex gap-1.5">
                 {layoutTypes.map((lt) => (
                   <button
                     key={lt.id}
@@ -732,13 +732,13 @@ export default function LayoutSelector({
                       handleTypeChange(lt.id)
                       setStructureSelection(null)
                     }}
-                    className={`flex-1 px-2 py-2 text-xs rounded flex flex-col items-center gap-0.5 ${
+                    className={`flex-1 px-3 py-2.5 text-sm rounded-lg flex flex-col items-center gap-1 font-medium ${
                       type === lt.id
-                        ? 'bg-blue-500 text-white'
+                        ? 'bg-blue-500 text-white shadow-sm'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                   >
-                    <span className="text-sm">{lt.icon}</span>
+                    <span className="text-base">{lt.icon}</span>
                     <span>{lt.name}</span>
                   </button>
                 ))}
@@ -746,8 +746,8 @@ export default function LayoutSelector({
             </div>
 
             {/* Structure Grid - same for all layout types */}
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-gray-600 text-center">
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-600 text-center">
                 Select Cell <span className="text-gray-400 font-normal">(to configure structure)</span>
               </label>
               <div className="flex justify-center">
@@ -788,7 +788,7 @@ export default function LayoutSelector({
                 />
               </div>
               {/* Selection indicator */}
-              <div className="text-xs text-center py-1 bg-gray-50 rounded">
+              <div className="text-sm text-center py-2 bg-gray-50 rounded-lg">
                 {structureSelection === null ? (
                   <span className="text-gray-600">
                     {type === 'fullbleed' ? 'Single cell layout' : `Select a ${type === 'rows' ? 'row' : 'column'} or cell to edit`}
@@ -808,14 +808,14 @@ export default function LayoutSelector({
             {/* Selection Controls */}
             {type !== 'fullbleed' && structureSelection === null && (
               <div className="flex items-center justify-between">
-                <span className="text-xs text-gray-600">{structure.length} {type === 'rows' ? 'rows' : 'columns'}</span>
+                <span className="text-sm text-gray-600">{structure.length} {type === 'rows' ? 'rows' : 'columns'}</span>
                 <button
                   onClick={addSection}
                   disabled={structure.length >= 4}
-                  className={`px-2 py-1 text-xs rounded ${
+                  className={`px-3 py-1.5 text-sm rounded-lg font-medium ${
                     structure.length >= 4
                       ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-blue-500 text-white hover:bg-blue-600'
+                      : 'bg-blue-500 text-white hover:bg-blue-600 shadow-sm'
                   }`}
                 >
                   + Add {type === 'rows' ? 'Row' : 'Column'}
@@ -825,14 +825,14 @@ export default function LayoutSelector({
 
             {/* Section editing controls */}
             {type !== 'fullbleed' && structureSelection?.type === 'section' && selectedSection && (
-              <div className="space-y-3 p-3 bg-purple-50 rounded-lg">
+              <div className="space-y-4 p-4 bg-purple-50 rounded-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-purple-700">
+                  <span className="text-sm font-medium text-purple-700">
                     {type === 'rows' ? `Row ${selectedSectionIndex + 1}` : `Column ${selectedSectionIndex + 1}`}
                   </span>
                   <button
                     onClick={() => setStructureSelection(null)}
-                    className="text-[10px] text-purple-500 hover:text-purple-700"
+                    className="text-xs text-purple-500 hover:text-purple-700 font-medium"
                   >
                     ✕ Deselect
                   </button>
@@ -841,33 +841,33 @@ export default function LayoutSelector({
                 {/* Section size (height for rows, width for columns) */}
                 {structure.length > 1 && (
                   <div>
-                    <label className="block text-[10px] text-purple-600 mb-1">
+                    <label className="block text-xs text-purple-600 mb-2 font-medium">
                       {type === 'rows' ? 'Height' : 'Width'}
                     </label>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-3">
                       <input
                         type="range"
                         min="20"
                         max="80"
                         value={selectedSection.size}
                         onChange={(e) => updateSectionSize(selectedSectionIndex, Number(e.target.value))}
-                        className="flex-1 h-1.5 accent-purple-500"
+                        className="flex-1"
                       />
-                      <span className="text-xs text-purple-700 w-10 text-right">{Math.round(selectedSection.size)}%</span>
+                      <span className="text-sm text-purple-700 w-12 text-right font-medium">{Math.round(selectedSection.size)}%</span>
                     </div>
                   </div>
                 )}
 
                 {/* Subdivisions */}
                 <div>
-                  <label className="block text-[10px] text-purple-600 mb-1">
+                  <label className="block text-xs text-purple-600 mb-2 font-medium">
                     Split into {type === 'rows' ? 'columns' : 'rows'}
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <button
                       onClick={() => removeSubdivision(selectedSectionIndex)}
                       disabled={(selectedSection.subdivisions || 1) <= 1}
-                      className={`w-8 h-8 text-sm rounded ${
+                      className={`w-9 h-9 text-base rounded-lg font-medium ${
                         (selectedSection.subdivisions || 1) <= 1
                           ? 'bg-purple-100 text-purple-300 cursor-not-allowed'
                           : 'bg-purple-200 text-purple-700 hover:bg-purple-300'
@@ -875,13 +875,13 @@ export default function LayoutSelector({
                     >
                       −
                     </button>
-                    <span className="text-sm font-medium text-purple-700 w-8 text-center">
+                    <span className="text-base font-semibold text-purple-700 w-8 text-center">
                       {selectedSection.subdivisions || 1}
                     </span>
                     <button
                       onClick={() => addSubdivision(selectedSectionIndex)}
                       disabled={(selectedSection.subdivisions || 1) >= 3}
-                      className={`w-8 h-8 text-sm rounded ${
+                      className={`w-9 h-9 text-base rounded-lg font-medium ${
                         (selectedSection.subdivisions || 1) >= 3
                           ? 'bg-purple-100 text-purple-300 cursor-not-allowed'
                           : 'bg-purple-200 text-purple-700 hover:bg-purple-300'
@@ -899,7 +899,7 @@ export default function LayoutSelector({
                       removeSection(selectedSectionIndex)
                       setStructureSelection(null)
                     }}
-                    className="w-full px-3 py-1.5 text-xs bg-red-100 text-red-600 hover:bg-red-200 rounded"
+                    className="w-full px-3 py-2 text-sm bg-red-100 text-red-600 hover:bg-red-200 rounded-lg font-medium"
                   >
                     Delete {type === 'rows' ? 'Row' : 'Column'}
                   </button>
@@ -909,9 +909,9 @@ export default function LayoutSelector({
 
             {/* Cell editing controls (subdivision size) */}
             {type !== 'fullbleed' && structureSelection?.type === 'cell' && selectedCellInfo && (
-              <div className="space-y-3 p-3 bg-purple-50 rounded-lg">
+              <div className="space-y-4 p-4 bg-purple-50 rounded-xl">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-purple-700">
+                  <span className="text-sm font-medium text-purple-700">
                     {type === 'rows'
                       ? `Row ${selectedCellInfo.sectionIndex + 1}, Column ${selectedCellInfo.subIndex + 1}`
                       : `Column ${selectedCellInfo.sectionIndex + 1}, Row ${selectedCellInfo.subIndex + 1}`
@@ -919,7 +919,7 @@ export default function LayoutSelector({
                   </span>
                   <button
                     onClick={() => setStructureSelection(null)}
-                    className="text-[10px] text-purple-500 hover:text-purple-700"
+                    className="text-xs text-purple-500 hover:text-purple-700 font-medium"
                   >
                     ✕ Deselect
                   </button>
@@ -927,19 +927,19 @@ export default function LayoutSelector({
 
                 {/* Cell size (width for cells in rows, height for cells in columns) */}
                 <div>
-                  <label className="block text-[10px] text-purple-600 mb-1">
+                  <label className="block text-xs text-purple-600 mb-2 font-medium">
                     {type === 'rows' ? 'Width' : 'Height'}
                   </label>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <input
                       type="range"
                       min="20"
                       max="80"
                       value={selectedCellSection?.subSizes?.[selectedCellInfo.subIndex] || 50}
                       onChange={(e) => updateSubSize(selectedCellInfo.sectionIndex, selectedCellInfo.subIndex, Number(e.target.value))}
-                      className="flex-1 h-1.5 accent-purple-500"
+                      className="flex-1"
                     />
-                    <span className="text-xs text-purple-700 w-10 text-right">
+                    <span className="text-sm text-purple-700 w-12 text-right font-medium">
                       {Math.round(selectedCellSection?.subSizes?.[selectedCellInfo.subIndex] || 50)}%
                     </span>
                   </div>
@@ -948,7 +948,7 @@ export default function LayoutSelector({
                 {/* Quick link to edit parent section */}
                 <button
                   onClick={() => setStructureSelection({ type: 'section', index: selectedCellInfo.sectionIndex })}
-                  className="w-full px-3 py-1.5 text-xs bg-purple-200 text-purple-700 hover:bg-purple-300 rounded"
+                  className="w-full px-3 py-2 text-sm bg-purple-200 text-purple-700 hover:bg-purple-300 rounded-lg font-medium"
                 >
                   Edit Parent {type === 'rows' ? 'Row' : 'Column'}
                 </button>
@@ -961,7 +961,7 @@ export default function LayoutSelector({
                 handleReset()
                 setStructureSelection(null)
               }}
-              className="w-full px-3 py-2 text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 rounded"
+              className="w-full px-3 py-2.5 text-sm bg-gray-100 text-gray-600 hover:bg-gray-200 rounded-lg font-medium"
             >
               Reset to Default
             </button>
@@ -996,10 +996,10 @@ export default function LayoutSelector({
         }
 
         return (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {/* Cell Alignment Section */}
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-gray-600 text-center">
+            <div className="space-y-3">
+              <label className="block text-sm font-medium text-gray-600 text-center">
                 Cell Alignment <span className="text-gray-400 font-normal">(select cell or set global)</span>
               </label>
               <div className="flex justify-center">
@@ -1013,7 +1013,7 @@ export default function LayoutSelector({
                   size="large"
                 />
               </div>
-              <div className="text-xs text-center py-1 bg-gray-50 rounded">
+              <div className="text-sm text-center py-2 bg-gray-50 rounded-lg">
                 {selectedCell === null ? (
                   <span className="text-gray-600">Global alignment (all cells)</span>
                 ) : (
@@ -1027,8 +1027,8 @@ export default function LayoutSelector({
               {/* Alignment Controls */}
               <div className="flex gap-4">
                 <div className="flex-1">
-                  <span className="text-[9px] text-gray-400 block mb-1">Horizontal</span>
-                  <div className="flex gap-1">
+                  <span className="text-xs text-gray-500 block mb-1.5">Horizontal</span>
+                  <div className="flex gap-1.5">
                     {textAlignOptions.map((align) => {
                       const isActive = getAlignmentForCell(selectedCell, 'textAlign') === align.id
                       return (
@@ -1036,9 +1036,9 @@ export default function LayoutSelector({
                           key={align.id}
                           onClick={() => setAlignmentForCell(selectedCell, 'textAlign', align.id)}
                           title={align.name}
-                          className={`flex-1 px-2 py-2 rounded flex items-center justify-center ${
+                          className={`flex-1 px-2 py-2.5 rounded-lg flex items-center justify-center ${
                             isActive
-                              ? 'bg-blue-500 text-white'
+                              ? 'bg-blue-500 text-white shadow-sm'
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
@@ -1049,8 +1049,8 @@ export default function LayoutSelector({
                   </div>
                 </div>
                 <div className="flex-1">
-                  <span className="text-[9px] text-gray-400 block mb-1">Vertical</span>
-                  <div className="flex gap-1">
+                  <span className="text-xs text-gray-500 block mb-1.5">Vertical</span>
+                  <div className="flex gap-1.5">
                     {verticalAlignOptions.map((align) => {
                       const isActive = getAlignmentForCell(selectedCell, 'textVerticalAlign') === align.id
                       return (
@@ -1058,9 +1058,9 @@ export default function LayoutSelector({
                           key={align.id}
                           onClick={() => setAlignmentForCell(selectedCell, 'textVerticalAlign', align.id)}
                           title={align.name}
-                          className={`flex-1 px-2 py-2 rounded flex items-center justify-center ${
+                          className={`flex-1 px-2 py-2.5 rounded-lg flex items-center justify-center ${
                             isActive
-                              ? 'bg-blue-500 text-white'
+                              ? 'bg-blue-500 text-white shadow-sm'
                               : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                           }`}
                         >
@@ -1074,9 +1074,9 @@ export default function LayoutSelector({
             </div>
 
             {/* Image Cell Assignment */}
-            <div className="pt-3 border-t border-gray-200">
-              <div className="flex items-center gap-2 py-2">
-                <span className="text-xs font-medium text-gray-600 w-24">📷 Image</span>
+            <div className="pt-4 border-t border-gray-100">
+              <div className="flex items-center gap-3 py-2">
+                <span className="text-sm font-medium text-gray-600 w-24">📷 Image</span>
                 <UnifiedCellGrid
                   layout={layout}
                   imageCell={imageCell}
@@ -1085,13 +1085,13 @@ export default function LayoutSelector({
                   aspectRatio={platformAspectRatio}
                   size="small"
                 />
-                <span className="text-[9px] text-gray-400">Cell {imageCell + 1}</span>
+                <span className="text-xs text-gray-500">Cell {imageCell + 1}</span>
               </div>
             </div>
 
             {/* Text Elements - cell assignment + visibility + color */}
-            <div className="pt-3 border-t border-gray-200 space-y-2">
-              <label className="block text-xs font-medium text-gray-600">Text Elements</label>
+            <div className="pt-4 border-t border-gray-100 space-y-2">
+              <label className="block text-sm font-medium text-gray-600">Text Elements</label>
               {textElementDefs.map((element) => {
                 const currentCell = textCells?.[element.id]
                 const textData = text?.[element.id] || {}
@@ -1099,11 +1099,11 @@ export default function LayoutSelector({
                 const colorValue = textData.color || 'secondary'
 
                 return (
-                  <div key={element.id} className="flex items-center gap-2 py-1">
+                  <div key={element.id} className="flex items-center gap-2 py-1.5">
                     {/* Visibility Toggle */}
                     <button
                       onClick={() => onTextChange?.(element.id, { visible: !isVisible })}
-                      className={`w-5 h-5 rounded flex items-center justify-center text-[10px] ${
+                      className={`w-6 h-6 rounded-md flex items-center justify-center text-xs ${
                         isVisible
                           ? 'bg-green-100 text-green-600'
                           : 'bg-gray-100 text-gray-400'
@@ -1114,7 +1114,7 @@ export default function LayoutSelector({
                     </button>
 
                     {/* Label */}
-                    <span className={`text-xs w-20 ${isVisible ? 'text-gray-600' : 'text-gray-400'}`}>
+                    <span className={`text-sm w-24 ${isVisible ? 'text-gray-700' : 'text-gray-400'}`}>
                       {element.label}
                     </span>
 
@@ -1130,18 +1130,18 @@ export default function LayoutSelector({
                     />
 
                     {/* Cell Label */}
-                    <span className="text-[9px] text-gray-400 w-10">
+                    <span className="text-xs text-gray-500 w-12">
                       {currentCell !== null ? `Cell ${currentCell + 1}` : 'Auto'}
                     </span>
 
                     {/* Color Picker */}
-                    <div className="flex gap-0.5">
+                    <div className="flex gap-1">
                       {colorOptions.map((color) => (
                         <button
                           key={color.id}
                           onClick={() => onTextChange?.(element.id, { color: color.id })}
-                          className={`w-4 h-4 rounded-full border ${
-                            colorValue === color.id ? 'ring-2 ring-blue-400 ring-offset-1' : 'border-gray-300'
+                          className={`w-5 h-5 rounded-full border-2 transition-transform hover:scale-110 ${
+                            colorValue === color.id ? 'ring-2 ring-blue-400 ring-offset-1 border-transparent' : 'border-gray-200'
                           }`}
                           style={{ backgroundColor: theme?.[color.id] || '#666' }}
                           title={color.name}
@@ -1153,7 +1153,7 @@ export default function LayoutSelector({
                     {currentCell !== null && (
                       <button
                         onClick={() => onTextCellsChange?.({ [element.id]: null })}
-                        className="text-[9px] text-gray-400 hover:text-gray-600"
+                        className="text-xs text-gray-400 hover:text-gray-600"
                         title="Reset to auto"
                       >
                         ×
@@ -1520,13 +1520,13 @@ export default function LayoutSelector({
   }
 
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-700">
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-gray-800">
         {subTabs.find(tab => tab.id === activeSubTab)?.name || 'Layout'}
       </h3>
 
       {/* Sub-tabs - icon-only navigation */}
-      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+      <div className="flex gap-1 bg-gray-100 p-1.5 rounded-xl">
         {subTabs.map((tab) => (
           <button
             key={tab.id}
@@ -1541,9 +1541,9 @@ export default function LayoutSelector({
               }
             }}
             title={tab.name}
-            className={`flex-1 px-3 py-2 rounded-md transition-all flex items-center justify-center ${
+            className={`flex-1 px-3 py-2.5 rounded-lg transition-all flex items-center justify-center ${
               activeSubTab === tab.id
-                ? 'bg-blue-500 text-white shadow-sm'
+                ? 'bg-white text-blue-600 shadow-sm'
                 : 'text-gray-500 hover:bg-gray-200 hover:text-gray-700'
             }`}
           >

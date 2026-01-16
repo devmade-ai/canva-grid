@@ -125,23 +125,23 @@ function App() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen">
       {/* Load fonts */}
       {fonts.map((font) => (
         <link key={font.id} rel="stylesheet" href={font.url} />
       ))}
 
       {/* Header */}
-      <header className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between">
-        <h1 className="text-xl font-bold text-gray-800">Social Ad Creator</h1>
-        <div className="flex gap-1">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200/60 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
+        <h1 className="text-lg font-semibold text-gray-800 tracking-tight">Social Ad Creator</h1>
+        <div className="flex gap-1.5">
           <button
             onClick={undo}
             disabled={!canUndo}
             title="Undo (Ctrl+Z)"
-            className={`px-3 py-1.5 text-sm rounded flex items-center gap-1 ${
+            className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1.5 font-medium ${
               canUndo
-                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95'
                 : 'bg-gray-50 text-gray-300 cursor-not-allowed'
             }`}
           >
@@ -152,9 +152,9 @@ function App() {
             onClick={redo}
             disabled={!canRedo}
             title="Redo (Ctrl+Y)"
-            className={`px-3 py-1.5 text-sm rounded flex items-center gap-1 ${
+            className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1.5 font-medium ${
               canRedo
-                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                ? 'bg-gray-100 text-gray-700 hover:bg-gray-200 active:scale-95'
                 : 'bg-gray-50 text-gray-300 cursor-not-allowed'
             }`}
           >
@@ -166,18 +166,18 @@ function App() {
 
       <div className="flex flex-col lg:flex-row lg:items-stretch">
         {/* Sidebar Controls */}
-        <aside className="w-full lg:w-96 p-4 lg:p-6 lg:pr-0">
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4">
+        <aside className="w-full lg:w-96 p-4 lg:p-5 lg:pr-0">
+          <div className="bg-white rounded-xl border border-gray-200/80 shadow-card p-4 lg:p-5">
           {/* Section Tabs */}
-          <div className="flex flex-wrap gap-1 mb-4 pb-3 border-b border-gray-100">
+          <div className="flex flex-wrap gap-1.5 mb-5 pb-4 border-b border-gray-100">
             {sections.map((section) => (
               <button
                 key={section.id}
                 onClick={() => setActiveSection(section.id)}
-                className={`px-2 py-1 text-xs rounded transition-colors ${
+                className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
                   activeSection === section.id
-                    ? 'bg-blue-500 text-white'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-800'
                 }`}
               >
                 {section.label}
@@ -186,7 +186,7 @@ function App() {
           </div>
 
           {/* Section Content */}
-          <div className="space-y-4">
+          <div className="space-y-5">
             <ErrorBoundary title="Image controls error" message="Failed to load image controls.">
               {activeSection === 'image' && (
                 <ImageUploader
@@ -264,7 +264,7 @@ function App() {
         </aside>
 
         {/* Preview Area */}
-        <main className="flex-1 p-4 lg:p-6 space-y-4">
+        <main className="flex-1 p-4 lg:p-5 space-y-4">
           {/* Style Presets - Top Level */}
           <ErrorBoundary title="Style presets error" message="Failed to load style presets.">
             <StylePresetSelector
@@ -273,7 +273,7 @@ function App() {
             />
           </ErrorBoundary>
 
-          <div className="bg-white rounded-lg shadow-sm p-4 lg:p-6">
+          <div className="bg-white rounded-xl border border-gray-200/80 shadow-card p-4 lg:p-6">
             {/* Platform Selector */}
             <PlatformPreview
               selectedPlatform={state.platform}
@@ -283,7 +283,7 @@ function App() {
             {/* Canvas Preview */}
             <div
               ref={previewContainerRef}
-              className="mt-4 bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center"
+              className="mt-5 bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl overflow-hidden flex items-center justify-center border border-gray-200/50"
               style={{
                 minHeight: platform.height * previewScale + 40,
               }}
@@ -309,7 +309,7 @@ function App() {
             </div>
 
             {/* Export Buttons */}
-            <div className="mt-4">
+            <div className="mt-5">
               <ErrorBoundary title="Export error" message="Failed to load export options.">
                 <ExportButtons
                   canvasRef={canvasRef}

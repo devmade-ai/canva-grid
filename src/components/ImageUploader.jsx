@@ -29,21 +29,21 @@ function Section({ title, children, defaultOpen = true, badge = null }) {
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="border-t border-gray-200 pt-3">
+    <div className="border-t border-gray-100 pt-4">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between text-left mb-2"
+        className="w-full flex items-center justify-between text-left mb-3 group"
       >
         <div className="flex items-center gap-2">
-          <h4 className="text-xs font-semibold text-gray-700">{title}</h4>
+          <h4 className="text-sm font-medium text-gray-700 group-hover:text-gray-900">{title}</h4>
           {badge && (
-            <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 text-gray-500 rounded">
+            <span className="text-xs px-2 py-0.5 bg-gray-100 text-gray-500 rounded-full">
               {badge}
             </span>
           )}
         </div>
         <svg
-          className={`w-4 h-4 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
+          className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
@@ -51,7 +51,7 @@ function Section({ title, children, defaultOpen = true, badge = null }) {
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
         </svg>
       </button>
-      {isOpen && <div className="space-y-3">{children}</div>}
+      {isOpen && <div className="space-y-4">{children}</div>}
     </div>
   )
 }
@@ -140,31 +140,31 @@ export default memo(function ImageUploader({
   }, [onImageChange])
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-4">
       {/* ===== SECTION 1: IMAGE UPLOAD (always visible) ===== */}
-      <h3 className="text-sm font-semibold text-gray-700">Image</h3>
+      <h3 className="text-sm font-semibold text-gray-800">Image</h3>
 
       <div
-        className="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center cursor-pointer hover:border-blue-400 transition-colors"
+        className="border-2 border-dashed border-gray-200 rounded-xl p-5 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all"
         onDrop={handleDrop}
         onDragOver={handleDragOver}
         onClick={() => fileInputRef.current?.click()}
       >
         {image ? (
-          <div className="space-y-2">
+          <div className="space-y-3">
             <img
               src={image}
               alt="Preview"
-              className="max-h-24 mx-auto rounded"
+              className="max-h-28 mx-auto rounded-lg shadow-sm"
             />
-            <p className="text-xs text-gray-500">Click or drop to replace</p>
+            <p className="text-sm text-gray-500">Click or drop to replace</p>
           </div>
         ) : (
           <div className="py-4">
-            <svg className="w-8 h-8 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+            <svg className="w-10 h-10 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
             </svg>
-            <p className="text-sm text-gray-500">Drop image or click to upload</p>
+            <p className="text-sm text-gray-600 font-medium">Drop image or click to upload</p>
           </div>
         )}
         <input
@@ -180,7 +180,7 @@ export default memo(function ImageUploader({
       {image && (
         <button
           onClick={handleRemove}
-          className="w-full text-sm text-red-600 hover:text-red-700 hover:bg-red-50 py-1.5 rounded transition-colors"
+          className="w-full text-sm text-red-600 hover:text-red-700 hover:bg-red-50 py-2 rounded-lg transition-colors font-medium"
         >
           Remove Image
         </button>
@@ -188,21 +188,21 @@ export default memo(function ImageUploader({
 
       {/* Sample Images - shown when no image uploaded */}
       {!image && (
-        <div className="space-y-2">
-          <label className="block text-xs font-medium text-gray-600">
+        <div className="space-y-3">
+          <label className="block text-sm font-medium text-gray-600">
             Or try a sample
           </label>
-          <div className="grid grid-cols-5 gap-1">
+          <div className="grid grid-cols-5 gap-1.5">
             {sampleImages.map((sample) => (
               <button
                 key={sample.id}
                 onClick={() => loadSampleImage(sample)}
                 disabled={loadingSample === sample.id}
                 title={sample.name}
-                className={`aspect-square rounded overflow-hidden border-2 transition-colors ${
+                className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
                   loadingSample === sample.id
-                    ? 'border-blue-400 opacity-50'
-                    : 'border-gray-200 hover:border-blue-400'
+                    ? 'border-blue-400 opacity-50 scale-95'
+                    : 'border-gray-200 hover:border-blue-400 hover:shadow-sm active:scale-95'
                 }`}
               >
                 <img
@@ -215,7 +215,7 @@ export default memo(function ImageUploader({
                   }}
                 />
                 <div
-                  className="w-full h-full bg-gray-100 items-center justify-center text-gray-400 text-[8px] text-center p-0.5"
+                  className="w-full h-full bg-gray-100 items-center justify-center text-gray-400 text-[9px] text-center p-0.5"
                   style={{ display: 'none' }}
                 >
                   {sample.name}
@@ -224,7 +224,7 @@ export default memo(function ImageUploader({
             ))}
           </div>
           {sampleError && (
-            <p className="text-xs text-amber-600">{sampleError}</p>
+            <p className="text-sm text-amber-600">{sampleError}</p>
           )}
         </div>
       )}
@@ -232,16 +232,16 @@ export default memo(function ImageUploader({
       {/* ===== SECTION 2: IMAGE SETTINGS (when image exists) ===== */}
       {image && (
         <Section title="Settings" defaultOpen={true}>
-          <div className="space-y-2">
-            <label className="block text-xs font-medium text-gray-600">Object Fit</label>
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-600">Object Fit</label>
             <div className="flex gap-2">
               {['cover', 'contain'].map((fit) => (
                 <button
                   key={fit}
                   onClick={() => onObjectFitChange(fit)}
-                  className={`flex-1 px-3 py-1.5 text-xs rounded capitalize ${
+                  className={`flex-1 px-3 py-2 text-sm rounded-lg capitalize font-medium ${
                     objectFit === fit
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-blue-500 text-white shadow-sm'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -251,16 +251,16 @@ export default memo(function ImageUploader({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-xs font-medium text-gray-600">Position</label>
-            <div className="grid grid-cols-3 gap-1">
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-600">Position</label>
+            <div className="grid grid-cols-3 gap-1.5">
               {['top', 'center', 'bottom'].map((pos) => (
                 <button
                   key={pos}
                   onClick={() => onPositionChange(pos)}
-                  className={`px-2 py-1.5 text-xs rounded capitalize ${
+                  className={`px-2 py-2 text-sm rounded-lg capitalize font-medium ${
                     position === pos
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-blue-500 text-white shadow-sm'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -283,15 +283,15 @@ export default memo(function ImageUploader({
               onChange={(e) => onFiltersChange({ grayscale: e.target.checked })}
               className="w-4 h-4 text-blue-500 rounded border-gray-300 focus:ring-blue-500"
             />
-            <label htmlFor="grayscale" className="text-xs font-medium text-gray-600">
+            <label htmlFor="grayscale" className="text-sm font-medium text-gray-600">
               Grayscale
             </label>
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <label className="text-xs font-medium text-gray-600">Sepia</label>
-              <span className="text-xs text-gray-500">{filters.sepia}%</span>
+              <label className="text-sm font-medium text-gray-600">Sepia</label>
+              <span className="text-sm text-gray-500">{filters.sepia}%</span>
             </div>
             <input
               type="range"
@@ -299,14 +299,14 @@ export default memo(function ImageUploader({
               max="100"
               value={filters.sepia}
               onChange={(e) => onFiltersChange({ sepia: parseInt(e.target.value, 10) })}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full"
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <label className="text-xs font-medium text-gray-600">Blur</label>
-              <span className="text-xs text-gray-500">{filters.blur}px</span>
+              <label className="text-sm font-medium text-gray-600">Blur</label>
+              <span className="text-sm text-gray-500">{filters.blur}px</span>
             </div>
             <input
               type="range"
@@ -315,14 +315,14 @@ export default memo(function ImageUploader({
               step="0.5"
               value={filters.blur}
               onChange={(e) => onFiltersChange({ blur: parseFloat(e.target.value) })}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full"
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <label className="text-xs font-medium text-gray-600">Contrast</label>
-              <span className="text-xs text-gray-500">{filters.contrast}%</span>
+              <label className="text-sm font-medium text-gray-600">Contrast</label>
+              <span className="text-sm text-gray-500">{filters.contrast}%</span>
             </div>
             <input
               type="range"
@@ -330,14 +330,14 @@ export default memo(function ImageUploader({
               max="150"
               value={filters.contrast}
               onChange={(e) => onFiltersChange({ contrast: parseInt(e.target.value, 10) })}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full"
             />
           </div>
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <label className="text-xs font-medium text-gray-600">Brightness</label>
-              <span className="text-xs text-gray-500">{filters.brightness}%</span>
+              <label className="text-sm font-medium text-gray-600">Brightness</label>
+              <span className="text-sm text-gray-500">{filters.brightness}%</span>
             </div>
             <input
               type="range"
@@ -345,7 +345,7 @@ export default memo(function ImageUploader({
               max="150"
               value={filters.brightness}
               onChange={(e) => onFiltersChange({ brightness: parseInt(e.target.value, 10) })}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full"
             />
           </div>
         </Section>
@@ -354,16 +354,16 @@ export default memo(function ImageUploader({
       {/* ===== SECTION 4: OVERLAY (when image exists) ===== */}
       {image && (
         <Section title="Overlay" defaultOpen={false}>
-          <div className="space-y-2">
-            <label className="block text-xs font-medium text-gray-600">Type</label>
-            <div className="grid grid-cols-2 gap-1">
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-600">Type</label>
+            <div className="grid grid-cols-2 gap-1.5">
               {overlayTypes.map((type) => (
                 <button
                   key={type.id}
                   onClick={() => onOverlayChange({ type: type.id })}
-                  className={`px-2 py-1.5 text-xs rounded ${
+                  className={`px-2 py-2 text-sm rounded-lg font-medium ${
                     overlay.type === type.id
-                      ? 'bg-blue-500 text-white'
+                      ? 'bg-blue-500 text-white shadow-sm'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
@@ -373,22 +373,21 @@ export default memo(function ImageUploader({
             </div>
           </div>
 
-          <div className="space-y-2">
-            <label className="block text-xs font-medium text-gray-600">Overlay Color</label>
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-600">Overlay Color</label>
             <div className="flex gap-2">
               {overlayColorOptions.map((color) => (
                 <button
                   key={color.id}
                   onClick={() => onOverlayChange({ color: color.id })}
-                  className={`flex-1 px-2 py-1.5 text-xs rounded flex items-center justify-center gap-1 ${
+                  className={`flex-1 px-2 py-2 text-sm rounded-lg flex items-center justify-center gap-1 font-medium ${
                     overlay.color === color.id
-                      ? 'ring-2 ring-blue-500 ring-offset-1'
-                      : 'hover:bg-gray-100'
+                      ? 'ring-2 ring-blue-500 ring-offset-2'
+                      : 'hover:opacity-90'
                   }`}
                   style={{ backgroundColor: theme[color.id] }}
                 >
                   <span
-                    className="text-xs"
                     style={{
                       color: color.id === 'primary' ? theme.secondary : theme.primary,
                     }}
@@ -402,8 +401,8 @@ export default memo(function ImageUploader({
 
           <div className="space-y-2">
             <div className="flex justify-between">
-              <label className="text-xs font-medium text-gray-600">Opacity</label>
-              <span className="text-xs text-gray-500">{overlay.opacity}%</span>
+              <label className="text-sm font-medium text-gray-600">Opacity</label>
+              <span className="text-sm text-gray-500">{overlay.opacity}%</span>
             </div>
             <input
               type="range"
@@ -411,7 +410,7 @@ export default memo(function ImageUploader({
               max="100"
               value={overlay.opacity}
               onChange={(e) => onOverlayChange({ opacity: parseInt(e.target.value, 10) })}
-              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              className="w-full"
             />
           </div>
         </Section>
@@ -422,13 +421,13 @@ export default memo(function ImageUploader({
         <Section title="Logo" defaultOpen={!!logo} badge={logo ? null : 'Optional'}>
           {!logo ? (
             <div
-              className="border-2 border-dashed border-gray-300 rounded-lg p-3 text-center cursor-pointer hover:border-blue-400 transition-colors"
+              className="border-2 border-dashed border-gray-200 rounded-xl p-4 text-center cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition-all"
               onClick={() => logoInputRef.current?.click()}
             >
-              <svg className="w-6 h-6 mx-auto text-gray-400 mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              <svg className="w-8 h-8 mx-auto text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
-              <p className="text-xs text-gray-500">Click to upload logo</p>
+              <p className="text-sm text-gray-500">Click to upload logo</p>
               <input
                 ref={logoInputRef}
                 type="file"
@@ -447,30 +446,30 @@ export default memo(function ImageUploader({
           ) : (
             <>
               {/* Logo preview */}
-              <div className="relative bg-gray-100 rounded-lg p-2">
-                <img src={logo} alt="Logo" className="max-h-16 mx-auto object-contain" />
+              <div className="relative bg-gray-50 rounded-xl p-3">
+                <img src={logo} alt="Logo" className="max-h-20 mx-auto object-contain" />
                 <button
                   onClick={() => {
                     onLogoChange(null)
                     if (logoInputRef.current) logoInputRef.current.value = ''
                   }}
-                  className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600"
+                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-sm hover:bg-red-600 shadow-sm"
                 >
                   ×
                 </button>
               </div>
 
               {/* Logo position */}
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-gray-600">Position</label>
-                <div className="grid grid-cols-3 gap-1">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-600">Position</label>
+                <div className="grid grid-cols-3 gap-1.5">
                   {logoPositionOptions.map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => onLogoPositionChange(opt.id)}
-                      className={`px-1.5 py-1 text-[10px] rounded ${
+                      className={`px-2 py-1.5 text-xs rounded-lg font-medium ${
                         logoPosition === opt.id
-                          ? 'bg-blue-500 text-white'
+                          ? 'bg-blue-500 text-white shadow-sm'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >
@@ -481,16 +480,16 @@ export default memo(function ImageUploader({
               </div>
 
               {/* Logo size */}
-              <div className="space-y-1">
-                <label className="block text-xs font-medium text-gray-600">Size</label>
-                <div className="flex gap-1">
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-600">Size</label>
+                <div className="flex gap-1.5">
                   {logoSizeOptions.map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => onLogoSizeChange(opt.id)}
-                      className={`flex-1 px-1.5 py-1 text-[10px] rounded ${
+                      className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium ${
                         logoSize === opt.id
-                          ? 'bg-blue-500 text-white'
+                          ? 'bg-blue-500 text-white shadow-sm'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
                     >

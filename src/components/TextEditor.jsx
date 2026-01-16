@@ -36,21 +36,21 @@ export default memo(function TextEditor({
   theme,
 }) {
   return (
-    <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-gray-700">Text</h3>
+    <div className="space-y-4">
+      <h3 className="text-sm font-semibold text-gray-800">Text</h3>
 
-      <div className="space-y-3">
+      <div className="space-y-4">
         {textLayers.map((layer) => {
           const layerState = text?.[layer.id] || { content: '', visible: false, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0 }
 
           return (
-            <div key={layer.id} className="space-y-1.5 border-b border-gray-100 pb-3 last:border-0">
+            <div key={layer.id} className="space-y-2.5 border-b border-gray-100 pb-4 last:border-0 last:pb-0">
               {/* Header: label + visibility toggle */}
               <div className="flex items-center justify-between">
-                <label className="text-xs font-medium text-gray-600">{layer.label}</label>
+                <label className="text-sm font-medium text-gray-700">{layer.label}</label>
                 <button
                   onClick={() => onTextChange(layer.id, { visible: !layerState.visible })}
-                  className={`text-[10px] px-2 py-0.5 rounded ${
+                  className={`text-xs px-2.5 py-1 rounded-full font-medium ${
                     layerState.visible
                       ? 'bg-green-100 text-green-700'
                       : 'bg-gray-100 text-gray-500'
@@ -67,7 +67,7 @@ export default memo(function TextEditor({
                   onChange={(e) => onTextChange(layer.id, { content: e.target.value })}
                   placeholder={layer.placeholder}
                   rows={2}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 resize-none"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 resize-none"
                 />
               ) : (
                 <input
@@ -75,24 +75,24 @@ export default memo(function TextEditor({
                   value={layerState.content}
                   onChange={(e) => onTextChange(layer.id, { content: e.target.value })}
                   placeholder={layer.placeholder}
-                  className="w-full px-2 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  className="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500"
                 />
               )}
 
               {/* Row 1: Color + Size */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 {/* Color options */}
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-gray-400">Color:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500">Color:</span>
                   {colorOptions.map((color) => (
                     <button
                       key={color.id}
                       onClick={() => onTextChange(layer.id, { color: color.id })}
                       title={color.name}
-                      className={`w-5 h-5 rounded border-2 ${
+                      className={`w-6 h-6 rounded-full border-2 transition-transform hover:scale-110 ${
                         layerState.color === color.id
-                          ? 'border-blue-500'
-                          : 'border-transparent'
+                          ? 'border-blue-500 ring-2 ring-blue-500/20'
+                          : 'border-gray-200'
                       }`}
                       style={{ backgroundColor: theme[color.id] }}
                     />
@@ -100,14 +100,14 @@ export default memo(function TextEditor({
                 </div>
 
                 {/* Size options */}
-                <div className="flex items-center gap-0.5 ml-auto">
-                  <span className="text-[10px] text-gray-400">Size:</span>
+                <div className="flex items-center gap-1 ml-auto">
+                  <span className="text-xs text-gray-500">Size:</span>
                   {sizeOptions.map((size) => (
                     <button
                       key={size.id}
                       onClick={() => onTextChange(layer.id, { size: size.id })}
                       title={`Size ${size.name}`}
-                      className={`w-5 h-5 text-[9px] font-medium rounded ${
+                      className={`w-6 h-6 text-xs font-medium rounded-md ${
                         layerState.size === size.id
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -120,14 +120,14 @@ export default memo(function TextEditor({
               </div>
 
               {/* Row 2: Bold/Italic + Letter Spacing */}
-              <div className="flex items-center gap-3">
+              <div className="flex items-center gap-4">
                 {/* Bold/Italic toggles */}
-                <div className="flex items-center gap-1">
-                  <span className="text-[10px] text-gray-400">Style:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs text-gray-500">Style:</span>
                   <button
                     onClick={() => onTextChange(layer.id, { bold: !layerState.bold })}
                     title="Bold"
-                    className={`w-6 h-5 text-[10px] font-bold rounded ${
+                    className={`w-7 h-6 text-xs font-bold rounded-md ${
                       layerState.bold
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -138,7 +138,7 @@ export default memo(function TextEditor({
                   <button
                     onClick={() => onTextChange(layer.id, { italic: !layerState.italic })}
                     title="Italic"
-                    className={`w-6 h-5 text-[10px] italic rounded ${
+                    className={`w-7 h-6 text-xs italic rounded-md ${
                       layerState.italic
                         ? 'bg-blue-500 text-white'
                         : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
@@ -149,14 +149,14 @@ export default memo(function TextEditor({
                 </div>
 
                 {/* Letter spacing */}
-                <div className="flex items-center gap-0.5 ml-auto">
-                  <span className="text-[10px] text-gray-400">Spacing:</span>
+                <div className="flex items-center gap-1 ml-auto">
+                  <span className="text-xs text-gray-500">Spacing:</span>
                   {letterSpacingOptions.map((opt) => (
                     <button
                       key={opt.id}
                       onClick={() => onTextChange(layer.id, { letterSpacing: opt.id })}
                       title={opt.name}
-                      className={`px-1.5 h-5 text-[9px] rounded ${
+                      className={`px-2 h-6 text-xs rounded-md ${
                         layerState.letterSpacing === opt.id
                           ? 'bg-blue-500 text-white'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
