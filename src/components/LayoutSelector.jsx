@@ -149,6 +149,61 @@ const overlayColorOptions = [
   { id: 'accent', name: 'Accent' },
 ]
 
+// Contextual tips for overlay settings
+function getOverlayTip(type, opacity) {
+  if (!type) return null
+
+  const isLowOpacity = opacity <= 40
+  const isMidOpacity = opacity > 40 && opacity <= 60
+  const isHighOpacity = opacity > 60
+
+  switch (type) {
+    case 'solid':
+      if (isLowOpacity) {
+        return 'Subtle brand tint—keeps image details visible while adding color cohesion.'
+      } else if (isMidOpacity) {
+        return 'Balanced tint—good for text legibility while showing the image.'
+      } else {
+        return 'Strong tint dominates the image. Consider a gradient if you want partial visibility.'
+      }
+    case 'gradient-down':
+      if (isLowOpacity) {
+        return 'Soft top fade—adds subtle depth for top-placed text.'
+      } else {
+        return 'Top-to-bottom fade creates a natural "scrim" for headlines at the top.'
+      }
+    case 'gradient-up':
+      if (isLowOpacity) {
+        return 'Soft bottom fade—mimics natural shadow for bottom text.'
+      } else {
+        return 'Bottom fade creates a professional scrim—great for captions and CTAs.'
+      }
+    case 'vignette':
+      if (isLowOpacity) {
+        return 'Subtle vignette draws the eye to center content without being obvious.'
+      } else if (isMidOpacity) {
+        return 'Classic vignette effect—frames your content like professional photography.'
+      } else {
+        return 'Dramatic framing—creates strong focus but may obscure edge details.'
+      }
+    default:
+      return null
+  }
+}
+
+// Tip display component
+function OverlayTip({ type, opacity }) {
+  const tip = getOverlayTip(type, opacity)
+  if (!tip) return null
+
+  return (
+    <div className="flex items-start gap-1.5 px-2 py-1.5 bg-blue-50 dark:bg-blue-900/30 rounded text-[10px] text-blue-700 dark:text-blue-300">
+      <span className="flex-shrink-0 mt-0.5">💡</span>
+      <span>{tip}</span>
+    </div>
+  )
+}
+
 // Helper to count total cells in structure
 function getTotalCells(structure) {
   if (!structure) return 1
@@ -1342,6 +1397,14 @@ export default function LayoutSelector({
                           </div>
                         )}
                       </>
+                    )}
+
+                    {/* Contextual tip */}
+                    {isCellOverlayEnabled(selectedCell) && (
+                      <OverlayTip
+                        type={getCellOverlayConfig(selectedCell)?.type || overlay?.type || 'solid'}
+                        opacity={getCellOverlayConfig(selectedCell)?.opacity ?? overlay?.opacity ?? 50}
+                      />
                     )}
 
                     {/* Reset cell to default */}

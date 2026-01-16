@@ -8,6 +8,75 @@ const overlayColorOptions = [
   { id: 'accent', name: 'Accent' },
 ]
 
+// Contextual tips for overlay settings
+function getOverlayTip(type, opacity, isGrayscale) {
+  // Special tip for grayscale + overlay combo
+  if (isGrayscale && opacity > 0) {
+    return 'Grayscale + colored overlay creates a professional duotone effect—great for brand consistency.'
+  }
+
+  if (!type || opacity === 0) return null
+
+  const isLowOpacity = opacity <= 40
+  const isMidOpacity = opacity > 40 && opacity <= 60
+
+  switch (type) {
+    case 'solid':
+      if (isLowOpacity) {
+        return 'Subtle brand tint—keeps image details visible while adding color cohesion.'
+      } else if (isMidOpacity) {
+        return 'Balanced tint—good for text legibility while showing the image.'
+      } else {
+        return 'Strong tint dominates the image. Consider a gradient for partial visibility.'
+      }
+    case 'gradient-down':
+      if (isLowOpacity) {
+        return 'Soft top fade—adds subtle depth for top-placed text.'
+      } else {
+        return 'Top-to-bottom fade creates a natural "scrim" for headlines at the top.'
+      }
+    case 'gradient-up':
+      if (isLowOpacity) {
+        return 'Soft bottom fade—mimics natural shadow for bottom text.'
+      } else {
+        return 'Bottom fade creates a professional scrim—great for captions and CTAs.'
+      }
+    case 'vignette':
+      if (isLowOpacity) {
+        return 'Subtle vignette draws the eye to center content without being obvious.'
+      } else if (isMidOpacity) {
+        return 'Classic vignette effect—frames your content like professional photography.'
+      } else {
+        return 'Dramatic framing—creates strong focus but may obscure edge details.'
+      }
+    default:
+      return null
+  }
+}
+
+// Get filter tips
+function getFilterTip(filters) {
+  if (filters.grayscale) {
+    return 'Try adding a colored overlay in the Overlay section below for a duotone effect.'
+  }
+  if (filters.blur > 0) {
+    return 'Blur softens the image—useful for making text stand out against busy backgrounds.'
+  }
+  return null
+}
+
+// Tip display component
+function ImageTip({ tip }) {
+  if (!tip) return null
+
+  return (
+    <div className="flex items-start gap-1.5 px-2.5 py-2 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-xs text-blue-700 dark:text-blue-300">
+      <span className="flex-shrink-0">💡</span>
+      <span>{tip}</span>
+    </div>
+  )
+}
+
 const logoPositionOptions = [
   { id: 'top-left', name: 'Top Left' },
   { id: 'top-right', name: 'Top Right' },
@@ -348,6 +417,9 @@ export default memo(function ImageUploader({
               className="w-full"
             />
           </div>
+
+          {/* Filter tip */}
+          <ImageTip tip={getFilterTip(filters)} />
         </Section>
       )}
 
@@ -413,6 +485,9 @@ export default memo(function ImageUploader({
               className="w-full"
             />
           </div>
+
+          {/* Overlay tip */}
+          <ImageTip tip={getOverlayTip(overlay.type, overlay.opacity, filters.grayscale)} />
         </Section>
       )}
 
