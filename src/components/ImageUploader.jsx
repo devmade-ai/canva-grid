@@ -321,14 +321,33 @@ export default memo(function ImageUploader({
           </div>
 
           <div className="space-y-3">
-            <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Position</label>
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Vertical Position</label>
             <div className="grid grid-cols-3 gap-1.5">
               {['top', 'center', 'bottom'].map((pos) => (
                 <button
                   key={pos}
-                  onClick={() => onPositionChange(pos)}
+                  onClick={() => onPositionChange({ vertical: pos })}
                   className={`px-2 py-2 text-sm rounded-lg capitalize font-medium ${
-                    position === pos
+                    position.vertical === pos
+                      ? 'bg-blue-500 text-white shadow-sm'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                  }`}
+                >
+                  {pos}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Horizontal Position</label>
+            <div className="grid grid-cols-3 gap-1.5">
+              {['left', 'center', 'right'].map((pos) => (
+                <button
+                  key={pos}
+                  onClick={() => onPositionChange({ horizontal: pos })}
+                  className={`px-2 py-2 text-sm rounded-lg capitalize font-medium ${
+                    position.horizontal === pos
                       ? 'bg-blue-500 text-white shadow-sm'
                       : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}

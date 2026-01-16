@@ -9,7 +9,7 @@ export const defaultState = {
   activeStylePreset: null,
   image: null,
   imageObjectFit: 'cover',
-  imagePosition: 'center',
+  imagePosition: { vertical: 'center', horizontal: 'center' },
   imageFilters: {
     grayscale: false,
     sepia: 0,
@@ -102,8 +102,8 @@ export function useAdState() {
     setState((prev) => ({ ...prev, imageObjectFit }))
   }, [])
 
-  const setImagePosition = useCallback((imagePosition) => {
-    setState((prev) => ({ ...prev, imagePosition }))
+  const setImagePosition = useCallback((position) => {
+    setState((prev) => ({ ...prev, imagePosition: { ...prev.imagePosition, ...position } }))
   }, [])
 
   const setImageFilters = useCallback((filters) => {
