@@ -11,7 +11,7 @@ export const defaultState = {
   imageObjectFit: 'cover',
   imagePosition: { vertical: 'center', horizontal: 'center' },
   imageFilters: {
-    grayscale: false,
+    grayscale: 0,
     sepia: 0,
     blur: 0,
     contrast: 100,
@@ -217,9 +217,9 @@ export function useAdState() {
         color: settings.overlay.color,
         opacity: settings.overlay.opacity,
       } : prev.overlay,
-      // Apply image filters
+      // Apply image filters (preserve grayscale - user controls this independently)
       imageFilters: settings.imageFilters ? {
-        grayscale: settings.imageFilters.grayscale,
+        grayscale: prev.imageFilters.grayscale,
         sepia: settings.imageFilters.sepia,
         blur: settings.imageFilters.blur,
         contrast: settings.imageFilters.contrast,

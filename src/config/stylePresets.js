@@ -21,7 +21,7 @@ export const stylePresets = [
         cellAlignments: [],
       },
       overlay: { type: 'gradient-up', color: 'primary', opacity: 70 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 110, brightness: 95 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 110, brightness: 95 },
       textCells: {
         title: null,
         tagline: null,
@@ -50,7 +50,7 @@ export const stylePresets = [
         cellAlignments: [],
       },
       overlay: { type: 'vignette', color: 'primary', opacity: 60 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 120, brightness: 90 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 120, brightness: 90 },
       textCells: {
         title: null,
         tagline: null,
@@ -85,7 +85,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'gradient-down', color: 'primary', opacity: 40 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 105, brightness: 105 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 105, brightness: 105 },
       textCells: {
         title: 0,
         tagline: 0,
@@ -122,7 +122,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'solid', color: 'primary', opacity: 30 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 100, brightness: 100 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 100, brightness: 100 },
       textCells: {
         title: 1,
         tagline: 1,
@@ -157,7 +157,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'gradient-up', color: 'primary', opacity: 50 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 105, brightness: 98 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 105, brightness: 98 },
       textCells: {
         title: 0,
         tagline: 0,
@@ -192,7 +192,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'solid', color: 'secondary', opacity: 10 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 95, brightness: 105 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 95, brightness: 105 },
       textCells: {
         title: 1,
         tagline: 1,
@@ -223,7 +223,7 @@ export const stylePresets = [
         cellAlignments: [],
       },
       overlay: { type: 'vignette', color: 'primary', opacity: 30 },
-      imageFilters: { grayscale: false, sepia: 10, blur: 0, contrast: 95, brightness: 102 },
+      imageFilters: { grayscale: 0, sepia: 10, blur: 0, contrast: 95, brightness: 102 },
       textCells: {
         title: null,
         tagline: null,
@@ -258,7 +258,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'vignette', color: 'primary', opacity: 50 },
-      imageFilters: { grayscale: false, sepia: 5, blur: 0, contrast: 110, brightness: 95 },
+      imageFilters: { grayscale: 0, sepia: 5, blur: 0, contrast: 110, brightness: 95 },
       textCells: {
         title: 1,
         tagline: 1,
@@ -295,7 +295,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'gradient-down', color: 'accent', opacity: 35 },
-      imageFilters: { grayscale: false, sepia: 20, blur: 0, contrast: 100, brightness: 102 },
+      imageFilters: { grayscale: 0, sepia: 20, blur: 0, contrast: 100, brightness: 102 },
       textCells: {
         title: 1,
         tagline: 1,
@@ -330,7 +330,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'gradient-up', color: 'primary', opacity: 45 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 105, brightness: 100 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 105, brightness: 100 },
       textCells: {
         title: 0,
         tagline: 0,
@@ -367,7 +367,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'solid', color: 'primary', opacity: 25 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 100, brightness: 105 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 100, brightness: 105 },
       textCells: {
         title: 0,
         tagline: 0,
@@ -396,7 +396,7 @@ export const stylePresets = [
         cellAlignments: [],
       },
       overlay: { type: 'solid', color: 'primary', opacity: 40 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 95, brightness: 108 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 95, brightness: 108 },
       textCells: {
         title: null,
         tagline: null,
@@ -433,7 +433,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'gradient-up', color: 'primary', opacity: 55 },
-      imageFilters: { grayscale: false, sepia: 25, blur: 0, contrast: 105, brightness: 98 },
+      imageFilters: { grayscale: 0, sepia: 25, blur: 0, contrast: 105, brightness: 98 },
       textCells: {
         title: 0,
         tagline: 0,
@@ -462,7 +462,7 @@ export const stylePresets = [
         cellAlignments: [],
       },
       overlay: { type: 'vignette', color: 'primary', opacity: 55 },
-      imageFilters: { grayscale: true, sepia: 0, blur: 0, contrast: 120, brightness: 90 },
+      imageFilters: { grayscale: 100, sepia: 0, blur: 0, contrast: 120, brightness: 90 },
       textCells: {
         title: null,
         tagline: null,
@@ -500,7 +500,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'solid', color: 'primary', opacity: 20 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 100, brightness: 100 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 100, brightness: 100 },
       textCells: {
         title: 1,
         tagline: 1,
@@ -536,7 +536,7 @@ export const stylePresets = [
         ],
       },
       overlay: { type: 'gradient-up', color: 'primary', opacity: 60 },
-      imageFilters: { grayscale: false, sepia: 0, blur: 0, contrast: 105, brightness: 98 },
+      imageFilters: { grayscale: 0, sepia: 0, blur: 0, contrast: 105, brightness: 98 },
       textCells: {
         title: 0,
         tagline: 0,

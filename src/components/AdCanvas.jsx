@@ -143,7 +143,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   const imageFilterStyle = useMemo(() => {
     const filters = state.imageFilters || {}
     const parts = []
-    if (filters.grayscale) parts.push('grayscale(100%)')
+    if (filters.grayscale > 0) parts.push(`grayscale(${filters.grayscale}%)`)
     if (filters.sepia > 0) parts.push(`sepia(${filters.sepia}%)`)
     if (filters.blur > 0) parts.push(`blur(${filters.blur}px)`)
     if (filters.contrast !== 100) parts.push(`contrast(${filters.contrast}%)`)

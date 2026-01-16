@@ -9,9 +9,9 @@ const overlayColorOptions = [
 ]
 
 // Contextual tips for overlay settings
-function getOverlayTip(type, opacity, isGrayscale) {
+function getOverlayTip(type, opacity, grayscaleAmount) {
   // Special tip for grayscale + overlay combo
-  if (isGrayscale && opacity > 0) {
+  if (grayscaleAmount > 0 && opacity > 0) {
     return 'Grayscale + colored overlay creates a professional duotone effect—great for brand consistency.'
   }
 
@@ -56,7 +56,7 @@ function getOverlayTip(type, opacity, isGrayscale) {
 
 // Get filter tips
 function getFilterTip(filters) {
-  if (filters.grayscale) {
+  if (filters.grayscale > 0) {
     return 'Try adding a colored overlay in the Overlay section below for a duotone effect.'
   }
   if (filters.blur > 0) {
@@ -357,23 +357,39 @@ export default memo(function ImageUploader({
               ))}
             </div>
           </div>
+
+          <div className="space-y-3">
+            <label className="block text-sm font-medium text-gray-600 dark:text-gray-300">Grayscale</label>
+            <button
+              onClick={() => onFiltersChange({ grayscale: filters.grayscale > 0 ? 0 : 100 })}
+              className={`w-full px-3 py-2 text-sm rounded-lg font-medium ${
+                filters.grayscale > 0
+                  ? 'bg-blue-500 text-white shadow-sm'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              {filters.grayscale > 0 ? 'On' : 'Off'}
+            </button>
+          </div>
         </Section>
       )}
 
       {/* ===== SECTION 3: FILTERS (when image exists) ===== */}
       {image && (
         <Section title="Filters" defaultOpen={false}>
-          <div className="flex items-center gap-2">
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <label className="text-sm font-medium text-gray-600 dark:text-gray-300">Grayscale</label>
+              <span className="text-sm text-gray-500 dark:text-gray-400">{filters.grayscale}%</span>
+            </div>
             <input
-              type="checkbox"
-              id="grayscale"
-              checked={filters.grayscale}
-              onChange={(e) => onFiltersChange({ grayscale: e.target.checked })}
-              className="w-4 h-4 text-blue-500 rounded border-gray-300 dark:border-gray-600 focus:ring-blue-500"
+              type="range"
+              min="0"
+              max="100"
+              value={filters.grayscale}
+              onChange={(e) => onFiltersChange({ grayscale: parseInt(e.target.value, 10) })}
+              className="w-full"
             />
-            <label htmlFor="grayscale" className="text-sm font-medium text-gray-600 dark:text-gray-300">
-              Grayscale
-            </label>
           </div>
 
           <div className="space-y-2">
