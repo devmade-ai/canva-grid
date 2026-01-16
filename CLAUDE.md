@@ -54,15 +54,27 @@
 ### `docs/TODO.md`
 
 **Purpose:** AI-managed backlog of ideas and potential improvements.
-**When to update:** When noticing potential improvements. Mark items `[x]` when complete (don't delete).
+**When to update:** When noticing potential improvements. Move completed items to HISTORY.md.
 **What to include:**
 
 - Group by category (Features, UX, Technical, etc.)
-- Use `- [ ]` for pending, `- [x]` for complete
+- Use `- [ ]` for pending items only
 - Brief description of what and why
-- Keep completed items for historical context
+- When complete, move to HISTORY.md (don't keep in TODO)
 
-**Why:** User reviews this to prioritize work. Captures ideas that arise during development.
+**Why:** User reviews this to prioritize work. Keeps TODO focused on pending items only.
+
+### `docs/HISTORY.md`
+
+**Purpose:** Changelog and record of completed work.
+**When to update:** When completing TODO items or making significant changes.
+**What to include:**
+
+- Completed TODO items (organized by category)
+- Bug fixes and changes (organized by date)
+- Brief description of what was done
+
+**Why:** Historical context separate from active TODO. Tracks what's been accomplished.
 
 ### `docs/USER_ACTIONS.md`
 

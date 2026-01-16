@@ -1,5 +1,65 @@
 # Changelog
 
+## Completed Features (from TODO)
+
+### Layout & Structure
+
+- Per-cell text alignment (horizontal + vertical)
+- Layout Tab sub-tabs (Presets, Structure, Alignment, Placement)
+- Unified cell selector grid component
+- Structure tab with contextual section/cell selection
+- Fullbleed treated as single-cell grid
+- Per-cell overlay controls with Overlay sub-tab
+- Spacing sub-tab with global and per-cell padding
+- Cell selector matches selected platform's aspect ratio
+- Simple cell references (1, 2, 3) instead of row/column naming
+- Fixed padding units (px) instead of percentages
+
+### Text System
+
+- Text element grouping (Title+Tagline, Body+Heading, CTA, Footnote)
+- Text groups assignable to any cell
+- Per-group text placement with individual cell selectors
+- Per-group alignment with global fallback
+- Separate text into individual elements
+- Per-element editing: visibility, color, text content inline
+- Bold/italic text options per text element
+- Letter spacing controls (Tight, Normal, Wide, Wider)
+- Simplified Text tab (removed sub-tabs)
+
+### Image & Media
+
+- Image as layer over cells with cell selection
+- Quick presets with overlay combinations
+- Sample images for quick testing
+- Image filters (grayscale, sepia, blur, contrast, brightness)
+- Image quick controls: contain/cover, grayscale, overlay slider
+- Merged Logo and Image tabs into unified Image tab
+- Reorganized Image tab: Upload → Remove → Settings → Effects → Logo
+- Collapsible sections with sensible defaults
+
+### Theme & Display
+
+- Expanded to 12 preset themes
+- Responsive preview canvas
+- Standard alignment icons (SVG-based)
+- More prominent sub-tabs styling
+
+### Platform & Export
+
+- Default platform: Instagram Square
+- Reordered platforms for common use cases
+- Smart layout suggestions based on image aspect ratio
+- Loading states during export with progress indicator
+
+### Technical
+
+- Undo/redo functionality (Ctrl+Z / Ctrl+Y)
+- Error boundaries for graceful error handling
+- Optimized re-renders with React.memo
+
+---
+
 ## 2026-01-10
 
 ### Bug fixes
