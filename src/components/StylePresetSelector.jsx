@@ -140,21 +140,21 @@ export default function StylePresetSelector({ activePresetId, onSelectPreset }) 
   const activePreset = stylePresets.find(p => p.id === activePresetId)
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div className="bg-white rounded-xl border border-gray-200/80 shadow-card">
       {/* Header */}
       <div
-        className="flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-gray-50"
+        className="flex items-center justify-between px-4 py-3.5 cursor-pointer hover:bg-gray-50 rounded-t-xl transition-colors"
         onClick={() => setIsExpanded(!isExpanded)}
       >
         <div className="flex items-center gap-3">
-          <h3 className="text-sm font-semibold text-gray-700">Style Presets</h3>
+          <h3 className="text-sm font-semibold text-gray-800">Style Presets</h3>
           {activePreset && (
-            <span className="px-2 py-0.5 text-xs bg-blue-100 text-blue-700 rounded-full">
+            <span className="px-2.5 py-1 text-xs bg-blue-100 text-blue-700 rounded-full font-medium">
               {activePreset.name}
             </span>
           )}
         </div>
-        <button className="text-gray-400 hover:text-gray-600">
+        <button className="text-gray-400 hover:text-gray-600 transition-colors">
           {isExpanded ? (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 15l7-7 7 7" />
@@ -169,16 +169,16 @@ export default function StylePresetSelector({ activePresetId, onSelectPreset }) 
 
       {/* Expandable content */}
       {isExpanded && (
-        <div className="px-4 pb-4 space-y-3">
+        <div className="px-4 pb-4 space-y-4">
           {/* Category pills */}
-          <div className="flex flex-wrap gap-1">
+          <div className="flex flex-wrap gap-1.5">
             {styleCategories.map((cat) => (
               <button
                 key={cat.id}
                 onClick={() => setActiveCategory(cat.id)}
-                className={`px-2.5 py-1 text-xs rounded-full transition-colors ${
+                className={`px-3 py-1.5 text-xs rounded-lg font-medium transition-all ${
                   activeCategory === cat.id
-                    ? 'bg-blue-500 text-white'
+                    ? 'bg-blue-500 text-white shadow-sm'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                 }`}
               >
@@ -194,14 +194,14 @@ export default function StylePresetSelector({ activePresetId, onSelectPreset }) 
                 key={preset.id}
                 onClick={() => onSelectPreset(preset)}
                 title={`${preset.name}: ${preset.description}`}
-                className={`flex flex-col items-center gap-1 p-1.5 rounded-lg transition-all ${
+                className={`flex flex-col items-center gap-1.5 p-2 rounded-xl transition-all ${
                   activePresetId === preset.id
                     ? 'bg-blue-50 ring-2 ring-blue-500'
                     : 'hover:bg-gray-50'
                 }`}
               >
                 <PresetSwatch preset={preset} isActive={activePresetId === preset.id} />
-                <span className={`text-[9px] leading-tight text-center line-clamp-1 ${
+                <span className={`text-[10px] leading-tight text-center line-clamp-1 ${
                   activePresetId === preset.id ? 'text-blue-700 font-medium' : 'text-gray-600'
                 }`}>
                   {preset.name}
@@ -212,7 +212,7 @@ export default function StylePresetSelector({ activePresetId, onSelectPreset }) 
 
           {/* Active preset description */}
           {activePreset && (
-            <div className="text-xs text-gray-500 text-center pt-1 border-t border-gray-100">
+            <div className="text-sm text-gray-500 text-center pt-2 border-t border-gray-100">
               {activePreset.description}
             </div>
           )}

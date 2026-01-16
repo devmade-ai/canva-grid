@@ -101,11 +101,11 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange 
   }, [canvasRef, state.platform, onPlatformChange])
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-3">
       <button
         onClick={handleExportSingle}
         disabled={isExporting}
-        className="w-full px-4 py-2 text-sm font-medium text-white bg-blue-500 rounded hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-3 text-sm font-semibold text-white bg-blue-500 rounded-xl hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow active:scale-[0.98]"
       >
         {isExporting && !exportProgress ? 'Exporting...' : 'Download Current'}
       </button>
@@ -113,7 +113,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange 
       <button
         onClick={handleExportAll}
         disabled={isExporting}
-        className="w-full px-4 py-2 text-sm font-medium text-blue-600 bg-blue-50 rounded hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        className="w-full px-4 py-3 text-sm font-semibold text-blue-600 bg-blue-50 rounded-xl hover:bg-blue-100 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]"
       >
         {exportProgress
           ? `Exporting ${exportProgress.current}/${exportProgress.total}...`
@@ -121,9 +121,17 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange 
       </button>
 
       {exportProgress && (
-        <p className="text-xs text-center text-gray-500">
-          Processing: {exportProgress.name}
-        </p>
+        <div className="space-y-2">
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div
+              className="bg-blue-500 h-1.5 rounded-full transition-all duration-300"
+              style={{ width: `${(exportProgress.current / exportProgress.total) * 100}%` }}
+            />
+          </div>
+          <p className="text-sm text-center text-gray-500">
+            Processing: {exportProgress.name}
+          </p>
+        </div>
       )}
     </div>
   )
