@@ -27,6 +27,7 @@
 ### `CLAUDE.md`
 
 **Purpose:** AI preferences, project overview, architecture, key state structures.
+**When to read:** At the start of every session, before doing any work.
 **When to update:** When project architecture changes, state structure changes, or preferences evolve.
 **What to include:**
 
@@ -41,6 +42,7 @@
 ### `docs/SESSION_NOTES.md`
 
 **Purpose:** Compact context summary for session continuity (like `/compact` output).
+**When to read:** At the start of a session to quickly understand what was done previously.
 **When to update:** Rewrite at session end with a fresh summary. Clear previous content.
 **What to include:**
 
@@ -54,6 +56,7 @@
 ### `docs/TODO.md`
 
 **Purpose:** AI-managed backlog of ideas and potential improvements.
+**When to read:** When looking for work to do, or when the user asks about pending tasks.
 **When to update:** When noticing potential improvements. Move completed items to HISTORY.md.
 **What to include:**
 
@@ -67,6 +70,7 @@
 ### `docs/HISTORY.md`
 
 **Purpose:** Changelog and record of completed work.
+**When to read:** When you need historical context about why something was built a certain way.
 **When to update:** When completing TODO items or making significant changes.
 **What to include:**
 
@@ -79,6 +83,7 @@
 ### `docs/USER_ACTIONS.md`
 
 **Purpose:** Manual actions requiring user intervention outside the codebase.
+**When to read:** When something requires manual user intervention (deployments, API keys, external config).
 **When to update:** When tasks need external action. Clear when completed.
 **What to include:**
 
@@ -92,6 +97,7 @@
 ### `docs/AI_MISTAKES.md`
 
 **Purpose:** Record significant AI mistakes and learnings to prevent repetition.
+**When to read:** When starting a session, to avoid repeating past mistakes.
 **When to update:** After making a mistake that wasted time or broke things.
 **What to include:**
 
@@ -105,6 +111,7 @@
 ### `README.md`
 
 **Purpose:** User-facing guide for the application.
+**When to read:** When you need a quick overview of what the tool does and its main features.
 **When to update:** When features change that affect how users interact with the tool.
 **What to include:**
 
