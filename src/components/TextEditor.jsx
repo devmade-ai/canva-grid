@@ -52,12 +52,12 @@ const textAlignOptions = [
 ]
 
 const textLayers = [
-  { id: 'title', label: 'Title', placeholder: 'Enter title...', multiline: false },
-  { id: 'tagline', label: 'Tagline', placeholder: 'Your tagline here...', multiline: false },
-  { id: 'bodyHeading', label: 'Body Heading', placeholder: 'Section heading...', multiline: false },
+  { id: 'title', label: 'Title', placeholder: 'Enter title...', multiline: true },
+  { id: 'tagline', label: 'Tagline', placeholder: 'Your tagline here...', multiline: true },
+  { id: 'bodyHeading', label: 'Body Heading', placeholder: 'Section heading...', multiline: true },
   { id: 'bodyText', label: 'Body Text', placeholder: 'Enter body text...', multiline: true },
-  { id: 'cta', label: 'Call to Action', placeholder: 'Learn More', multiline: false },
-  { id: 'footnote', label: 'Footnote', placeholder: 'Terms apply...', multiline: false },
+  { id: 'cta', label: 'Call to Action', placeholder: 'Learn More', multiline: true },
+  { id: 'footnote', label: 'Footnote', placeholder: 'Terms apply...', multiline: true },
 ]
 
 export default memo(function TextEditor({
