@@ -151,8 +151,7 @@ Core features working:
   - Body Heading + Body Text (paired)
   - CTA (independent)
   - Footnote (independent)
-- Theme system with 4 color themes and custom colors
-- Quick Styles bar for one-click style combinations (above preview)
+- Theme system with 12 color themes and custom colors
 - Overlay system (solid, 8 gradient directions, vignette, spotlight) with per-cell controls
 - 15 Google Fonts (sans-serif, serif, display categories)
 - Export to 6 platforms (LinkedIn, Facebook, Instagram, Twitter/X, TikTok)
@@ -201,17 +200,7 @@ src/
 │   ├── StyleTab.jsx           # Themes, fonts, overlay, spacing
 │   ├── PlatformPreview.jsx    # Platform selector
 │   ├── ExportButtons.jsx      # Export controls
-│   ├── ErrorBoundary.jsx      # Error handling wrapper
-│   │
-│   │ # Legacy components (not imported, pending deletion after testing):
-│   ├── ImageUploader.jsx      # → replaced by MediaTab.jsx
-│   ├── TextEditor.jsx         # → replaced by ContentTab.jsx
-│   ├── LayoutSelector.jsx     # → replaced by LayoutTab.jsx
-│   ├── ThemePicker.jsx        # → replaced by StyleTab.jsx
-│   ├── FontSelector.jsx       # → replaced by StyleTab.jsx
-│   └── StylePresetSelector.jsx # → replaced by TemplatesTab.jsx
-│   # Why kept: Reference during testing, fallback if issues found.
-│   # Delete after browser testing confirms new UI works. See TODO.md.
+│   └── ErrorBoundary.jsx      # Error handling wrapper
 ├── config/         # Configuration
 │   ├── layouts.js        # Overlay types and helpers
 │   ├── layoutPresets.js  # 20 layouts with SVG icons and categories

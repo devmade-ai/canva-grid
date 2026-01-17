@@ -5,34 +5,24 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-UI refactor implementation - workflow-based tabs
+Post-refactor cleanup - removing legacy components and updating documentation
 
 ## Accomplished
-- Implemented complete workflow-based tab structure: Templates | Media | Content | Layout | Style
-- Created `CollapsibleSection.jsx` - reusable collapsible component
-- Created `TemplatesTab.jsx` - Complete Designs (style presets) + Layout Only presets
-- Created `MediaTab.jsx` - image/logo upload with filters in collapsible sections
-- Created `ContentTab.jsx` - text editing with visibility, cell assignment, all formatting options
-- Created `LayoutTab.jsx` - Structure + Cell Assignment using interactive grid
-- Created `StyleTab.jsx` - Themes + Typography + Overlay + Spacing
-- Updated `App.jsx` with new tab structure (default tab is "templates")
-- Build passes successfully
-- Updated CLAUDE.md with new architecture and tab documentation
+- Deleted 6 legacy components no longer in use:
+  - `ImageUploader.jsx`, `TextEditor.jsx`, `LayoutSelector.jsx`
+  - `ThemePicker.jsx`, `FontSelector.jsx`, `StylePresetSelector.jsx`
+- Deleted `docs/REFACTOR_PLAN.md` (implementation complete)
+- Updated CLAUDE.md to remove legacy component references
+- Updated TODO.md (removed completed cleanup items)
+- Updated HISTORY.md (recorded cleanup completion)
 
 ## Current state
-- **Working**: Build compiles, new UI structure in place
-- **Not tested in browser**: Should verify all interactions work correctly
-- **Old components exist but unused**: ImageUploader, TextEditor, LayoutSelector, ThemePicker, FontSelector, StylePresetSelector are still in codebase but not imported
+- **Clean**: All legacy components removed, documentation updated
+- **Working**: Workflow-based UI with 5 tabs (Templates, Media, Content, Layout, Style)
+- **Build**: Should pass (no imports of deleted files)
 
 ## Key context
-- Templates is now the entry point (replaces Quick Styles bar)
-- Content tab owns both text editing AND cell placement
-- Style tab owns themes, fonts, overlay, AND spacing
-- Layout tab is simplified to structure and alignment only
+- The January 2026 UI refactor is fully complete
+- New tab components: `TemplatesTab`, `MediaTab`, `ContentTab`, `LayoutTab`, `StyleTab`
 - All tabs use `CollapsibleSection` for consistent organization
-- REFACTOR_PLAN.md can be archived/deleted - implementation complete
-
-## Next steps (optional cleanup)
-- Delete old unused components after verifying new UI works
-- Delete or archive REFACTOR_PLAN.md
-- Browser test all workflows
+- 12 color themes available in Style → Themes
