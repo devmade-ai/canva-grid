@@ -151,7 +151,8 @@ Core features working:
   - Body Heading + Body Text (paired)
   - CTA (independent)
   - Footnote (independent)
-- Theme system with 4 presets and custom colors
+- Theme system with 4 color themes and custom colors
+- Quick Styles bar for one-click style combinations (above preview)
 - Overlay system (solid, 8 gradient directions, vignette, spotlight) with per-cell controls
 - 15 Google Fonts (sans-serif, serif, display categories)
 - Export to 6 platforms (LinkedIn, Facebook, Instagram, Twitter/X, TikTok)
@@ -188,18 +189,18 @@ src/
 │   ├── ImageUploader.jsx      # Image + logo upload, fit, position, grayscale
 │   ├── LogoUploader.jsx       # Logo upload and positioning (used by ImageUploader)
 │   ├── TextEditor.jsx         # Text layer editing
-│   ├── LayoutSelector.jsx     # Layout with sub-tabs (Structure, Placement, Overlay, Spacing, Presets)
-│   ├── ThemePicker.jsx        # Theme presets and custom colors
+│   ├── LayoutSelector.jsx     # Layout with sub-tabs (Structure, Placement, Overlay, Spacing, Layouts)
+│   ├── ThemePicker.jsx        # Color themes and custom colors
 │   ├── FontSelector.jsx       # Font selection
-│   ├── StylePresetSelector.jsx # Quick style presets (top-level)
+│   ├── StylePresetSelector.jsx # Quick Styles bar (top-level, above preview)
 │   ├── PlatformPreview.jsx    # Platform selector
 │   ├── ExportButtons.jsx      # Export controls
 │   └── ErrorBoundary.jsx      # Error handling wrapper
 ├── config/         # Configuration
 │   ├── layouts.js        # Overlay types and helpers
-│   ├── layoutPresets.js  # 20 layout presets with SVG icons and categories
+│   ├── layoutPresets.js  # 20 layouts with SVG icons and categories
 │   ├── platforms.js      # 6 platform sizes
-│   ├── themes.js         # 4 preset themes
+│   ├── themes.js         # 4 color themes
 │   └── fonts.js          # 15 Google Fonts
 ├── hooks/
 │   ├── useAdState.js     # Central state (includes textGroups, layout)
@@ -276,8 +277,18 @@ The Layout tab uses a sub-tab architecture for better organization:
    - Global padding for all cells
    - Click cell for custom padding overrides
 
-5. **Presets** - Quick start with 20 pre-built layouts
+5. **Layouts** - Quick start with 20 pre-built layout templates
    - Categories: All, Suggested, Image Focus, Text Focus, Balanced, Grid
    - Smart suggestions based on image aspect ratio and platform
    - Visual SVG preview icons
    - Applies both layout structure AND text cell placements
+
+## Preset Types (Naming Clarification)
+
+The app has three types of "presets" - use these distinct names to avoid confusion:
+
+| Name | Location | What It Applies | Config File |
+|------|----------|-----------------|-------------|
+| **Layouts** | Layout tab → Layouts sub-tab | Grid structure + text cell placements | `layoutPresets.js` |
+| **Quick Styles** | Top bar above preview | Theme + font combination | `StylePresetSelector.jsx` |
+| **Themes** | Theme tab | Color scheme only | `themes.js` |

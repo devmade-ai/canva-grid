@@ -44,15 +44,19 @@ Each text element supports:
 
 The Layout tab has 5 sub-tabs for organization:
 
-- **Presets** - 20 quick-start layouts organized by category (Image Focus, Text Focus, Balanced, Grid) with smart suggestions based on your image's aspect ratio
+- **Layouts** - 20 quick-start layout templates organized by category (Image Focus, Text Focus, Balanced, Grid) with smart suggestions based on your image's aspect ratio
 - **Structure** - Fine-tune rows/columns and subdivisions
 - **Placement** - Assign text elements to cells, per-cell alignment, image cell selection
 - **Overlay** - Per-cell overlay controls (enable/disable, type, intensity)
 - **Spacing** - Global and per-cell padding controls
 
+### Quick Styles
+
+One-click style combinations available above the preview area. Each Quick Style applies a theme + font pairing for instant results.
+
 ### Themes & Fonts
 
-- **4 preset themes** - Quick color schemes
+- **4 color themes** - Quick color schemes (or create custom)
 - **Custom colors** - Full control over background, text, and accent colors
 - **15 Google Fonts** - Sans-serif, serif, and display categories
 
@@ -66,9 +70,9 @@ The Layout tab has 5 sub-tabs for organization:
 ## How to Use
 
 1. **Upload an image** - Drag-drop or click the upload area in the Image tab
-2. **Choose a layout** - Go to Layout tab → Presets and pick a starting layout
+2. **Choose a layout** - Go to Layout tab → Layouts and pick a starting template
 3. **Add your text** - Fill in the text fields in the Text tab
-4. **Customize** - Adjust colors (Theme tab), fonts (Font tab), and fine-tune layout
+4. **Customize** - Use Quick Styles for instant looks, or adjust colors (Theme tab) and fonts (Font tab) manually
 5. **Export** - Select your platform and download
 
 ### Tips
