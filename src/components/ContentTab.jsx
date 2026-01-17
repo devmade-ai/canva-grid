@@ -26,6 +26,13 @@ const letterSpacingOptions = [
 ]
 
 // Alignment icons
+const AlignAutoIcon = () => (
+  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+    <rect x="2" y="0" width="10" height="2" opacity="0.4" />
+    <rect x="0" y="4" width="14" height="2" opacity="0.4" />
+    <rect x="3" y="8" width="8" height="2" opacity="0.4" />
+  </svg>
+)
 const AlignLeftIcon = () => (
   <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
     <rect x="0" y="0" width="10" height="2" />
@@ -49,6 +56,7 @@ const AlignRightIcon = () => (
 )
 
 const textAlignOptions = [
+  { id: null, name: 'Auto (cell default)', Icon: AlignAutoIcon },
   { id: 'left', name: 'Left', Icon: AlignLeftIcon },
   { id: 'center', name: 'Center', Icon: AlignCenterIcon },
   { id: 'right', name: 'Right', Icon: AlignRightIcon },
@@ -267,7 +275,7 @@ function TextElementEditor({
           const isActive = layerState.textAlign === align.id
           return (
             <button
-              key={align.id}
+              key={align.id ?? 'auto'}
               onClick={() => onTextChange(element.id, { textAlign: align.id })}
               title={align.name}
               className={`w-6 h-5 rounded flex items-center justify-center transition-colors ${
@@ -280,18 +288,6 @@ function TextElementEditor({
             </button>
           )
         })}
-        {layerState.textAlign !== null && (
-          <button
-            onClick={() => onTextChange(element.id, { textAlign: null })}
-            className="text-[10px] text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 ml-1"
-            title="Use cell default"
-          >
-            ×
-          </button>
-        )}
-        {layerState.textAlign === null && (
-          <span className="text-[10px] text-gray-400 dark:text-gray-500 ml-1">(cell)</span>
-        )}
       </div>
 
       {/* Row 4: Color */}
