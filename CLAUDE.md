@@ -203,13 +203,15 @@ src/
 │   ├── ExportButtons.jsx      # Export controls
 │   ├── ErrorBoundary.jsx      # Error handling wrapper
 │   │
-│   │ # Legacy components (kept for reference, not used in new UI):
-│   ├── ImageUploader.jsx      # Old image tab
-│   ├── TextEditor.jsx         # Old text editor
-│   ├── LayoutSelector.jsx     # Old layout with sub-tabs
-│   ├── ThemePicker.jsx        # Old theme picker
-│   ├── FontSelector.jsx       # Old font selector
-│   └── StylePresetSelector.jsx # Old quick styles bar
+│   │ # Legacy components (not imported, pending deletion after testing):
+│   ├── ImageUploader.jsx      # → replaced by MediaTab.jsx
+│   ├── TextEditor.jsx         # → replaced by ContentTab.jsx
+│   ├── LayoutSelector.jsx     # → replaced by LayoutTab.jsx
+│   ├── ThemePicker.jsx        # → replaced by StyleTab.jsx
+│   ├── FontSelector.jsx       # → replaced by StyleTab.jsx
+│   └── StylePresetSelector.jsx # → replaced by TemplatesTab.jsx
+│   # Why kept: Reference during testing, fallback if issues found.
+│   # Delete after browser testing confirms new UI works. See TODO.md.
 ├── config/         # Configuration
 │   ├── layouts.js        # Overlay types and helpers
 │   ├── layoutPresets.js  # 20 layouts with SVG icons and categories
