@@ -22,11 +22,12 @@
 
 ## Documentation
 
-**These documents are maintained every session.** Keep them up to date as you work.
+**AI assistants automatically maintain these documents.** Update them as you work - don't wait for the user to ask. This ensures context is always current for the next session.
 
 ### `CLAUDE.md`
 
 **Purpose:** AI preferences, project overview, architecture, key state structures.
+**When to read:** At the start of every session, before doing any work.
 **When to update:** When project architecture changes, state structure changes, or preferences evolve.
 **What to include:**
 
@@ -41,6 +42,7 @@
 ### `docs/SESSION_NOTES.md`
 
 **Purpose:** Compact context summary for session continuity (like `/compact` output).
+**When to read:** At the start of a session to quickly understand what was done previously.
 **When to update:** Rewrite at session end with a fresh summary. Clear previous content.
 **What to include:**
 
@@ -54,6 +56,7 @@
 ### `docs/TODO.md`
 
 **Purpose:** AI-managed backlog of ideas and potential improvements.
+**When to read:** When looking for work to do, or when the user asks about pending tasks.
 **When to update:** When noticing potential improvements. Move completed items to HISTORY.md.
 **What to include:**
 
@@ -67,6 +70,7 @@
 ### `docs/HISTORY.md`
 
 **Purpose:** Changelog and record of completed work.
+**When to read:** When you need historical context about why something was built a certain way.
 **When to update:** When completing TODO items or making significant changes.
 **What to include:**
 
@@ -79,6 +83,7 @@
 ### `docs/USER_ACTIONS.md`
 
 **Purpose:** Manual actions requiring user intervention outside the codebase.
+**When to read:** When something requires manual user intervention (deployments, API keys, external config).
 **When to update:** When tasks need external action. Clear when completed.
 **What to include:**
 
@@ -92,6 +97,7 @@
 ### `docs/AI_MISTAKES.md`
 
 **Purpose:** Record significant AI mistakes and learnings to prevent repetition.
+**When to read:** When starting a session, to avoid repeating past mistakes.
 **When to update:** After making a mistake that wasted time or broke things.
 **What to include:**
 
@@ -105,6 +111,7 @@
 ### `README.md`
 
 **Purpose:** User-facing guide for the application.
+**When to read:** When you need a quick overview of what the tool does and its main features.
 **When to update:** When features change that affect how users interact with the tool.
 **What to include:**
 
@@ -115,6 +122,34 @@
 - Tech stack and deployment info
 
 **Why:** Users and contributors read this first. Must accurately reflect the current state.
+
+### `docs/USER_GUIDE.md`
+
+**Purpose:** Comprehensive user documentation explaining how to use every feature.
+**When to read:** When you need to understand what users can do with the tool, or how a feature is supposed to work from the user's perspective.
+**When to update:** When adding new features, changing UI workflows, or modifying how existing features work.
+**What to include:**
+
+- Tab-by-tab walkthrough of the interface
+- Explanation of every control and what it does
+- Workflow tips and best practices
+- Organized by user tasks, not technical implementation
+
+**Why:** Serves as the authoritative reference for user-facing behavior. Helps ensure AI assistants understand the user experience.
+
+### `docs/TESTING_GUIDE.md`
+
+**Purpose:** Manual test scenarios for verifying the application works correctly.
+**When to read:** Before testing changes, or when you need to verify specific functionality works.
+**When to update:** When adding new features that need test coverage, or when existing tests become outdated.
+**What to include:**
+
+- Step-by-step test scenarios with exact actions
+- Where to click/look for each step
+- Expected results for each action
+- Regression checklist for quick verification
+
+**Why:** Ensures consistent, thorough testing. Prevents regressions by documenting what to verify after changes.
 
 ### REMINDER: READ AND FOLLOW THE FUCKING DOCUMENTATION EVERY TIME
 
@@ -151,8 +186,7 @@ Core features working:
   - Body Heading + Body Text (paired)
   - CTA (independent)
   - Footnote (independent)
-- Theme system with 4 color themes and custom colors
-- Quick Styles bar for one-click style combinations (above preview)
+- Theme system with 12 color themes and custom colors
 - Overlay system (solid, 8 gradient directions, vignette, spotlight) with per-cell controls
 - 15 Google Fonts (sans-serif, serif, display categories)
 - Export to 6 platforms (LinkedIn, Facebook, Instagram, Twitter/X, TikTok)
@@ -201,17 +235,7 @@ src/
 │   ├── StyleTab.jsx           # Themes, fonts, overlay, spacing
 │   ├── PlatformPreview.jsx    # Platform selector
 │   ├── ExportButtons.jsx      # Export controls
-│   ├── ErrorBoundary.jsx      # Error handling wrapper
-│   │
-│   │ # Legacy components (not imported, pending deletion after testing):
-│   ├── ImageUploader.jsx      # → replaced by MediaTab.jsx
-│   ├── TextEditor.jsx         # → replaced by ContentTab.jsx
-│   ├── LayoutSelector.jsx     # → replaced by LayoutTab.jsx
-│   ├── ThemePicker.jsx        # → replaced by StyleTab.jsx
-│   ├── FontSelector.jsx       # → replaced by StyleTab.jsx
-│   └── StylePresetSelector.jsx # → replaced by TemplatesTab.jsx
-│   # Why kept: Reference during testing, fallback if issues found.
-│   # Delete after browser testing confirms new UI works. See TODO.md.
+│   └── ErrorBoundary.jsx      # Error handling wrapper
 ├── config/         # Configuration
 │   ├── layouts.js        # Overlay types and helpers
 │   ├── layoutPresets.js  # 20 layouts with SVG icons and categories

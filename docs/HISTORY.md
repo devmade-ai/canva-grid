@@ -2,6 +2,31 @@
 
 ## 2026-01-17
 
+### Post-refactor cleanup
+
+Deleted legacy components that were replaced by the new workflow-based UI:
+- `ImageUploader.jsx` → replaced by `MediaTab.jsx`
+- `TextEditor.jsx` → replaced by `ContentTab.jsx`
+- `LayoutSelector.jsx` → replaced by `LayoutTab.jsx`
+- `ThemePicker.jsx` → replaced by `StyleTab.jsx`
+- `FontSelector.jsx` → replaced by `StyleTab.jsx`
+- `StylePresetSelector.jsx` → replaced by `TemplatesTab.jsx`
+- `docs/REFACTOR_PLAN.md` → implementation complete, no longer needed
+
+Updated documentation:
+- Removed legacy component references from CLAUDE.md
+- Moved cleanup tasks from TODO.md to HISTORY.md
+
+### Documentation overhaul
+
+Created comprehensive documentation:
+- `docs/USER_GUIDE.md` - Full user documentation explaining every tab, control, and workflow
+- `docs/TESTING_GUIDE.md` - 20+ manual test scenarios with step-by-step instructions
+
+Updated existing documentation:
+- `README.md` - Rewrote to reflect current workflow-based UI, fixed outdated references
+- `CLAUDE.md` - Added USER_GUIDE.md and TESTING_GUIDE.md entries with purpose, when to read, when to update
+
 ### Major UI refactor: Workflow-based tabs
 
 Reorganized from feature-based tabs (Image, Layout, Text, Theme, Fonts) to workflow-based tabs:

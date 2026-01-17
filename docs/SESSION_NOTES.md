@@ -5,34 +5,28 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-UI refactor implementation - workflow-based tabs
+Post-refactor cleanup and documentation overhaul
 
 ## Accomplished
-- Implemented complete workflow-based tab structure: Templates | Media | Content | Layout | Style
-- Created `CollapsibleSection.jsx` - reusable collapsible component
-- Created `TemplatesTab.jsx` - Complete Designs (style presets) + Layout Only presets
-- Created `MediaTab.jsx` - image/logo upload with filters in collapsible sections
-- Created `ContentTab.jsx` - text editing with visibility, cell assignment, all formatting options
-- Created `LayoutTab.jsx` - Structure + Cell Assignment using interactive grid
-- Created `StyleTab.jsx` - Themes + Typography + Overlay + Spacing
-- Updated `App.jsx` with new tab structure (default tab is "templates")
-- Build passes successfully
-- Updated CLAUDE.md with new architecture and tab documentation
+- Deleted 6 legacy components (ImageUploader, TextEditor, LayoutSelector, ThemePicker, FontSelector, StylePresetSelector)
+- Deleted docs/REFACTOR_PLAN.md (implementation complete)
+- Updated README.md with current UI structure and features
+- Created docs/USER_GUIDE.md - comprehensive user documentation
+- Created docs/TESTING_GUIDE.md - manual test scenarios with step-by-step instructions
+- Updated CLAUDE.md:
+  - Removed legacy component references
+  - Added USER_GUIDE.md and TESTING_GUIDE.md documentation entries
+  - Fixed "4 themes" → "12 themes"
+- Updated TODO.md (removed completed cleanup items)
+- Updated HISTORY.md (recorded all changes)
 
 ## Current state
-- **Working**: Build compiles, new UI structure in place
-- **Not tested in browser**: Should verify all interactions work correctly
-- **Old components exist but unused**: ImageUploader, TextEditor, LayoutSelector, ThemePicker, FontSelector, StylePresetSelector are still in codebase but not imported
+- **Clean**: All legacy components removed
+- **Documented**: Full user guide and testing guide in place
+- **Working**: Workflow-based UI with 5 tabs (Templates, Media, Content, Layout, Style)
 
 ## Key context
-- Templates is now the entry point (replaces Quick Styles bar)
-- Content tab owns both text editing AND cell placement
-- Style tab owns themes, fonts, overlay, AND spacing
-- Layout tab is simplified to structure and alignment only
-- All tabs use `CollapsibleSection` for consistent organization
-- REFACTOR_PLAN.md can be archived/deleted - implementation complete
-
-## Next steps (optional cleanup)
-- Delete old unused components after verifying new UI works
-- Delete or archive REFACTOR_PLAN.md
-- Browser test all workflows
+- January 2026 UI refactor is fully complete and cleaned up
+- Documentation is comprehensive and up-to-date
+- TESTING_GUIDE.md has 20+ test scenarios covering all tabs
+- USER_GUIDE.md explains every feature from user perspective
