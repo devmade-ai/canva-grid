@@ -231,6 +231,8 @@ function App() {
                     onLayoutChange={setLayout}
                     platform={state.platform}
                     theme={state.theme}
+                    overlay={state.overlay}
+                    onOverlayChange={setOverlay}
                   />
                 )}
               </ErrorBoundary>
