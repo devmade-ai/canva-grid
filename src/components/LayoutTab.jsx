@@ -141,16 +141,19 @@ function CellGrid({
   const showSectionLabels = mode === 'structure' && !isFullbleed && normalizedStructure.length > 1
 
   const sizeConfig = {
-    small: { width: 80, height: 52 },
+    small: { maxWidth: 100, minHeight: 50 },
     normal: { maxWidth: 180, minHeight: 100 },
     large: { maxWidth: 280, minHeight: 160 },
   }
   const config = sizeConfig[size] || sizeConfig.normal
 
-  const containerStyle =
-    size === 'small'
-      ? { width: `${config.width}px`, height: `${config.height}px`, flexShrink: 0 }
-      : { aspectRatio: aspectRatio, maxWidth: `${config.maxWidth}px`, minHeight: `${config.minHeight}px`, width: '100%' }
+  const containerStyle = {
+    aspectRatio: aspectRatio,
+    maxWidth: `${config.maxWidth}px`,
+    minHeight: `${config.minHeight}px`,
+    width: '100%',
+    flexShrink: 0,
+  }
 
   const getCellContent = (cellIndex, isImage, isSelected, isSectionSelected, subdivisions, subSize) => {
     let bgClass, textClass, content
