@@ -5,30 +5,32 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Export fixes and Layout/Media tab UX improvements
+Added new overlay effects and platform dimensions
 
 ## Accomplished
-- Fixed export text wrapping mismatch with preview (removed `skipFonts: true` from html-to-image)
-- Hide canvas during export to prevent visible size flash
-- Added "Exporting..." overlay with spinner during export
-- Fixed cell grid selectors not scaling with row/column count (now uses aspect-ratio sizing)
-- Simplified Layout tab UI:
-  - Moved Image Cell selector to Media tab (under Background Image settings)
-  - Removed separate Cell Assignment section
-  - Integrated alignment controls into Structure section (responds to selection)
-- Added Image Overlay section to Media tab (uses global overlay system, same as templates)
+- Added 8 new platform dimensions:
+  - Website: Hero Standard (1920x600), Hero Tall (1920x800), Hero Full HD (1920x1080), OG Image (1200x630)
+  - Banners: LinkedIn Banner (1584x396), YouTube Banner (2560x1440)
+  - Other: Email Header (800x400), Zoom Background (1920x1080)
+- Added 13 new overlay types (now 24 total):
+  - Radial: Radial Soft, Radial Ring
+  - Effects: Blur Edges, Frame, Duotone
+  - Blend modes: Multiply, Screen, Overlay, Color Burn
+  - Textures: Noise, Film Grain
+- Updated AdCanvas to render special effects (noise/grain via SVG filters, blend modes, duotone)
+- Organized overlay types by category in both MediaTab and StyleTab UI
+- Grouped platforms by category in PlatformPreview component
+- Updated documentation (USER_GUIDE.md, CLAUDE.md)
 
 ## Current state
-- **Export**: Text wrapping now matches preview exactly, no visible flash during export
-- **Layout tab**: Streamlined to Structure + Text Alignment sections only
-- **Media tab**: Now has Image Cell selector and Image Overlay controls
-- **Working**: All changes pushed to `claude/verify-preview-constraints-Pace8`
+- **Build**: Passes successfully
+- **Platforms**: 14 total (6 social, 4 web, 2 banners, 2 other)
+- **Overlays**: 24 total organized by category (basic, linear, radial, effect, blend, texture)
+- **Working**: Branch `claude/image-blur-overlay-hero-Eb9Kn`
 
 ## Key context
-- Export uses `html-to-image` library - `skipFonts: true` caused different text metrics
-- Two overlay systems: global `state.overlay` (templates use this) vs per-cell `layout.cellOverlays`
-- Media tab's Image Overlay now controls `state.overlay` to match template behavior
-- Text Alignment in Layout tab shows context-aware controls based on structure selection:
-  - Section selected: applies to all cells in row/column
-  - Cell selected: applies to that cell only
-  - Nothing selected: applies global alignment
+- Overlay types now have categories: basic, linear, radial, effect, blend, texture
+- Special overlay effects (noise, grain, blur-edges, duotone) use `special` property and custom rendering
+- Blend mode overlays use `blendMode` property for mix-blend-mode CSS
+- SVG filters defined in `<SvgFilters>` component at top of AdCanvas render tree
+- Platforms now have category property for grouping in UI

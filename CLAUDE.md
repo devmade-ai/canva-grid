@@ -187,9 +187,19 @@ Core features working:
   - CTA (independent)
   - Footnote (independent)
 - Theme system with 12 color themes and custom colors
-- Overlay system (solid, 8 gradient directions, vignette, spotlight) with per-cell controls
+- Overlay system with 20+ effects:
+  - Basic: Solid color
+  - Linear gradients: 8 directions (↑↓←→ and diagonals)
+  - Radial: Vignette, Spotlight, Radial Soft, Radial Ring
+  - Effects: Blur Edges, Frame, Duotone
+  - Blend modes: Multiply, Screen, Overlay, Color Burn
+  - Textures: Noise, Film Grain
 - 15 Google Fonts (sans-serif, serif, display categories)
-- Export to 6 platforms (LinkedIn, Facebook, Instagram, Twitter/X, TikTok)
+- Export to 14 platforms:
+  - Social: Instagram Square/Story, TikTok, LinkedIn, Facebook, Twitter/X
+  - Website: Hero (Standard/Tall/Full HD), OG Image
+  - Banners: LinkedIn Banner, YouTube Banner
+  - Other: Email Header, Zoom Background
 - Single download and ZIP batch download
 - Responsive preview that adapts to device width
 
@@ -237,10 +247,10 @@ src/
 │   ├── ExportButtons.jsx      # Export controls
 │   └── ErrorBoundary.jsx      # Error handling wrapper
 ├── config/         # Configuration
-│   ├── layouts.js        # Overlay types and helpers
+│   ├── layouts.js        # 20+ overlay types (solid, gradients, radial, effects, blends, textures)
 │   ├── layoutPresets.js  # 20 layouts with SVG icons and categories
 │   ├── stylePresets.js   # Complete design presets (theme + fonts + layout + effects)
-│   ├── platforms.js      # 6 platform sizes
+│   ├── platforms.js      # 14 platform sizes (social, web, banners, other)
 │   ├── themes.js         # 12 color themes
 │   └── fonts.js          # 15 Google Fonts
 ├── hooks/
