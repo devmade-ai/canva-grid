@@ -549,6 +549,7 @@ export default memo(function MediaTab({
                     type="range"
                     min="0"
                     max="100"
+                    step="5"
                     value={overlay?.opacity ?? 0}
                     onChange={(e) => onOverlayChange({ opacity: parseInt(e.target.value, 10) })}
                     className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
@@ -573,6 +574,7 @@ export default memo(function MediaTab({
                 type="range"
                 min="0"
                 max="100"
+                step="5"
                 value={filters.grayscale}
                 onChange={(e) => onFiltersChange({ grayscale: parseInt(e.target.value, 10) })}
                 className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
@@ -588,6 +590,7 @@ export default memo(function MediaTab({
                 type="range"
                 min="0"
                 max="100"
+                step="5"
                 value={filters.sepia}
                 onChange={(e) => onFiltersChange({ sepia: parseInt(e.target.value, 10) })}
                 className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
@@ -619,6 +622,7 @@ export default memo(function MediaTab({
                 type="range"
                 min="50"
                 max="150"
+                step="5"
                 value={filters.contrast}
                 onChange={(e) => onFiltersChange({ contrast: parseInt(e.target.value, 10) })}
                 className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
@@ -634,6 +638,7 @@ export default memo(function MediaTab({
                 type="range"
                 min="50"
                 max="150"
+                step="5"
                 value={filters.brightness}
                 onChange={(e) => onFiltersChange({ brightness: parseInt(e.target.value, 10) })}
                 className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
