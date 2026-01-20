@@ -55,7 +55,12 @@ Manage your background image and logo.
 
 #### Image Overlay
 Controls the overlay on your background image (same system used by Complete Design templates):
-- **Type:** Solid, gradient (8 directions), vignette, or spotlight
+- **Type:** Choose from multiple overlay categories:
+  - **Basic & Gradients:** Solid color, linear gradients (8 directions)
+  - **Radial:** Vignette, Spotlight, Radial Soft, Radial Ring
+  - **Effects:** Blur Edges, Frame, Duotone
+  - **Blend Modes:** Multiply, Screen, Overlay, Color Burn
+  - **Textures:** Noise, Film Grain
 - **Color:** Choose from theme colors (Primary, Secondary, Accent) or neutrals
 - **Opacity:** Adjust transparency (0 = disabled, 100 = full)
 
@@ -150,7 +155,7 @@ Customize the visual appearance.
 #### Overlay
 Controls per-cell overlays that help text stand out:
 - **Enable/Disable:** Toggle overlay for each cell
-- **Type:** Solid, gradient (8 directions), vignette, or spotlight
+- **Type:** Choose from multiple overlay categories (same options as Media > Image Overlay)
 - **Color:** Usually matches your theme
 - **Opacity:** Adjust transparency (0-100%)
 
@@ -165,17 +170,33 @@ Controls per-cell overlays that help text stand out:
 Located below the preview area.
 
 ### Platform Selection
-Click any platform button to see how your ad looks at that size:
-- LinkedIn (1200×627)
-- Facebook (1200×630)
+Click any platform button to see how your ad looks at that size. Platforms are organized by category:
+
+**Social Media:**
 - Instagram Square (1080×1080)
-- Instagram Story (1080×1920)
-- Twitter/X (1200×675)
 - TikTok (1080×1920)
+- Instagram Story (1080×1920)
+- LinkedIn Post (1200×627)
+- Facebook Post (1200×630)
+- Twitter/X (1600×900)
+
+**Website:**
+- Hero Standard (1920×600) - Standard website hero banner
+- Hero Tall (1920×800) - Taller hero for more impact
+- Hero Full HD (1920×1080) - Full viewport hero
+- OG Image (1200×630) - Social share preview image
+
+**Banners:**
+- LinkedIn Banner (1584×396) - Profile/company banner
+- YouTube Banner (2560×1440) - Channel art
+
+**Other:**
+- Email Header (800×400) - Email campaign header
+- Zoom Background (1920×1080) - Virtual meeting background
 
 ### Download Options
 - **Download:** Export the current platform as a PNG file
-- **Download All:** Get a ZIP file containing all 6 platform sizes
+- **Download All:** Get a ZIP file containing all platform sizes
 
 ---
 

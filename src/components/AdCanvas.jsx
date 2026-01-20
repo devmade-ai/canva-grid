@@ -1,8 +1,36 @@
 import { forwardRef, useMemo } from 'react'
-import { overlayTypes, hexToRgb } from '../config/layouts'
+import { overlayTypes, hexToRgb, getOverlayType } from '../config/layouts'
 import { platforms } from '../config/platforms'
 import { fonts } from '../config/fonts'
 import { getNeutralColor } from '../config/themes'
+
+// SVG filter definitions for texture effects
+const SvgFilters = () => (
+  <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+    <defs>
+      {/* Noise filter - subtle random dots */}
+      <filter id="noise-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" result="noise" />
+        <feColorMatrix type="saturate" values="0" result="mono" />
+        <feComponentTransfer result="contrast">
+          <feFuncR type="linear" slope="2" intercept="-0.5" />
+          <feFuncG type="linear" slope="2" intercept="-0.5" />
+          <feFuncB type="linear" slope="2" intercept="-0.5" />
+        </feComponentTransfer>
+      </filter>
+      {/* Film grain filter - finer texture */}
+      <filter id="grain-filter" x="0%" y="0%" width="100%" height="100%">
+        <feTurbulence type="fractalNoise" baseFrequency="1.2" numOctaves="3" result="noise" />
+        <feColorMatrix type="saturate" values="0" result="mono" />
+        <feComponentTransfer result="contrast">
+          <feFuncR type="linear" slope="1.5" intercept="-0.25" />
+          <feFuncG type="linear" slope="1.5" intercept="-0.25" />
+          <feFuncB type="linear" slope="1.5" intercept="-0.25" />
+        </feComponentTransfer>
+      </filter>
+    </defs>
+  </svg>
+)
 
 const defaultTextLayer = { content: '', visible: false, color: 'secondary', size: 1, textAlign: null }
 
@@ -38,11 +66,76 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     return fallback
   }
 
-  // Get overlay style for a given config
+  // Get overlay style for a given config (returns object with background, blendMode, special)
   const getOverlayStyle = (overlayConfig) => {
     const color = resolveColor(overlayConfig.color, themeColors.primary)
-    const type = overlayTypes.find((o) => o.id === overlayConfig.type) || overlayTypes[0]
-    return type.getCss(hexToRgb(color), overlayConfig.opacity)
+    const type = getOverlayType(overlayConfig.type)
+    const background = type.getCss(hexToRgb(color), overlayConfig.opacity)
+    return {
+      background,
+      blendMode: type.blendMode || null,
+      special: type.special || null,
+      opacity: overlayConfig.opacity,
+      color: hexToRgb(color),
+    }
+  }
+
+  // Render special overlay effects (noise, grain, duotone, blur-edges)
+  const renderSpecialOverlay = (special, overlayStyle, opacity) => {
+    if (special === 'noise') {
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: opacity / 100,
+            mixBlendMode: 'overlay',
+            pointerEvents: 'none',
+          }}
+        >
+          <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
+            <filter id={`noise-${Math.random().toString(36).substr(2, 9)}`}>
+              <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" />
+              <feColorMatrix type="saturate" values="0" />
+            </filter>
+            <rect width="100%" height="100%" filter="url(#noise-filter)" />
+          </svg>
+        </div>
+      )
+    }
+
+    if (special === 'grain') {
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            opacity: (opacity / 100) * 0.5,
+            mixBlendMode: 'overlay',
+            pointerEvents: 'none',
+          }}
+        >
+          <svg width="100%" height="100%" style={{ position: 'absolute', inset: 0 }}>
+            <rect width="100%" height="100%" filter="url(#grain-filter)" />
+          </svg>
+        </div>
+      )
+    }
+
+    if (special === 'blur-edges') {
+      return (
+        <div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            boxShadow: `inset 0 0 ${60 * (opacity / 100)}px ${30 * (opacity / 100)}px ${overlayStyle.color.replace('rgb', 'rgba').replace(')', `, ${opacity / 100})`)}`,
+            pointerEvents: 'none',
+          }}
+        />
+      )
+    }
+
+    return null
   }
 
   // Global overlay style (for backward compatibility)
@@ -162,6 +255,39 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     return parts.length > 0 ? parts.join(' ') : 'none'
   }, [state.imageFilters])
 
+  // Render a single overlay layer with support for blend modes and special effects
+  const renderOverlayLayer = (overlayConfig, key = 'overlay') => {
+    if (!overlayConfig || overlayConfig.opacity <= 0) return null
+
+    const overlayStyle = getOverlayStyle(overlayConfig)
+
+    // Handle special effects (noise, grain, blur-edges)
+    if (overlayStyle.special && overlayStyle.special !== 'duotone') {
+      return renderSpecialOverlay(overlayStyle.special, overlayStyle, overlayConfig.opacity)
+    }
+
+    // Standard overlay with optional blend mode
+    return (
+      <div
+        key={key}
+        style={{
+          position: 'absolute',
+          inset: 0,
+          background: overlayStyle.background,
+          mixBlendMode: overlayStyle.blendMode || 'normal',
+          pointerEvents: 'none',
+        }}
+      />
+    )
+  }
+
+  // Check if overlay is a duotone effect
+  const isDuotoneOverlay = (overlayConfig) => {
+    if (!overlayConfig) return false
+    const type = getOverlayType(overlayConfig.type)
+    return type.special === 'duotone'
+  }
+
   // Render image with overlay (for fullbleed or image cells)
   // Supports stacking: global overlay (Image tab) + cell overlay (Layout > Overlay)
   const renderImage = (style = {}, cellOverlayConfig = null) => {
@@ -174,6 +300,11 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       cellOverlayConfig !== globalOverlay &&
       cellOverlayConfig.enabled !== false
 
+    // Check for duotone effect (applies grayscale to image)
+    const hasDuotone = isDuotoneOverlay(globalOverlay) || isDuotoneOverlay(cellOverlayConfig)
+    const duotoneFilter = hasDuotone ? 'grayscale(100%)' : ''
+    const combinedFilter = [imageFilterStyle, duotoneFilter].filter(Boolean).join(' ') || 'none'
+
     return (
       <div style={{ position: 'relative', backgroundColor: themeColors.primary, ...style }}>
         {state.image && (
@@ -185,30 +316,14 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
               backgroundSize: state.imageObjectFit,
               backgroundPosition: `${state.imagePosition.horizontal} ${state.imagePosition.vertical}`,
               backgroundRepeat: 'no-repeat',
-              filter: imageFilterStyle,
+              filter: combinedFilter,
             }}
           />
         )}
         {/* Global overlay layer (from Image tab) */}
-        {hasGlobalOverlay && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: getOverlayStyle(globalOverlay),
-            }}
-          />
-        )}
+        {hasGlobalOverlay && renderOverlayLayer(globalOverlay, 'global-overlay')}
         {/* Cell overlay layer (from Layout > Overlay) - stacks on top */}
-        {hasCellOverlay && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: getOverlayStyle(cellOverlayConfig),
-            }}
-          />
-        )}
+        {hasCellOverlay && renderOverlayLayer(cellOverlayConfig, 'cell-overlay')}
       </div>
     )
   }
@@ -484,15 +599,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
         {hasImage && renderImage({ position: 'absolute', inset: 0 }, cellOverlay)}
 
         {/* Overlay for non-image cells (if enabled) */}
-        {!hasImage && cellOverlay && cellOverlay.enabled !== false && (
-          <div
-            style={{
-              position: 'absolute',
-              inset: 0,
-              background: getOverlayStyle(cellOverlay),
-            }}
-          />
-        )}
+        {!hasImage && cellOverlay && cellOverlay.enabled !== false && renderOverlayLayer(cellOverlay, `cell-${cellIndex}-overlay`)}
 
         {/* Text on image layer */}
         {hasImage && textElementsOnImage.length > 0 && (
@@ -583,6 +690,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
 
   return (
     <div ref={ref} style={containerStyle}>
+      <SvgFilters />
       {renderLayout()}
       {renderLogo()}
     </div>

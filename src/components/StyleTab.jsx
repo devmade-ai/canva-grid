@@ -389,23 +389,88 @@ export default memo(function StyleTab({
                   {/* Custom overlay settings */}
                   {getCellOverlayConfig(selectedOverlayCell)?.type !== undefined && (
                     <div className="space-y-3 pt-2 border-t border-gray-200 dark:border-gray-700">
-                      {/* Type */}
-                      <div className="space-y-1.5">
+                      {/* Type - organized by category */}
+                      <div className="space-y-2">
                         <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Type</label>
-                        <div className="grid grid-cols-2 gap-1">
-                          {overlayTypes.map((t) => (
-                            <button
-                              key={t.id}
-                              onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
-                              className={`px-2 py-1 text-[10px] rounded ${
-                                getCellOverlayConfig(selectedOverlayCell)?.type === t.id
-                                  ? 'bg-blue-500 text-white'
-                                  : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
-                              }`}
-                            >
-                              {t.name}
-                            </button>
-                          ))}
+                        {/* Basic & Linear */}
+                        <div className="space-y-1">
+                          <span className="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Basic & Gradients</span>
+                          <div className="grid grid-cols-3 gap-1">
+                            {overlayTypes.filter(t => t.category === 'basic' || t.category === 'linear').map((t) => (
+                              <button
+                                key={t.id}
+                                onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
+                                className={`px-1.5 py-1 text-[9px] rounded truncate ${
+                                  getCellOverlayConfig(selectedOverlayCell)?.type === t.id
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                                title={t.name}
+                              >
+                                {t.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Radial */}
+                        <div className="space-y-1">
+                          <span className="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Radial</span>
+                          <div className="grid grid-cols-3 gap-1">
+                            {overlayTypes.filter(t => t.category === 'radial').map((t) => (
+                              <button
+                                key={t.id}
+                                onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
+                                className={`px-1.5 py-1 text-[9px] rounded truncate ${
+                                  getCellOverlayConfig(selectedOverlayCell)?.type === t.id
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                                title={t.name}
+                              >
+                                {t.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Effects */}
+                        <div className="space-y-1">
+                          <span className="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Effects</span>
+                          <div className="grid grid-cols-3 gap-1">
+                            {overlayTypes.filter(t => t.category === 'effect' || t.category === 'texture').map((t) => (
+                              <button
+                                key={t.id}
+                                onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
+                                className={`px-1.5 py-1 text-[9px] rounded truncate ${
+                                  getCellOverlayConfig(selectedOverlayCell)?.type === t.id
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                                title={t.name}
+                              >
+                                {t.name}
+                              </button>
+                            ))}
+                          </div>
+                        </div>
+                        {/* Blend Modes */}
+                        <div className="space-y-1">
+                          <span className="text-[9px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Blend Modes</span>
+                          <div className="grid grid-cols-3 gap-1">
+                            {overlayTypes.filter(t => t.category === 'blend').map((t) => (
+                              <button
+                                key={t.id}
+                                onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
+                                className={`px-1.5 py-1 text-[9px] rounded truncate ${
+                                  getCellOverlayConfig(selectedOverlayCell)?.type === t.id
+                                    ? 'bg-blue-500 text-white'
+                                    : 'bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600'
+                                }`}
+                                title={t.name}
+                              >
+                                {t.name}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       </div>
 

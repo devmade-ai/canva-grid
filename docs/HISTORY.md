@@ -1,5 +1,63 @@
 # Changelog
 
+## 2026-01-20
+
+### Added new platform dimensions (8 new platforms)
+
+Expanded from 6 social media platforms to 14 total platforms organized by category:
+
+**Website (new)**
+- Hero Standard (1920×600) - Standard website hero banner
+- Hero Tall (1920×800) - Taller hero for more impact
+- Hero Full HD (1920×1080) - Full viewport hero
+- OG Image (1200×630) - Social share preview image
+
+**Banners (new)**
+- LinkedIn Banner (1584×396) - Profile/company banner
+- YouTube Banner (2560×1440) - Channel art
+
+**Other (new)**
+- Email Header (800×400) - Email campaign header
+- Zoom Background (1920×1080) - Virtual meeting background
+
+**Existing (renamed for clarity)**
+- LinkedIn Post (was "LinkedIn")
+- Facebook Post (was "Facebook")
+
+PlatformPreview component now groups platforms by category for easier navigation.
+
+### Added new overlay effects (13 new overlays)
+
+Expanded from 11 overlay types to 24 total, organized by category:
+
+**Radial (new)**
+- Radial Soft - Subtle center glow
+- Radial Ring - Ring-shaped gradient
+
+**Effects (new)**
+- Blur Edges - Soft vignette using box-shadow
+- Frame - Border effect on all edges
+- Duotone - Grayscale image with color tint (uses blend mode)
+
+**Blend Modes (new)**
+- Multiply - Darkening blend
+- Screen - Lightening blend
+- Overlay - Contrast blend
+- Color Burn - Intense darkening
+
+**Textures (new)**
+- Noise - Random dot texture via SVG filter
+- Film Grain - Fine grain texture via SVG filter
+
+Technical implementation:
+- Added `category` property to overlay types for UI grouping
+- Added `blendMode` property for CSS mix-blend-mode
+- Added `special` property for custom rendering (noise, grain, blur-edges, duotone)
+- Created `<SvgFilters>` component with feTurbulence-based filters for noise/grain
+- Updated MediaTab and StyleTab to display overlays grouped by category
+
+---
+
 ## 2026-01-18
 
 ### Export fixes

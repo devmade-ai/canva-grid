@@ -1,12 +1,16 @@
 export const overlayTypes = [
+  // Basic
   {
     id: 'solid',
     name: 'Solid',
+    category: 'basic',
     getCss: (color, opacity) => color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba'),
   },
+  // Linear Gradients
   {
     id: 'gradient-down',
     name: 'Gradient ↓',
+    category: 'linear',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `linear-gradient(to bottom, ${rgbaColor}, transparent)`
@@ -15,6 +19,7 @@ export const overlayTypes = [
   {
     id: 'gradient-up',
     name: 'Gradient ↑',
+    category: 'linear',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `linear-gradient(to top, ${rgbaColor}, transparent)`
@@ -23,6 +28,7 @@ export const overlayTypes = [
   {
     id: 'gradient-left',
     name: 'Gradient ←',
+    category: 'linear',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `linear-gradient(to left, ${rgbaColor}, transparent)`
@@ -31,6 +37,7 @@ export const overlayTypes = [
   {
     id: 'gradient-right',
     name: 'Gradient →',
+    category: 'linear',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `linear-gradient(to right, ${rgbaColor}, transparent)`
@@ -39,6 +46,7 @@ export const overlayTypes = [
   {
     id: 'gradient-tl',
     name: 'Gradient ↖',
+    category: 'linear',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `linear-gradient(to top left, ${rgbaColor}, transparent)`
@@ -47,6 +55,7 @@ export const overlayTypes = [
   {
     id: 'gradient-tr',
     name: 'Gradient ↗',
+    category: 'linear',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `linear-gradient(to top right, ${rgbaColor}, transparent)`
@@ -55,6 +64,7 @@ export const overlayTypes = [
   {
     id: 'gradient-bl',
     name: 'Gradient ↙',
+    category: 'linear',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `linear-gradient(to bottom left, ${rgbaColor}, transparent)`
@@ -63,14 +73,17 @@ export const overlayTypes = [
   {
     id: 'gradient-br',
     name: 'Gradient ↘',
+    category: 'linear',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `linear-gradient(to bottom right, ${rgbaColor}, transparent)`
     },
   },
+  // Radial Gradients
   {
     id: 'vignette',
     name: 'Vignette',
+    category: 'radial',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `radial-gradient(ellipse at center, transparent 0%, ${rgbaColor} 100%)`
@@ -79,10 +92,102 @@ export const overlayTypes = [
   {
     id: 'spotlight',
     name: 'Spotlight',
+    category: 'radial',
     getCss: (color, opacity) => {
       const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
       return `radial-gradient(ellipse at center, ${rgbaColor} 0%, transparent 70%)`
     },
+  },
+  {
+    id: 'radial-soft',
+    name: 'Radial Soft',
+    category: 'radial',
+    getCss: (color, opacity) => {
+      const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
+      return `radial-gradient(circle at center, ${rgbaColor} 0%, transparent 50%)`
+    },
+  },
+  {
+    id: 'radial-ring',
+    name: 'Radial Ring',
+    category: 'radial',
+    getCss: (color, opacity) => {
+      const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
+      return `radial-gradient(circle at center, transparent 30%, ${rgbaColor} 50%, transparent 70%)`
+    },
+  },
+  // Edge Effects
+  {
+    id: 'blur-edges',
+    name: 'Blur Edges',
+    category: 'effect',
+    special: 'blur-edges',
+    getCss: (color, opacity) => {
+      const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
+      return `radial-gradient(ellipse at center, transparent 40%, ${rgbaColor} 100%)`
+    },
+  },
+  {
+    id: 'frame',
+    name: 'Frame',
+    category: 'effect',
+    getCss: (color, opacity) => {
+      const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
+      const transparentRgba = color.replace(')', ', 0)').replace('rgb', 'rgba')
+      return `linear-gradient(to right, ${rgbaColor} 0%, ${transparentRgba} 5%, ${transparentRgba} 95%, ${rgbaColor} 100%), linear-gradient(to bottom, ${rgbaColor} 0%, ${transparentRgba} 5%, ${transparentRgba} 95%, ${rgbaColor} 100%)`
+    },
+  },
+  // Blend Mode Effects (use mix-blend-mode)
+  {
+    id: 'multiply',
+    name: 'Multiply',
+    category: 'blend',
+    blendMode: 'multiply',
+    getCss: (color, opacity) => color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba'),
+  },
+  {
+    id: 'screen',
+    name: 'Screen',
+    category: 'blend',
+    blendMode: 'screen',
+    getCss: (color, opacity) => color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba'),
+  },
+  {
+    id: 'overlay-blend',
+    name: 'Overlay',
+    category: 'blend',
+    blendMode: 'overlay',
+    getCss: (color, opacity) => color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba'),
+  },
+  {
+    id: 'color-burn',
+    name: 'Color Burn',
+    category: 'blend',
+    blendMode: 'color-burn',
+    getCss: (color, opacity) => color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba'),
+  },
+  // Texture Effects
+  {
+    id: 'noise',
+    name: 'Noise',
+    category: 'texture',
+    special: 'noise',
+    getCss: () => 'transparent',
+  },
+  {
+    id: 'grain',
+    name: 'Film Grain',
+    category: 'texture',
+    special: 'grain',
+    getCss: () => 'transparent',
+  },
+  // Duotone (applies filter + color)
+  {
+    id: 'duotone',
+    name: 'Duotone',
+    category: 'effect',
+    special: 'duotone',
+    getCss: (color, opacity) => color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba'),
   },
 ]
 
@@ -91,6 +196,11 @@ export function hexToRgb(hex) {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex)
   if (!result) return 'rgb(0, 0, 0)'
   return `rgb(${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)})`
+}
+
+// Helper to get overlay type by id
+export function getOverlayType(id) {
+  return overlayTypes.find((o) => o.id === id) || overlayTypes[0]
 }
 
 // Image style presets combining overlay + filters

@@ -474,24 +474,88 @@ export default memo(function MediaTab({
       {image && (
         <CollapsibleSection title="Image Overlay" defaultExpanded={overlay?.opacity > 0}>
           <div className="space-y-3">
-            {/* Overlay Type */}
-            <div className="space-y-2">
+            {/* Overlay Type - organized by category */}
+            <div className="space-y-3">
               <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Type</label>
-              <div className="grid grid-cols-4 gap-1.5">
-                {overlayTypes.map((t) => (
-                  <button
-                    key={t.id}
-                    onClick={() => onOverlayChange({ type: t.id })}
-                    className={`px-2 py-1.5 text-xs rounded-lg font-medium truncate ${
-                      overlay?.type === t.id
-                        ? 'bg-blue-500 text-white shadow-sm'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                    }`}
-                    title={t.name}
-                  >
-                    {t.name}
-                  </button>
-                ))}
+              {/* Basic & Linear Gradients */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Basic & Gradients</span>
+                <div className="grid grid-cols-5 gap-1">
+                  {overlayTypes.filter(t => t.category === 'basic' || t.category === 'linear').map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => onOverlayChange({ type: t.id })}
+                      className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
+                        overlay?.type === t.id
+                          ? 'bg-blue-500 text-white shadow-sm'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      }`}
+                      title={t.name}
+                    >
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Radial */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Radial</span>
+                <div className="grid grid-cols-4 gap-1">
+                  {overlayTypes.filter(t => t.category === 'radial').map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => onOverlayChange({ type: t.id })}
+                      className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
+                        overlay?.type === t.id
+                          ? 'bg-blue-500 text-white shadow-sm'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      }`}
+                      title={t.name}
+                    >
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Effects & Textures */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Effects</span>
+                <div className="grid grid-cols-4 gap-1">
+                  {overlayTypes.filter(t => t.category === 'effect' || t.category === 'texture').map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => onOverlayChange({ type: t.id })}
+                      className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
+                        overlay?.type === t.id
+                          ? 'bg-blue-500 text-white shadow-sm'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      }`}
+                      title={t.name}
+                    >
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {/* Blend Modes */}
+              <div className="space-y-1.5">
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Blend Modes</span>
+                <div className="grid grid-cols-4 gap-1">
+                  {overlayTypes.filter(t => t.category === 'blend').map((t) => (
+                    <button
+                      key={t.id}
+                      onClick={() => onOverlayChange({ type: t.id })}
+                      className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
+                        overlay?.type === t.id
+                          ? 'bg-blue-500 text-white shadow-sm'
+                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                      }`}
+                      title={t.name}
+                    >
+                      {t.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
