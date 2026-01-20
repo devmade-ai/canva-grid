@@ -253,7 +253,7 @@ export default memo(function StyleTab({
       </CollapsibleSection>
 
       {/* Typography Section */}
-      <CollapsibleSection title="Typography" defaultExpanded={true}>
+      <CollapsibleSection title="Typography" defaultExpanded={false}>
         <div className="space-y-3">
           <div className="space-y-2">
             <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Title Font</label>

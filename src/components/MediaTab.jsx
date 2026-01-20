@@ -387,6 +387,179 @@ export default memo(function MediaTab({
         </div>
       </CollapsibleSection>
 
+      {/* Image Overlay Section - only when image exists */}
+      {image && (
+        <CollapsibleSection title="Image Overlay" defaultExpanded={overlay?.opacity > 0}>
+          <div className="space-y-3">
+            {/* On/Off Toggle */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Overlay</label>
+              <button
+                onClick={() => onOverlayChange({ opacity: (overlay?.opacity ?? 0) > 0 ? 0 : 50 })}
+                className={`w-full px-3 py-2 text-sm rounded-lg font-medium ${
+                  (overlay?.opacity ?? 0) > 0
+                    ? 'bg-blue-500 text-white shadow-sm'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                }`}
+              >
+                {(overlay?.opacity ?? 0) > 0 ? 'On' : 'Off'}
+              </button>
+            </div>
+
+            {/* Only show controls when overlay is enabled */}
+            {(overlay?.opacity ?? 0) > 0 && (
+              <>
+                {/* Overlay Type - organized by category */}
+                <div className="space-y-3">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Type</label>
+                  {/* Basic & Linear Gradients */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Basic & Gradients</span>
+                    <div className="grid grid-cols-5 gap-1">
+                      {overlayTypes.filter(t => t.category === 'basic' || t.category === 'linear').map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => onOverlayChange({ type: overlay?.type === t.id ? null : t.id })}
+                          className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
+                            overlay?.type === t.id
+                              ? 'bg-blue-500 text-white shadow-sm'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                          title={t.name}
+                        >
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Radial */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Radial</span>
+                    <div className="grid grid-cols-4 gap-1">
+                      {overlayTypes.filter(t => t.category === 'radial').map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => onOverlayChange({ type: overlay?.type === t.id ? null : t.id })}
+                          className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
+                            overlay?.type === t.id
+                              ? 'bg-blue-500 text-white shadow-sm'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                          title={t.name}
+                        >
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Effects & Textures */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Effects</span>
+                    <div className="grid grid-cols-4 gap-1">
+                      {overlayTypes.filter(t => t.category === 'effect' || t.category === 'texture').map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => onOverlayChange({ type: overlay?.type === t.id ? null : t.id })}
+                          className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
+                            overlay?.type === t.id
+                              ? 'bg-blue-500 text-white shadow-sm'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                          title={t.name}
+                        >
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  {/* Blend Modes */}
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Blend Modes</span>
+                    <div className="grid grid-cols-4 gap-1">
+                      {overlayTypes.filter(t => t.category === 'blend').map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => onOverlayChange({ type: overlay?.type === t.id ? null : t.id })}
+                          className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
+                            overlay?.type === t.id
+                              ? 'bg-blue-500 text-white shadow-sm'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                          }`}
+                          title={t.name}
+                        >
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Overlay Color */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Color</label>
+                  <div className="flex flex-wrap gap-1.5">
+                    {/* Theme colors */}
+                    {themeColorOptions.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => onOverlayChange({ color: overlay?.color === c.id ? null : c.id })}
+                        className={`px-2.5 py-1.5 text-xs rounded-lg font-medium ${
+                          overlay?.color === c.id
+                            ? 'bg-blue-500 text-white shadow-sm'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <span
+                          className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 border border-gray-300 dark:border-gray-600"
+                          style={{ backgroundColor: theme?.[c.id] || '#000' }}
+                        />
+                        {c.name}
+                      </button>
+                    ))}
+                    {/* Neutral colors */}
+                    {neutralColors.map((c) => (
+                      <button
+                        key={c.id}
+                        onClick={() => onOverlayChange({ color: overlay?.color === c.id ? null : c.id })}
+                        className={`px-2.5 py-1.5 text-xs rounded-lg font-medium ${
+                          overlay?.color === c.id
+                            ? 'bg-blue-500 text-white shadow-sm'
+                            : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+                        }`}
+                      >
+                        <span
+                          className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 border border-gray-300 dark:border-gray-600"
+                          style={{ backgroundColor: c.color }}
+                        />
+                        {c.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Overlay Opacity */}
+                <div className="space-y-1">
+                  <div className="flex justify-between">
+                    <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Opacity</label>
+                    <span className="text-xs text-gray-500 dark:text-gray-400">
+                      {overlay?.opacity ?? 0}%
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={overlay?.opacity ?? 0}
+                    onChange={(e) => onOverlayChange({ opacity: parseInt(e.target.value, 10) })}
+                    className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
+                  />
+                </div>
+              </>
+            )}
+          </div>
+        </CollapsibleSection>
+      )}
+
       {/* Advanced Filters Section - only when image exists */}
       {image && (
         <CollapsibleSection title="Advanced Filters" defaultExpanded={false}>
@@ -465,160 +638,6 @@ export default memo(function MediaTab({
                 onChange={(e) => onFiltersChange({ brightness: parseInt(e.target.value, 10) })}
                 className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
               />
-            </div>
-          </div>
-        </CollapsibleSection>
-      )}
-
-      {/* Image Overlay Section - only when image exists */}
-      {image && (
-        <CollapsibleSection title="Image Overlay" defaultExpanded={overlay?.opacity > 0}>
-          <div className="space-y-3">
-            {/* Overlay Type - organized by category */}
-            <div className="space-y-3">
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Type</label>
-              {/* Basic & Linear Gradients */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Basic & Gradients</span>
-                <div className="grid grid-cols-5 gap-1">
-                  {overlayTypes.filter(t => t.category === 'basic' || t.category === 'linear').map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => onOverlayChange({ type: t.id })}
-                      className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
-                        overlay?.type === t.id
-                          ? 'bg-blue-500 text-white shadow-sm'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                      title={t.name}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Radial */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Radial</span>
-                <div className="grid grid-cols-4 gap-1">
-                  {overlayTypes.filter(t => t.category === 'radial').map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => onOverlayChange({ type: t.id })}
-                      className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
-                        overlay?.type === t.id
-                          ? 'bg-blue-500 text-white shadow-sm'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                      title={t.name}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Effects & Textures */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Effects</span>
-                <div className="grid grid-cols-4 gap-1">
-                  {overlayTypes.filter(t => t.category === 'effect' || t.category === 'texture').map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => onOverlayChange({ type: t.id })}
-                      className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
-                        overlay?.type === t.id
-                          ? 'bg-blue-500 text-white shadow-sm'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                      title={t.name}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-              {/* Blend Modes */}
-              <div className="space-y-1.5">
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-wide">Blend Modes</span>
-                <div className="grid grid-cols-4 gap-1">
-                  {overlayTypes.filter(t => t.category === 'blend').map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => onOverlayChange({ type: t.id })}
-                      className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
-                        overlay?.type === t.id
-                          ? 'bg-blue-500 text-white shadow-sm'
-                          : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                      }`}
-                      title={t.name}
-                    >
-                      {t.name}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Overlay Color */}
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Color</label>
-              <div className="flex flex-wrap gap-1.5">
-                {/* Theme colors */}
-                {themeColorOptions.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => onOverlayChange({ color: c.id })}
-                    className={`px-2.5 py-1.5 text-xs rounded-lg font-medium ${
-                      overlay?.color === c.id
-                        ? 'bg-blue-500 text-white shadow-sm'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <span
-                      className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 border border-gray-300 dark:border-gray-600"
-                      style={{ backgroundColor: theme?.[c.id] || '#000' }}
-                    />
-                    {c.name}
-                  </button>
-                ))}
-                {/* Neutral colors */}
-                {neutralColors.map((c) => (
-                  <button
-                    key={c.id}
-                    onClick={() => onOverlayChange({ color: c.id })}
-                    className={`px-2.5 py-1.5 text-xs rounded-lg font-medium ${
-                      overlay?.color === c.id
-                        ? 'bg-blue-500 text-white shadow-sm'
-                        : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
-                    }`}
-                  >
-                    <span
-                      className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 border border-gray-300 dark:border-gray-600"
-                      style={{ backgroundColor: c.color }}
-                    />
-                    {c.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Overlay Opacity */}
-            <div className="space-y-1">
-              <div className="flex justify-between">
-                <label className="text-xs font-medium text-gray-600 dark:text-gray-300">Opacity</label>
-                <span className="text-xs text-gray-500 dark:text-gray-400">
-                  {overlay?.opacity ?? 0}%
-                </span>
-              </div>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={overlay?.opacity ?? 0}
-                onChange={(e) => onOverlayChange({ opacity: parseInt(e.target.value, 10) })}
-                className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer"
-              />
-              <p className="text-xs text-gray-400 dark:text-gray-500">Set to 0 to disable overlay</p>
             </div>
           </div>
         </CollapsibleSection>

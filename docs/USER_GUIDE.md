@@ -55,16 +55,18 @@ Manage your background image and logo.
 
 #### Image Overlay
 Controls the overlay on your background image (same system used by Complete Design templates):
-- **Type:** Choose from multiple overlay categories:
+
+- **On/Off Toggle:** Quick enable/disable for the overlay effect
+- **Type:** Choose from multiple overlay categories (click again to deselect):
   - **Basic & Gradients:** Solid color, linear gradients (8 directions)
   - **Radial:** Vignette, Spotlight, Radial Soft, Radial Ring
   - **Effects:** Blur Edges, Frame, Duotone
   - **Blend Modes:** Multiply, Screen, Overlay, Color Burn
   - **Textures:** Noise, Film Grain
-- **Color:** Choose from theme colors (Primary, Secondary, Accent) or neutrals
-- **Opacity:** Adjust transparency (0 = disabled, 100 = full)
+- **Color:** Choose from theme colors (Primary, Secondary, Accent) or neutrals (click again to deselect)
+- **Opacity:** Adjust transparency (1-100%)
 
-**Note:** This is separate from per-cell overlays in the Style tab. Image Overlay affects only the image layer.
+**Note:** Type, Color, and Opacity controls only appear when the overlay is enabled. This is separate from per-cell overlays in the Style tab.
 
 #### Advanced Filters
 Expand this section to access:

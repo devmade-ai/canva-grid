@@ -5,32 +5,24 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Added new overlay effects and platform dimensions
+UI improvements to Media, Style, and Platform sections
 
 ## Accomplished
-- Added 8 new platform dimensions:
-  - Website: Hero Standard (1920x600), Hero Tall (1920x800), Hero Full HD (1920x1080), OG Image (1200x630)
-  - Banners: LinkedIn Banner (1584x396), YouTube Banner (2560x1440)
-  - Other: Email Header (800x400), Zoom Background (1920x1080)
-- Added 13 new overlay types (now 24 total):
-  - Radial: Radial Soft, Radial Ring
-  - Effects: Blur Edges, Frame, Duotone
-  - Blend modes: Multiply, Screen, Overlay, Color Burn
-  - Textures: Noise, Film Grain
-- Updated AdCanvas to render special effects (noise/grain via SVG filters, blend modes, duotone)
-- Organized overlay types by category in both MediaTab and StyleTab UI
-- Grouped platforms by category in PlatformPreview component
-- Updated documentation (USER_GUIDE.md, CLAUDE.md)
+
+- Moved Image Overlay section above Advanced Filters in MediaTab
+- Added on/off toggle button for Image Overlay (similar to Grayscale toggle)
+- Clicking selected overlay type/color now deselects them (toggle behavior)
+- Made platform categories collapsible (only category with selected platform expanded by default)
+- Made Typography section in Style tab collapsed by default
+- Overlay controls now only show when overlay is enabled
 
 ## Current state
 - **Build**: Passes successfully
-- **Platforms**: 14 total (6 social, 4 web, 2 banners, 2 other)
-- **Overlays**: 24 total organized by category (basic, linear, radial, effect, blend, texture)
-- **Working**: Branch `claude/image-blur-overlay-hero-Eb9Kn`
+- **All features**: Working
 
 ## Key context
-- Overlay types now have categories: basic, linear, radial, effect, blend, texture
-- Special overlay effects (noise, grain, blur-edges, duotone) use `special` property and custom rendering
-- Blend mode overlays use `blendMode` property for mix-blend-mode CSS
-- SVG filters defined in `<SvgFilters>` component at top of AdCanvas render tree
-- Platforms now have category property for grouping in UI
+
+- Image Overlay section now has On/Off toggle that sets opacity to 0 or 50
+- Platform categories are collapsible with chevron toggle
+- When a category is collapsed, it shows the selected platform name if any
+- Typography section starts collapsed to reduce visual clutter
