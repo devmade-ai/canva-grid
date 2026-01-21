@@ -5,33 +5,27 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Adding AI Image Prompt Helper feature to help users generate prompts for AI image generation tools
+UI defaults: AI Image Prompt Helper colors and collapsible section behavior
 
 ## Accomplished
 
-- Added new "AI Image Prompt" collapsible section at top of Media tab (collapsed by default)
-- Prompt builder includes:
-  - Subject/context text area
-  - Style options (Photo, Cinematic, Editorial, Minimal, Abstract, Illustration, 3D)
-  - Mood/lighting options (Dark, Light, Neutral, Dramatic, Soft, Warm, Cool)
-  - Image purpose (Hero Image vs Background for text overlays)
-  - Color options (use current theme or custom description)
-  - Auto-detected format from current platform (orientation, aspect ratio, dimensions)
-- Generated prompt automatically includes:
-  - "do not include any text, words, letters, numbers, or typography"
-  - "do not include any overlays, borders, watermarks, or graphic elements"
-- Copy button with visual feedback
-- Updated USER_GUIDE.md with documentation
+- Changed AI Image Prompt Helper to default to "Custom" colors instead of "Use Theme"
+- Changed all CollapsibleSection components across all tabs to be collapsed by default:
+  - MediaTab: Background Image, Image Overlay, Logo
+  - ContentTab: All text groups (Title & Tagline, Body, CTA, Footnote)
+  - LayoutTab: Structure, Text Alignment
+  - StyleTab: Themes
+  - TemplatesTab: Complete Designs
 - Build passes successfully
+- Changes committed and pushed to branch
 
 ## Current state
 - **Build**: Passes successfully
 - **All features**: Working
-- New AI Image Prompt Helper section is ready to use in Media tab
+- All sections now collapse by default for a cleaner initial UI
 
 ## Key context
 
-- The helper uses `useMemo` to efficiently regenerate the prompt when options change
-- Platform aspect ratio is calculated from the platforms config using GCD
-- Theme colors are passed from parent component and can be used in the generated prompt
-- The section is collapsed by default to keep the UI clean for users who don't need it
+- AI Image Prompt Helper section (also collapsed by default) and Advanced Filters section were already collapsed
+- Typography, Overlay, Spacing (StyleTab) and Layout Only (TemplatesTab) were already collapsed
+- The change affects the `defaultExpanded` prop passed to `CollapsibleSection` component
