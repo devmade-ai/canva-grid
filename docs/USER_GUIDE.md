@@ -46,6 +46,27 @@ Grid templates that change only the structure:
 
 Manage your background image and logo.
 
+#### AI Image Prompt (collapsed by default)
+A helper tool for generating prompts to use with AI image generation tools (like DALL-E, Midjourney, or Stable Diffusion). Expand this section to build a prompt tailored to your ad.
+
+**Controls:**
+- **Subject / Context:** Describe what you want in the image (e.g., "coffee shop interior", "mountain landscape")
+- **Style:** Choose a visual style (Photo, Cinematic, Editorial, Minimal, Abstract, Illustration, 3D)
+- **Mood / Lighting:** Set the atmosphere (Dark, Light, Neutral, Dramatic, Soft, Warm, Cool)
+- **Image Purpose:**
+  - **Hero Image:** Clean focal point for featured images
+  - **Background:** Subtle details, optimized for text overlays
+- **Orientation:** Landscape, Portrait, or Square (choose based on your target platforms)
+- **Colors:** Use your current theme colors or enter custom color descriptions
+
+**Generated Prompt:** The helper builds a complete prompt including:
+- Your style and mood preferences
+- Color palette from your theme
+- Selected orientation
+- **Automatic constraints:** "no text, no overlays" - ensures clean images ready for your ad
+
+Click **Copy** to copy the prompt to your clipboard for use in any AI image generator.
+
 #### Background Image
 - **Upload:** Drag-drop an image or click to browse
 - **Sample Images:** Click any sample to use it as a starting point
@@ -224,6 +245,15 @@ Click any platform button to see how your ad looks at that size. Platforms are o
 - **Solid overlays** with low opacity create subtle darkening
 - **Vignette** draws attention to the center
 - Adjust **text color** to contrast with your overlay
+
+### Using AI-Generated Images
+1. Open **Media > AI Image Prompt** section
+2. Describe your subject and choose style/mood
+3. Select orientation (Landscape for banners, Portrait for stories, Square for posts)
+4. Select "Background" purpose if you'll have text overlays
+5. Optionally set a theme first (Style tab) to include your colors
+6. Click **Copy** and paste into your AI image generator
+7. Upload the generated image back into the tool
 
 ### Working with Layouts
 - **Full Bleed:** Best for single-message ads with large text
