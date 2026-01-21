@@ -38,23 +38,11 @@ const purposeOptions = [
   { id: 'background', name: 'Background', description: 'as a background image suitable for text overlay, with subtle details and low contrast areas' },
 ]
 
-// Helper to get aspect ratio string from platform
-function getAspectRatioString(platform) {
-  const p = platforms.find((pl) => pl.id === platform)
-  if (!p) return '1:1'
-  const gcd = (a, b) => (b === 0 ? a : gcd(b, a % b))
-  const divisor = gcd(p.width, p.height)
-  return `${p.width / divisor}:${p.height / divisor}`
-}
-
-// Helper to get orientation from platform
-function getOrientationString(platform) {
-  const p = platforms.find((pl) => pl.id === platform)
-  if (!p) return 'square'
-  if (p.width > p.height) return 'landscape'
-  if (p.width < p.height) return 'portrait'
-  return 'square'
-}
+const orientationOptions = [
+  { id: 'landscape', name: 'Landscape', description: 'landscape orientation (wider than tall)' },
+  { id: 'portrait', name: 'Portrait', description: 'portrait orientation (taller than wide)' },
+  { id: 'square', name: 'Square', description: 'square orientation (1:1 aspect ratio)' },
+]
 
 // Simple cell grid for image cell selection
 function ImageCellGrid({ layout, imageCell, onSelectCell, platform }) {
@@ -143,18 +131,15 @@ const logoSizeOptions = [
 ]
 
 // AI Image Prompt Helper Component
-function AIPromptHelper({ platform, theme }) {
+function AIPromptHelper({ theme }) {
   const [style, setStyle] = useState('photorealistic')
   const [mood, setMood] = useState('neutral')
   const [purpose, setPurpose] = useState('background')
+  const [orientation, setOrientation] = useState('landscape')
   const [useThemeColors, setUseThemeColors] = useState(true)
   const [customColors, setCustomColors] = useState('')
   const [context, setContext] = useState('')
   const [copied, setCopied] = useState(false)
-
-  const platformData = platforms.find((p) => p.id === platform) || platforms[0]
-  const aspectRatio = getAspectRatioString(platform)
-  const orientation = getOrientationString(platform)
 
   // Generate the prompt
   const generatedPrompt = useMemo(() => {
@@ -184,15 +169,16 @@ function AIPromptHelper({ platform, theme }) {
       parts.push(`color palette: ${customColors.trim()}`)
     }
 
-    // Orientation & format
-    parts.push(`${orientation} orientation, ${aspectRatio} aspect ratio, for ${platformData.name}`)
+    // Orientation
+    const orientationData = orientationOptions.find((o) => o.id === orientation)
+    if (orientationData) parts.push(orientationData.description)
 
     // Constants - always include
     parts.push('do not include any text, words, letters, numbers, or typography')
     parts.push('do not include any overlays, borders, watermarks, or graphic elements')
 
     return parts.join(', ')
-  }, [style, mood, purpose, useThemeColors, customColors, context, theme, aspectRatio, orientation, platformData.name])
+  }, [style, mood, purpose, orientation, useThemeColors, customColors, context, theme])
 
   const handleCopy = useCallback(() => {
     navigator.clipboard.writeText(generatedPrompt)
@@ -277,6 +263,26 @@ function AIPromptHelper({ platform, theme }) {
         </p>
       </div>
 
+      {/* Orientation */}
+      <div className="space-y-1.5">
+        <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Orientation</label>
+        <div className="flex gap-1">
+          {orientationOptions.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => setOrientation(opt.id)}
+              className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium ${
+                orientation === opt.id
+                  ? 'bg-blue-500 text-white shadow-sm'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
+              }`}
+            >
+              {opt.name}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Colors */}
       <div className="space-y-1.5">
         <label className="block text-xs font-medium text-gray-600 dark:text-gray-300">Colors (optional)</label>
@@ -324,12 +330,6 @@ function AIPromptHelper({ platform, theme }) {
             className="w-full px-3 py-1.5 text-sm bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         )}
-      </div>
-
-      {/* Format Info */}
-      <div className="text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg px-3 py-2">
-        <span className="font-medium">Format:</span> {platformData.name} ({platformData.width}×{platformData.height}, {aspectRatio}, {orientation})
-        <span className="block text-[10px] mt-0.5">Change platform in the Export section below</span>
       </div>
 
       {/* Generated Prompt */}
@@ -461,7 +461,7 @@ export default memo(function MediaTab({
 
       {/* AI Image Prompt Helper Section - collapsed by default */}
       <CollapsibleSection title="AI Image Prompt" defaultExpanded={false}>
-        <AIPromptHelper platform={platform} theme={theme} />
+        <AIPromptHelper theme={theme} />
       </CollapsibleSection>
 
       {/* Background Image Section */}

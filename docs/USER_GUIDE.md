@@ -56,13 +56,13 @@ A helper tool for generating prompts to use with AI image generation tools (like
 - **Image Purpose:**
   - **Hero Image:** Clean focal point for featured images
   - **Background:** Subtle details, optimized for text overlays
+- **Orientation:** Landscape, Portrait, or Square (choose based on your target platforms)
 - **Colors:** Use your current theme colors or enter custom color descriptions
-- **Format:** Automatically shows the current platform's dimensions and aspect ratio
 
 **Generated Prompt:** The helper builds a complete prompt including:
 - Your style and mood preferences
 - Color palette from your theme
-- Correct orientation and aspect ratio for your platform
+- Selected orientation
 - **Automatic constraints:** "no text, no overlays" - ensures clean images ready for your ad
 
 Click **Copy** to copy the prompt to your clipboard for use in any AI image generator.
@@ -247,12 +247,13 @@ Click any platform button to see how your ad looks at that size. Platforms are o
 - Adjust **text color** to contrast with your overlay
 
 ### Using AI-Generated Images
-1. Set your theme and platform first (Style tab and Export area)
-2. Open **Media > AI Image Prompt** section
-3. Describe your subject and choose style/mood
+1. Open **Media > AI Image Prompt** section
+2. Describe your subject and choose style/mood
+3. Select orientation (Landscape for banners, Portrait for stories, Square for posts)
 4. Select "Background" purpose if you'll have text overlays
-5. Click **Copy** and paste into your AI image generator
-6. Upload the generated image back into the tool
+5. Optionally set a theme first (Style tab) to include your colors
+6. Click **Copy** and paste into your AI image generator
+7. Upload the generated image back into the tool
 
 ### Working with Layouts
 - **Full Bleed:** Best for single-message ads with large text
