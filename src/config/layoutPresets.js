@@ -4,10 +4,10 @@
 
 // Categories for organizing presets
 export const presetCategories = [
-  { id: 'image-focus', name: 'Image Focus', description: 'Layouts that emphasize visual content' },
-  { id: 'text-focus', name: 'Text Focus', description: 'Layouts optimized for text-heavy content' },
-  { id: 'balanced', name: 'Balanced', description: 'Equal emphasis on image and text' },
-  { id: 'grid', name: 'Grid', description: 'Multi-cell layouts with nested structure' },
+  { id: 'basic', name: 'Basic', description: 'Simple foundational layouts' },
+  { id: 'split', name: 'Split', description: 'Two-zone layouts with varied proportions' },
+  { id: 'grid', name: 'Grid', description: 'Multi-cell complex layouts' },
+  { id: 'asymmetric', name: 'Asymmetric', description: 'Creative uneven arrangements' },
 ]
 
 // Aspect ratio categories for filtering
@@ -19,8 +19,9 @@ export const aspectRatioCategories = [
 ]
 
 // SVG icon definitions for each preset (rendered as small preview diagrams)
-// Blue (#3b82f6) = image area, Gray (#e5e7eb) = text area
+// Blue (#3b82f6) = image area, Gray (#e5e7eb) = text area, Darker gray (#d1d5db) = secondary text
 export const presetIcons = {
+  // ===== BASIC =====
   'hero': {
     viewBox: '0 0 40 30',
     elements: [
@@ -28,138 +29,51 @@ export const presetIcons = {
       { type: 'rect', props: { x: 8, y: 10, width: 24, height: 10, fill: '#e5e7eb', opacity: 0.8 } },
     ]
   },
-  'hero-top': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 30, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 8, y: 4, width: 24, height: 10, fill: '#e5e7eb', opacity: 0.8 } },
-    ]
-  },
-  'hero-bottom': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 30, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 8, y: 16, width: 24, height: 10, fill: '#e5e7eb', opacity: 0.8 } },
-    ]
-  },
-  'left-image': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 20, height: 30, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 30, fill: '#e5e7eb' } },
-    ]
-  },
-  'right-image': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 20, height: 30, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 30, fill: '#3b82f6' } },
-    ]
-  },
-  'top-image': {
+  'split-horizontal': {
     viewBox: '0 0 40 30',
     elements: [
       { type: 'rect', props: { x: 0, y: 0, width: 40, height: 15, fill: '#3b82f6' } },
       { type: 'rect', props: { x: 0, y: 15, width: 40, height: 15, fill: '#e5e7eb' } },
     ]
   },
-  'bottom-image': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 15, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 0, y: 15, width: 40, height: 15, fill: '#3b82f6' } },
-    ]
-  },
-  'two-thirds-left': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 27, height: 30, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 27, y: 0, width: 13, height: 30, fill: '#e5e7eb' } },
-    ]
-  },
-  'two-thirds-right': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 13, height: 30, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 13, y: 0, width: 27, height: 30, fill: '#3b82f6' } },
-    ]
-  },
-  'two-thirds-top': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 20, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#e5e7eb' } },
-    ]
-  },
-  'two-thirds-bottom': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 10, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 0, y: 10, width: 40, height: 20, fill: '#3b82f6' } },
-    ]
-  },
-  'side-accent-left': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 10, height: 30, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 10, y: 0, width: 30, height: 30, fill: '#e5e7eb' } },
-    ]
-  },
-  'side-accent-right': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 30, height: 30, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 30, y: 0, width: 10, height: 30, fill: '#3b82f6' } },
-    ]
-  },
-  'banner-top': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 8, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 0, y: 8, width: 40, height: 22, fill: '#e5e7eb' } },
-    ]
-  },
-  'banner-bottom': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 22, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 0, y: 22, width: 40, height: 8, fill: '#3b82f6' } },
-    ]
-  },
-  // New grid-based icons
-  'image-top-split-bottom': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 18, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 0, y: 18, width: 20, height: 12, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 20, y: 18, width: 20, height: 12, fill: '#d1d5db' } },
-    ]
-  },
-  'split-top-image-bottom': {
-    viewBox: '0 0 40 30',
-    elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 20, height: 12, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 12, fill: '#d1d5db' } },
-      { type: 'rect', props: { x: 0, y: 12, width: 40, height: 18, fill: '#3b82f6' } },
-    ]
-  },
-  'image-left-split-right': {
+  'split-vertical': {
     viewBox: '0 0 40 30',
     elements: [
       { type: 'rect', props: { x: 0, y: 0, width: 20, height: 30, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 15, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 20, y: 15, width: 20, height: 15, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 30, fill: '#e5e7eb' } },
     ]
   },
-  'split-left-image-right': {
+
+  // ===== SPLIT VARIATIONS =====
+  'golden-left': {
     viewBox: '0 0 40 30',
     elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 20, height: 15, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 0, y: 15, width: 20, height: 15, fill: '#d1d5db' } },
-      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 30, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 0, y: 0, width: 25, height: 30, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 25, y: 0, width: 15, height: 30, fill: '#e5e7eb' } },
     ]
   },
-  'three-row-middle-image': {
+  'golden-right': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 15, height: 30, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 15, y: 0, width: 25, height: 30, fill: '#3b82f6' } },
+    ]
+  },
+  'golden-top': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 19, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 0, y: 19, width: 40, height: 11, fill: '#e5e7eb' } },
+    ]
+  },
+  'golden-bottom': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 11, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 11, width: 40, height: 19, fill: '#3b82f6' } },
+    ]
+  },
+  'thirds-horizontal': {
     viewBox: '0 0 40 30',
     elements: [
       { type: 'rect', props: { x: 0, y: 0, width: 40, height: 10, fill: '#e5e7eb' } },
@@ -167,15 +81,182 @@ export const presetIcons = {
       { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#d1d5db' } },
     ]
   },
+  'thirds-vertical': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 13, height: 30, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 13, y: 0, width: 14, height: 30, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 27, y: 0, width: 13, height: 30, fill: '#d1d5db' } },
+    ]
+  },
+
+  // ===== GRID LAYOUTS =====
+  'quad-grid': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 20, height: 15, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 15, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 15, width: 20, height: 15, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 20, y: 15, width: 20, height: 15, fill: '#c4c9cf' } },
+    ]
+  },
+  'l-shape-right': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 24, height: 30, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 24, y: 0, width: 16, height: 15, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 24, y: 15, width: 16, height: 15, fill: '#d1d5db' } },
+    ]
+  },
+  'l-shape-left': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 16, height: 15, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 15, width: 16, height: 15, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 16, y: 0, width: 24, height: 30, fill: '#3b82f6' } },
+    ]
+  },
+  'l-shape-bottom': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 18, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 0, y: 18, width: 20, height: 12, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 20, y: 18, width: 20, height: 12, fill: '#d1d5db' } },
+    ]
+  },
+  'l-shape-top': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 20, height: 12, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 12, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 0, y: 12, width: 40, height: 18, fill: '#3b82f6' } },
+    ]
+  },
+  't-layout': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 10, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 10, width: 20, height: 20, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 20, y: 10, width: 20, height: 20, fill: '#d1d5db' } },
+    ]
+  },
+  'inverted-t': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 20, height: 20, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 20, y: 0, width: 20, height: 20, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#d1d5db' } },
+    ]
+  },
+  'feature-center': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 10, height: 30, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 10, y: 0, width: 20, height: 30, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 30, y: 0, width: 10, height: 30, fill: '#d1d5db' } },
+    ]
+  },
+  'feature-middle': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 8, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 8, width: 40, height: 14, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 0, y: 22, width: 40, height: 8, fill: '#d1d5db' } },
+    ]
+  },
+
+  // ===== ASYMMETRIC LAYOUTS =====
+  'mosaic-left': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 25, height: 20, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 25, y: 0, width: 15, height: 10, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 25, y: 10, width: 15, height: 10, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#c4c9cf' } },
+    ]
+  },
+  'mosaic-right': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 15, height: 10, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 10, width: 15, height: 10, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 15, y: 0, width: 25, height: 20, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#c4c9cf' } },
+    ]
+  },
+  'stacked-quad': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 8, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 8, width: 40, height: 8, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 0, y: 16, width: 40, height: 8, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 0, y: 24, width: 40, height: 6, fill: '#c4c9cf' } },
+    ]
+  },
+  'sidebar-stack': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 12, height: 30, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 12, y: 0, width: 28, height: 10, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 12, y: 10, width: 28, height: 10, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 12, y: 20, width: 28, height: 10, fill: '#c4c9cf' } },
+    ]
+  },
+  'header-quad': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 10, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 10, width: 20, height: 10, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 20, y: 10, width: 20, height: 10, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 0, y: 20, width: 20, height: 10, fill: '#c4c9cf' } },
+      { type: 'rect', props: { x: 20, y: 20, width: 20, height: 10, fill: '#b0b5bb' } },
+    ]
+  },
+  'wide-feature': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 8, height: 30, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 8, y: 0, width: 8, height: 30, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 16, y: 0, width: 16, height: 30, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 32, y: 0, width: 8, height: 30, fill: '#c4c9cf' } },
+    ]
+  },
+  'tall-feature': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 40, height: 6, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 6, width: 40, height: 6, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 0, y: 12, width: 40, height: 12, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 0, y: 24, width: 40, height: 6, fill: '#c4c9cf' } },
+    ]
+  },
+  'columns-four': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 10, height: 30, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 10, y: 0, width: 10, height: 30, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 20, y: 0, width: 10, height: 30, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 30, y: 0, width: 10, height: 30, fill: '#c4c9cf' } },
+    ]
+  },
+  'asymmetric-grid': {
+    viewBox: '0 0 40 30',
+    elements: [
+      { type: 'rect', props: { x: 0, y: 0, width: 25, height: 18, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 25, y: 0, width: 15, height: 18, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 18, width: 15, height: 12, fill: '#d1d5db' } },
+      { type: 'rect', props: { x: 15, y: 18, width: 25, height: 12, fill: '#c4c9cf' } },
+    ]
+  },
 }
 
 export const layoutPresets = [
-  // ========== IMAGE FOCUS CATEGORY ==========
+  // ========== BASIC CATEGORY (Essential foundations) ==========
   {
     id: 'hero',
-    name: 'Full Bleed Hero',
-    description: 'Full image with centered text overlay - great for impactful visuals',
-    category: 'image-focus',
+    name: 'Full Bleed',
+    description: 'Full image with centered text overlay',
+    category: 'basic',
     aspectRatios: ['square', 'portrait', 'landscape'],
     layout: {
       type: 'fullbleed',
@@ -186,71 +267,44 @@ export const layoutPresets = [
       cellAlignments: [],
     },
     textCells: {
-      title: null,
-      tagline: null,
-      bodyHeading: null,
-      bodyText: null,
-      cta: null,
-      footnote: null,
+      title: null, tagline: null, bodyHeading: null, bodyText: null, cta: null, footnote: null,
     },
   },
   {
-    id: 'hero-top',
-    name: 'Hero Top Text',
-    description: 'Full image with text aligned to top',
-    category: 'image-focus',
-    aspectRatios: ['square', 'portrait', 'landscape'],
+    id: 'split-horizontal',
+    name: 'Top / Bottom',
+    description: 'Image top, text bottom - clean separation',
+    category: 'basic',
+    aspectRatios: ['square', 'portrait'],
     layout: {
-      type: 'fullbleed',
-      structure: [{ size: 100, subdivisions: 1, subSizes: [100] }],
+      type: 'rows',
+      structure: [
+        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 50, subdivisions: 1, subSizes: [100] },
+      ],
       imageCell: 0,
       textAlign: 'center',
-      textVerticalAlign: 'start',
-      cellAlignments: [],
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
     },
     textCells: {
-      title: null,
-      tagline: null,
-      bodyHeading: null,
-      bodyText: null,
-      cta: null,
-      footnote: null,
+      title: 1, tagline: 1, bodyHeading: 1, bodyText: 1, cta: 1, footnote: 1,
     },
   },
   {
-    id: 'hero-bottom',
-    name: 'Hero Bottom Text',
-    description: 'Full image with text aligned to bottom',
-    category: 'image-focus',
-    aspectRatios: ['square', 'portrait', 'landscape'],
-    layout: {
-      type: 'fullbleed',
-      structure: [{ size: 100, subdivisions: 1, subSizes: [100] }],
-      imageCell: 0,
-      textAlign: 'center',
-      textVerticalAlign: 'end',
-      cellAlignments: [],
-    },
-    textCells: {
-      title: null,
-      tagline: null,
-      bodyHeading: null,
-      bodyText: null,
-      cta: null,
-      footnote: null,
-    },
-  },
-  {
-    id: 'two-thirds-left',
-    name: 'Large Image Left',
-    description: 'Image takes 2/3, text on right strip',
-    category: 'image-focus',
+    id: 'split-vertical',
+    name: 'Left / Right',
+    description: 'Image left, text right - classic layout',
+    category: 'basic',
     aspectRatios: ['square', 'landscape'],
     layout: {
       type: 'columns',
       structure: [
-        { size: 66, subdivisions: 1, subSizes: [100] },
-        { size: 34, subdivisions: 1, subSizes: [100] },
+        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 50, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 0,
       textAlign: 'left',
@@ -261,114 +315,22 @@ export const layoutPresets = [
       ],
     },
     textCells: {
-      title: 1,
-      tagline: 1,
-      bodyHeading: 1,
-      bodyText: 1,
-      cta: 1,
-      footnote: 1,
-    },
-  },
-  {
-    id: 'two-thirds-right',
-    name: 'Large Image Right',
-    description: 'Text strip on left, image takes 2/3',
-    category: 'image-focus',
-    aspectRatios: ['square', 'landscape'],
-    layout: {
-      type: 'columns',
-      structure: [
-        { size: 34, subdivisions: 1, subSizes: [100] },
-        { size: 66, subdivisions: 1, subSizes: [100] },
-      ],
-      imageCell: 1,
-      textAlign: 'left',
-      textVerticalAlign: 'center',
-      cellAlignments: [
-        { textAlign: 'left', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 0,
-      bodyText: 0,
-      cta: 0,
-      footnote: 0,
-    },
-  },
-  {
-    id: 'two-thirds-top',
-    name: 'Large Image Top',
-    description: 'Image takes 2/3 top, text bar below',
-    category: 'image-focus',
-    aspectRatios: ['square', 'portrait'],
-    layout: {
-      type: 'rows',
-      structure: [
-        { size: 66, subdivisions: 1, subSizes: [100] },
-        { size: 34, subdivisions: 1, subSizes: [100] },
-      ],
-      imageCell: 0,
-      textAlign: 'center',
-      textVerticalAlign: 'center',
-      cellAlignments: [
-        { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 1,
-      tagline: 1,
-      bodyHeading: 1,
-      bodyText: 1,
-      cta: 1,
-      footnote: 1,
-    },
-  },
-  {
-    id: 'two-thirds-bottom',
-    name: 'Large Image Bottom',
-    description: 'Text bar on top, image takes 2/3 below',
-    category: 'image-focus',
-    aspectRatios: ['square', 'portrait'],
-    layout: {
-      type: 'rows',
-      structure: [
-        { size: 34, subdivisions: 1, subSizes: [100] },
-        { size: 66, subdivisions: 1, subSizes: [100] },
-      ],
-      imageCell: 1,
-      textAlign: 'center',
-      textVerticalAlign: 'center',
-      cellAlignments: [
-        { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 0,
-      bodyText: 0,
-      cta: 0,
-      footnote: 0,
+      title: 1, tagline: 1, bodyHeading: 1, bodyText: 1, cta: 1, footnote: 1,
     },
   },
 
-  // ========== BALANCED CATEGORY ==========
+  // ========== SPLIT CATEGORY (Two-zone with varied proportions) ==========
   {
-    id: 'left-image',
-    name: 'Image Left / Text Right',
-    description: 'Classic 50-50 split with image on left',
-    category: 'balanced',
+    id: 'golden-left',
+    name: 'Golden Left',
+    description: 'Large image left (62%), text panel right',
+    category: 'split',
     aspectRatios: ['square', 'landscape'],
     layout: {
       type: 'columns',
       structure: [
-        { size: 50, subdivisions: 1, subSizes: [100] },
-        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 62, subdivisions: 1, subSizes: [100] },
+        { size: 38, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 0,
       textAlign: 'left',
@@ -379,25 +341,20 @@ export const layoutPresets = [
       ],
     },
     textCells: {
-      title: 1,
-      tagline: 1,
-      bodyHeading: 1,
-      bodyText: 1,
-      cta: 1,
-      footnote: 1,
+      title: 1, tagline: 1, bodyHeading: 1, bodyText: 1, cta: 1, footnote: 1,
     },
   },
   {
-    id: 'right-image',
-    name: 'Text Left / Image Right',
-    description: 'Classic 50-50 split with image on right',
-    category: 'balanced',
+    id: 'golden-right',
+    name: 'Golden Right',
+    description: 'Text panel left, large image right (62%)',
+    category: 'split',
     aspectRatios: ['square', 'landscape'],
     layout: {
       type: 'columns',
       structure: [
-        { size: 50, subdivisions: 1, subSizes: [100] },
-        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 38, subdivisions: 1, subSizes: [100] },
+        { size: 62, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 1,
       textAlign: 'left',
@@ -408,264 +365,486 @@ export const layoutPresets = [
       ],
     },
     textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 0,
-      bodyText: 0,
-      cta: 0,
-      footnote: 0,
+      title: 0, tagline: 0, bodyHeading: 0, bodyText: 0, cta: 0, footnote: 0,
     },
   },
   {
-    id: 'top-image',
-    name: 'Image Top / Text Bottom',
-    description: 'Horizontal 50-50 split with image on top',
-    category: 'balanced',
+    id: 'golden-top',
+    name: 'Golden Top',
+    description: 'Large image top (62%), text bar below',
+    category: 'split',
     aspectRatios: ['square', 'portrait'],
     layout: {
       type: 'rows',
       structure: [
-        { size: 50, subdivisions: 1, subSizes: [100] },
-        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 62, subdivisions: 1, subSizes: [100] },
+        { size: 38, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 0,
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
         { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'start' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
       ],
     },
     textCells: {
-      title: 1,
-      tagline: 1,
-      bodyHeading: 1,
-      bodyText: 1,
-      cta: 1,
-      footnote: 1,
+      title: 1, tagline: 1, bodyHeading: 1, bodyText: 1, cta: 1, footnote: 1,
     },
   },
   {
-    id: 'bottom-image',
-    name: 'Text Top / Image Bottom',
-    description: 'Horizontal 50-50 split with image below',
-    category: 'balanced',
+    id: 'golden-bottom',
+    name: 'Golden Bottom',
+    description: 'Text bar top, large image below (62%)',
+    category: 'split',
     aspectRatios: ['square', 'portrait'],
     layout: {
       type: 'rows',
       structure: [
-        { size: 50, subdivisions: 1, subSizes: [100] },
-        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 38, subdivisions: 1, subSizes: [100] },
+        { size: 62, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 1,
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
-        { textAlign: 'center', textVerticalAlign: 'end' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
         { textAlign: 'center', textVerticalAlign: 'center' },
       ],
     },
     textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 0,
-      bodyText: 0,
-      cta: 0,
-      footnote: 0,
+      title: 0, tagline: 0, bodyHeading: 0, bodyText: 0, cta: 0, footnote: 0,
     },
   },
   {
-    id: 'three-row-middle-image',
-    name: 'Image Sandwich',
-    description: 'Image in middle with text bars above and below',
-    category: 'balanced',
+    id: 'thirds-horizontal',
+    name: 'Three Rows',
+    description: 'Header, image center, footer - sandwich layout',
+    category: 'split',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 25, subdivisions: 1, subSizes: [100] },
+        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 25, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 1,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+  {
+    id: 'thirds-vertical',
+    name: 'Three Columns',
+    description: 'Sidebar, center image, sidebar - flanked layout',
+    category: 'split',
+    aspectRatios: ['square', 'landscape'],
+    layout: {
+      type: 'columns',
+      structure: [
+        { size: 25, subdivisions: 1, subSizes: [100] },
+        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 25, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 1,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+
+  // ========== GRID CATEGORY (Multi-cell layouts) ==========
+  {
+    id: 'quad-grid',
+    name: '2×2 Grid',
+    description: 'Four equal cells - versatile multi-image layout',
+    category: 'grid',
+    aspectRatios: ['square', 'landscape'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 50, subdivisions: 2, subSizes: [50, 50] },
+        { size: 50, subdivisions: 2, subSizes: [50, 50] },
+      ],
+      imageCell: 0,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 1, tagline: 1, bodyHeading: 2, bodyText: 2, cta: 3, footnote: 3,
+    },
+  },
+  {
+    id: 'l-shape-right',
+    name: 'L-Shape Right',
+    description: 'Large image left, two text cells stacked right',
+    category: 'grid',
+    aspectRatios: ['square', 'landscape'],
+    layout: {
+      type: 'columns',
+      structure: [
+        { size: 60, subdivisions: 1, subSizes: [100] },
+        { size: 40, subdivisions: 2, subSizes: [50, 50] },
+      ],
+      imageCell: 0,
+      textAlign: 'left',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'left', textVerticalAlign: 'end' },
+        { textAlign: 'left', textVerticalAlign: 'start' },
+      ],
+    },
+    textCells: {
+      title: 1, tagline: 1, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+  {
+    id: 'l-shape-left',
+    name: 'L-Shape Left',
+    description: 'Two text cells stacked left, large image right',
+    category: 'grid',
+    aspectRatios: ['square', 'landscape'],
+    layout: {
+      type: 'columns',
+      structure: [
+        { size: 40, subdivisions: 2, subSizes: [50, 50] },
+        { size: 60, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 2,
+      textAlign: 'left',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'left', textVerticalAlign: 'end' },
+        { textAlign: 'left', textVerticalAlign: 'start' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 1, bodyText: 1, cta: 1, footnote: 1,
+    },
+  },
+  {
+    id: 'l-shape-bottom',
+    name: 'L-Shape Bottom',
+    description: 'Large image top, two text cells below',
+    category: 'grid',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 60, subdivisions: 1, subSizes: [100] },
+        { size: 40, subdivisions: 2, subSizes: [50, 50] },
+      ],
+      imageCell: 0,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 1, tagline: 1, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+  {
+    id: 'l-shape-top',
+    name: 'L-Shape Top',
+    description: 'Two text cells top, large image below',
+    category: 'grid',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 40, subdivisions: 2, subSizes: [50, 50] },
+        { size: 60, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 2,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 1, bodyText: 1, cta: 1, footnote: 1,
+    },
+  },
+  {
+    id: 't-layout',
+    name: 'T-Layout',
+    description: 'Header bar, then image and text side by side',
+    category: 'grid',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 30, subdivisions: 1, subSizes: [100] },
+        { size: 70, subdivisions: 2, subSizes: [50, 50] },
+      ],
+      imageCell: 1,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'left', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+  {
+    id: 'inverted-t',
+    name: 'Inverted T',
+    description: 'Image and text side by side, then footer bar',
+    category: 'grid',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 70, subdivisions: 2, subSizes: [50, 50] },
+        { size: 30, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 0,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'left', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 1, tagline: 1, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+  {
+    id: 'feature-center',
+    name: 'Center Feature',
+    description: 'Narrow sidebars with wide center image',
+    category: 'grid',
+    aspectRatios: ['square', 'landscape'],
+    layout: {
+      type: 'columns',
+      structure: [
+        { size: 25, subdivisions: 1, subSizes: [100] },
+        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 25, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 1,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+  {
+    id: 'feature-middle',
+    name: 'Middle Feature',
+    description: 'Thin bars top/bottom, wide image center',
+    category: 'grid',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 20, subdivisions: 1, subSizes: [100] },
+        { size: 60, subdivisions: 1, subSizes: [100] },
+        { size: 20, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 1,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+
+  // ========== ASYMMETRIC CATEGORY (Creative arrangements) ==========
+  {
+    id: 'mosaic-left',
+    name: 'Mosaic Left',
+    description: 'Large image with small cells wrapped around',
+    category: 'asymmetric',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 65, subdivisions: 2, subSizes: [60, 40] },
+        { size: 35, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 0,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'left', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 1, tagline: 1, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+  {
+    id: 'mosaic-right',
+    name: 'Mosaic Right',
+    description: 'Small cells left, large image right with footer',
+    category: 'asymmetric',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 65, subdivisions: 2, subSizes: [40, 60] },
+        { size: 35, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 1,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'left', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2,
+    },
+  },
+  {
+    id: 'stacked-quad',
+    name: 'Four Rows',
+    description: 'Four stacked rows - story-style layout',
+    category: 'asymmetric',
     aspectRatios: ['portrait'],
     layout: {
       type: 'rows',
       structure: [
+        { size: 20, subdivisions: 1, subSizes: [100] },
+        { size: 35, subdivisions: 1, subSizes: [100] },
         { size: 30, subdivisions: 1, subSizes: [100] },
+        { size: 15, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 1,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 2, bodyText: 2, cta: 3, footnote: 3,
+    },
+  },
+  {
+    id: 'sidebar-stack',
+    name: 'Sidebar + Stack',
+    description: 'Image sidebar with three stacked text rows',
+    category: 'asymmetric',
+    aspectRatios: ['square', 'landscape'],
+    layout: {
+      type: 'columns',
+      structure: [
+        { size: 35, subdivisions: 1, subSizes: [100] },
+        { size: 65, subdivisions: 3, subSizes: [33, 34, 33] },
+      ],
+      imageCell: 0,
+      textAlign: 'left',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'left', textVerticalAlign: 'center' },
+        { textAlign: 'left', textVerticalAlign: 'center' },
+        { textAlign: 'left', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 1, tagline: 1, bodyHeading: 2, bodyText: 2, cta: 3, footnote: 3,
+    },
+  },
+  {
+    id: 'header-quad',
+    name: 'Header + 2×2',
+    description: 'Header row with four cells below',
+    category: 'asymmetric',
+    aspectRatios: ['square', 'portrait'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 30, subdivisions: 1, subSizes: [100] },
+        { size: 35, subdivisions: 2, subSizes: [50, 50] },
+        { size: 35, subdivisions: 2, subSizes: [50, 50] },
+      ],
+      imageCell: 1,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 0, tagline: 0, bodyHeading: 2, bodyText: 2, cta: 3, footnote: 4,
+    },
+  },
+  {
+    id: 'wide-feature',
+    name: 'Wide Feature',
+    description: 'Four columns with wide center feature',
+    category: 'asymmetric',
+    aspectRatios: ['landscape'],
+    layout: {
+      type: 'columns',
+      structure: [
+        { size: 20, subdivisions: 1, subSizes: [100] },
+        { size: 20, subdivisions: 1, subSizes: [100] },
         { size: 40, subdivisions: 1, subSizes: [100] },
-        { size: 30, subdivisions: 1, subSizes: [100] },
-      ],
-      imageCell: 1,
-      textAlign: 'center',
-      textVerticalAlign: 'center',
-      cellAlignments: [
-        { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 2,
-      bodyText: 2,
-      cta: 2,
-      footnote: 2,
-    },
-  },
-
-  // ========== TEXT FOCUS CATEGORY ==========
-  {
-    id: 'side-accent-left',
-    name: 'Left Accent Strip',
-    description: 'Narrow image strip on left, large text area',
-    category: 'text-focus',
-    aspectRatios: ['square', 'landscape'],
-    layout: {
-      type: 'columns',
-      structure: [
-        { size: 25, subdivisions: 1, subSizes: [100] },
-        { size: 75, subdivisions: 1, subSizes: [100] },
-      ],
-      imageCell: 0,
-      textAlign: 'left',
-      textVerticalAlign: 'center',
-      cellAlignments: [
-        { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'left', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 1,
-      tagline: 1,
-      bodyHeading: 1,
-      bodyText: 1,
-      cta: 1,
-      footnote: 1,
-    },
-  },
-  {
-    id: 'side-accent-right',
-    name: 'Right Accent Strip',
-    description: 'Large text area with narrow image strip on right',
-    category: 'text-focus',
-    aspectRatios: ['square', 'landscape'],
-    layout: {
-      type: 'columns',
-      structure: [
-        { size: 75, subdivisions: 1, subSizes: [100] },
-        { size: 25, subdivisions: 1, subSizes: [100] },
-      ],
-      imageCell: 1,
-      textAlign: 'left',
-      textVerticalAlign: 'center',
-      cellAlignments: [
-        { textAlign: 'left', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 0,
-      bodyText: 0,
-      cta: 0,
-      footnote: 0,
-    },
-  },
-  {
-    id: 'banner-top',
-    name: 'Top Image Banner',
-    description: 'Thin image banner at top, large text area below',
-    category: 'text-focus',
-    aspectRatios: ['square', 'portrait'],
-    layout: {
-      type: 'rows',
-      structure: [
-        { size: 25, subdivisions: 1, subSizes: [100] },
-        { size: 75, subdivisions: 1, subSizes: [100] },
-      ],
-      imageCell: 0,
-      textAlign: 'center',
-      textVerticalAlign: 'start',
-      cellAlignments: [
-        { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'start' },
-      ],
-    },
-    textCells: {
-      title: 1,
-      tagline: 1,
-      bodyHeading: 1,
-      bodyText: 1,
-      cta: 1,
-      footnote: 1,
-    },
-  },
-  {
-    id: 'banner-bottom',
-    name: 'Bottom Image Banner',
-    description: 'Large text area with thin image banner at bottom',
-    category: 'text-focus',
-    aspectRatios: ['square', 'portrait'],
-    layout: {
-      type: 'rows',
-      structure: [
-        { size: 75, subdivisions: 1, subSizes: [100] },
-        { size: 25, subdivisions: 1, subSizes: [100] },
-      ],
-      imageCell: 1,
-      textAlign: 'center',
-      textVerticalAlign: 'end',
-      cellAlignments: [
-        { textAlign: 'center', textVerticalAlign: 'end' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 0,
-      bodyText: 0,
-      cta: 0,
-      footnote: 0,
-    },
-  },
-
-  // ========== GRID CATEGORY (NEW - uses nested subdivisions) ==========
-  {
-    id: 'image-top-split-bottom',
-    name: 'Image Top + 2 Below',
-    description: 'Full-width image on top, two text cells below',
-    category: 'grid',
-    aspectRatios: ['square', 'portrait'],
-    layout: {
-      type: 'rows',
-      structure: [
-        { size: 60, subdivisions: 1, subSizes: [100] },
-        { size: 40, subdivisions: 2, subSizes: [50, 50] },
-      ],
-      imageCell: 0,
-      textAlign: 'center',
-      textVerticalAlign: 'center',
-      cellAlignments: [
-        { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'center', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 1,
-      tagline: 1,
-      bodyHeading: 2,
-      bodyText: 2,
-      cta: 2,
-      footnote: 2,
-    },
-  },
-  {
-    id: 'split-top-image-bottom',
-    name: '2 Above + Image Bottom',
-    description: 'Two text cells on top, full-width image below',
-    category: 'grid',
-    aspectRatios: ['square', 'portrait'],
-    layout: {
-      type: 'rows',
-      structure: [
-        { size: 40, subdivisions: 2, subSizes: [50, 50] },
-        { size: 60, subdivisions: 1, subSizes: [100] },
+        { size: 20, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 2,
       textAlign: 'center',
@@ -674,75 +853,93 @@ export const layoutPresets = [
         { textAlign: 'center', textVerticalAlign: 'center' },
         { textAlign: 'center', textVerticalAlign: 'center' },
         { textAlign: 'center', textVerticalAlign: 'center' },
-      ],
-    },
-    textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 1,
-      bodyText: 1,
-      cta: 1,
-      footnote: 1,
-    },
-  },
-  {
-    id: 'image-left-split-right',
-    name: 'Image Left + 2 Right',
-    description: 'Full-height image on left, two text cells on right',
-    category: 'grid',
-    aspectRatios: ['square', 'landscape'],
-    layout: {
-      type: 'columns',
-      structure: [
-        { size: 50, subdivisions: 1, subSizes: [100] },
-        { size: 50, subdivisions: 2, subSizes: [50, 50] },
-      ],
-      imageCell: 0,
-      textAlign: 'left',
-      textVerticalAlign: 'center',
-      cellAlignments: [
         { textAlign: 'center', textVerticalAlign: 'center' },
-        { textAlign: 'left', textVerticalAlign: 'center' },
-        { textAlign: 'left', textVerticalAlign: 'center' },
       ],
     },
     textCells: {
-      title: 1,
-      tagline: 1,
-      bodyHeading: 2,
-      bodyText: 2,
-      cta: 2,
-      footnote: 2,
+      title: 0, tagline: 0, bodyHeading: 1, bodyText: 1, cta: 3, footnote: 3,
     },
   },
   {
-    id: 'split-left-image-right',
-    name: '2 Left + Image Right',
-    description: 'Two text cells on left, full-height image on right',
-    category: 'grid',
-    aspectRatios: ['square', 'landscape'],
+    id: 'tall-feature',
+    name: 'Tall Feature',
+    description: 'Four rows with tall center feature',
+    category: 'asymmetric',
+    aspectRatios: ['portrait'],
     layout: {
-      type: 'columns',
+      type: 'rows',
       structure: [
-        { size: 50, subdivisions: 2, subSizes: [50, 50] },
-        { size: 50, subdivisions: 1, subSizes: [100] },
+        { size: 15, subdivisions: 1, subSizes: [100] },
+        { size: 20, subdivisions: 1, subSizes: [100] },
+        { size: 45, subdivisions: 1, subSizes: [100] },
+        { size: 20, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 2,
-      textAlign: 'left',
+      textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
-        { textAlign: 'left', textVerticalAlign: 'center' },
-        { textAlign: 'left', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
         { textAlign: 'center', textVerticalAlign: 'center' },
       ],
     },
     textCells: {
-      title: 0,
-      tagline: 0,
-      bodyHeading: 1,
-      bodyText: 1,
-      cta: 1,
-      footnote: 1,
+      title: 0, tagline: 0, bodyHeading: 1, bodyText: 1, cta: 3, footnote: 3,
+    },
+  },
+  {
+    id: 'columns-four',
+    name: 'Four Columns',
+    description: 'Four equal columns - banner style',
+    category: 'asymmetric',
+    aspectRatios: ['landscape'],
+    layout: {
+      type: 'columns',
+      structure: [
+        { size: 25, subdivisions: 1, subSizes: [100] },
+        { size: 25, subdivisions: 1, subSizes: [100] },
+        { size: 25, subdivisions: 1, subSizes: [100] },
+        { size: 25, subdivisions: 1, subSizes: [100] },
+      ],
+      imageCell: 0,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 1, tagline: 1, bodyHeading: 2, bodyText: 2, cta: 3, footnote: 3,
+    },
+  },
+  {
+    id: 'asymmetric-grid',
+    name: 'Asymmetric Grid',
+    description: 'Uneven 2×2 grid with varied cell sizes',
+    category: 'asymmetric',
+    aspectRatios: ['square', 'landscape'],
+    layout: {
+      type: 'rows',
+      structure: [
+        { size: 60, subdivisions: 2, subSizes: [62, 38] },
+        { size: 40, subdivisions: 2, subSizes: [38, 62] },
+      ],
+      imageCell: 0,
+      textAlign: 'center',
+      textVerticalAlign: 'center',
+      cellAlignments: [
+        { textAlign: 'center', textVerticalAlign: 'center' },
+        { textAlign: 'left', textVerticalAlign: 'center' },
+        { textAlign: 'right', textVerticalAlign: 'center' },
+        { textAlign: 'center', textVerticalAlign: 'center' },
+      ],
+    },
+    textCells: {
+      title: 1, tagline: 1, bodyHeading: 2, bodyText: 3, cta: 3, footnote: 3,
     },
   },
 ]
@@ -764,27 +961,27 @@ export const getSuggestedLayouts = (imageAspectRatio, platform) => {
 
   if (!imageAspectRatio) {
     // No image - suggest text-focused layouts
-    return ['side-accent-right', 'banner-top', 'hero']
+    return ['hero', 'split-vertical', 'l-shape-right']
   }
 
   // Wide image (landscape)
   if (imageAspectRatio > 1.3) {
-    suggestions.push('hero', 'top-image', 'bottom-image', 'image-top-split-bottom', 'banner-top')
+    suggestions.push('hero', 'split-vertical', 'golden-left', 'l-shape-right', 'feature-center')
   }
   // Tall image (portrait)
   else if (imageAspectRatio < 0.8) {
-    suggestions.push('left-image', 'right-image', 'image-left-split-right', 'side-accent-left')
+    suggestions.push('hero', 'split-horizontal', 'golden-top', 'l-shape-bottom', 't-layout')
   }
   // Square-ish image
   else {
-    suggestions.push('hero', 'left-image', 'right-image', 'two-thirds-left', 'image-top-split-bottom')
+    suggestions.push('hero', 'quad-grid', 'l-shape-right', 'l-shape-bottom', 'mosaic-left')
   }
 
   // Platform-specific adjustments
   if (platform === 'instagram-story' || platform === 'tiktok') {
     // Vertical formats - prioritize horizontal splits
-    suggestions.unshift('top-image', 'bottom-image', 'two-thirds-top', 'image-top-split-bottom')
+    suggestions.unshift('split-horizontal', 'golden-top', 't-layout', 'stacked-quad')
   }
 
-  return [...new Set(suggestions)].slice(0, 4)
+  return [...new Set(suggestions)].slice(0, 5)
 }
