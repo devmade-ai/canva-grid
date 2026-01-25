@@ -1,5 +1,30 @@
 # Changelog
 
+## 2026-01-25
+
+### Redesigned layout presets with more complex options
+
+Completely rewrote layout presets to provide more complex, interesting layouts while reducing redundant basic options:
+
+**New structure (28 layouts, down from 20)**
+- **Basic (3)**: Full Bleed, Top/Bottom, Left/Right - essential foundations only
+- **Split (6)**: Golden ratio variations, Three Rows/Columns - varied proportions
+- **Grid (10)**: 2×2, L-shapes (4 directions), T-layouts, Feature center/middle - multi-cell layouts
+- **Asymmetric (9)**: Mosaic, Stacked, Sidebar+Stack, Header+2×2, Wide/Tall feature, Four columns, Asymmetric grid - creative uneven arrangements
+
+**Changes**
+- Removed redundant mirror variations (hero-top/hero-bottom, left-image/right-image, etc.)
+- Added golden ratio (62/38) splits for more professional proportions
+- Added L-shape layouts in all 4 directions (left, right, top, bottom)
+- Added T-layout and Inverted-T for header/footer emphasis
+- Added multi-cell grids: 2×2, Header+2×2, Sidebar+3 rows
+- Added asymmetric arrangements: Mosaic, Four rows, Four columns
+- All layouts have proper aspect ratio filtering (square, portrait, landscape)
+- Updated categories: Basic, Split, Grid, Asymmetric (was: Image Focus, Balanced, Text Focus, Grid)
+- Updated suggested layouts helper for new preset IDs
+
+---
+
 ## 2026-01-24
 
 ### Multi-image system with per-cell assignment
