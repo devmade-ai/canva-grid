@@ -1,5 +1,43 @@
 # Changelog
 
+## 2026-01-24
+
+### Multi-image system with per-cell assignment
+
+Replaced single background image with a flexible multi-image system:
+
+**Image Library**
+- Upload multiple images to a shared library
+- Images can be reused across cells
+- Remove images from library (auto-removes from cells)
+
+**Per-Cell Assignment**
+- Assign different images to different cells (1 per cell max)
+- Per-cell image settings: fit (cover/contain), position, filters
+- Cell selector in Media tab shows which cells have images
+
+**Frame System**
+- Outer frame: Colored border around entire canvas
+- Per-cell frames: Colored border within individual cells
+- Frame width is percentage of cell's padding (keeps dimensions simple)
+- Frame colors: Theme colors + neutral colors
+
+### Added paper size export options (6 new platforms)
+
+Added A3, A4, and A5 paper sizes in both portrait and landscape orientations for print use:
+
+**Print (new category)**
+- A3 Portrait (1754×2480) - Large poster size
+- A3 Landscape (2480×1754)
+- A4 Portrait (1240×1754) - Standard document size
+- A4 Landscape (1754×1240)
+- A5 Portrait (874×1240) - Flyer size
+- A5 Landscape (1240×874)
+
+All dimensions calculated at 150 DPI (suitable for screen/web exports). Total platforms now 20.
+
+---
+
 ## 2026-01-20
 
 ### Added new platform dimensions (8 new platforms)

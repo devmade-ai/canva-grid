@@ -5,32 +5,32 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Full implementation of the fun style guide across the entire UI
+Multi-image system and frame borders
 
 ## Accomplished
 
-- Created comprehensive `docs/STYLE_GUIDE.md` with creative design tokens
-- **Full implementation** of the style guide across the app:
-  - Updated `tailwind.config.js` with new colors (primary, secondary, accent, dark-*)
-  - Added custom gradients (gradient-creative, gradient-button, gradient-glow)
-  - Added glow shadow effects for dark mode
-  - Added display font family for headings (Space Grotesk)
-  - Updated `src/index.css` with new focus ring colors, scrollbar styling, utility classes
-  - Updated all 11 component files (App.jsx + 10 in components/)
-  - Changed all blue-* to primary/violet-*, gray-* to zinc-*/dark-*
-  - Added micro-animation classes (btn-scale, card-lift, text-gradient)
-- Build passes successfully
-- Committed and pushed to branch
+- **Multi-image system**: Replaced single image with image library + per-cell assignment
+  - `images` array holds all uploaded images
+  - `cellImages` object maps cells to image IDs with per-cell settings
+  - Each cell can have its own fit, position, and filters
+  - MediaTab redesigned: upload to library, cell selector, assign images
+
+- **Frame system**: Added colored borders using percentage of padding
+  - Outer frame: Canvas-wide border
+  - Per-cell frames: Individual cell borders
+  - Frame width calculated as % of padding (keeps dimensions stable)
+  - Controls in Style > Spacing section
+
+- **Paper sizes**: Added A3, A4, A5 in portrait/landscape (150 DPI)
 
 ## Current state
-- **Build**: Passes successfully
-- **Style guide**: Implemented across entire UI
-- **Colors**: Electric Violet (#8B5CF6) primary, deep indigo dark mode (#0F0F23)
+- **Build**: Passes
+- **Breaking change**: Old `image`, `imageObjectFit`, `imagePosition`, `imageFilters` state fields removed
+- **New state fields**: `images`, `cellImages`, `frame`
 
 ## Key context
 
-- The style guide document is at `docs/STYLE_GUIDE.md` for reference
-- Dark mode uses custom `dark-page`, `dark-card`, `dark-subtle`, `dark-elevated` colors
-- Primary action color is `primary` (Electric Violet), accent is `secondary` (Hot Pink)
-- All interactive elements use `primary` instead of `blue-500`
-- Components use `zinc-*` for neutral grays instead of `gray-*`
+- Image cells determined by `cellImages` presence, not `imageCell` index
+- `cellHasImage(cellIndex)` helper used throughout for consistency
+- Frame renders as `box-shadow: inset` for clean borders
+- StyleTab now receives `cellImages` prop for cell indicators
