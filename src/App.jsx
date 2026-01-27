@@ -201,6 +201,9 @@ function App() {
                     onApplyLayoutPreset={applyLayoutPreset}
                     imageAspectRatio={imageAspectRatio}
                     platform={state.platform}
+                    theme={state.theme}
+                    onThemeChange={setTheme}
+                    onThemePresetChange={setThemePreset}
                   />
                 )}
               </ErrorBoundary>
@@ -264,8 +267,6 @@ function App() {
                 {activeSection === 'style' && (
                   <StyleTab
                     theme={state.theme}
-                    onThemeChange={setTheme}
-                    onPresetChange={setThemePreset}
                     selectedFonts={state.fonts}
                     onFontsChange={setFonts}
                     layout={state.layout}

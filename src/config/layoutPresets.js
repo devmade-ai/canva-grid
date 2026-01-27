@@ -169,19 +169,17 @@ export const presetIcons = {
   'mosaic-left': {
     viewBox: '0 0 40 30',
     elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 25, height: 20, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 25, y: 0, width: 15, height: 10, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 25, y: 10, width: 15, height: 10, fill: '#d1d5db' } },
-      { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#c4c9cf' } },
+      { type: 'rect', props: { x: 0, y: 0, width: 24, height: 20, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 24, y: 0, width: 16, height: 20, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#d1d5db' } },
     ]
   },
   'mosaic-right': {
     viewBox: '0 0 40 30',
     elements: [
-      { type: 'rect', props: { x: 0, y: 0, width: 15, height: 10, fill: '#e5e7eb' } },
-      { type: 'rect', props: { x: 0, y: 10, width: 15, height: 10, fill: '#d1d5db' } },
-      { type: 'rect', props: { x: 15, y: 0, width: 25, height: 20, fill: '#3b82f6' } },
-      { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#c4c9cf' } },
+      { type: 'rect', props: { x: 0, y: 0, width: 16, height: 20, fill: '#e5e7eb' } },
+      { type: 'rect', props: { x: 16, y: 0, width: 24, height: 20, fill: '#3b82f6' } },
+      { type: 'rect', props: { x: 0, y: 20, width: 40, height: 10, fill: '#d1d5db' } },
     ]
   },
   'stacked-quad': {
@@ -425,9 +423,9 @@ export const layoutPresets = [
     layout: {
       type: 'rows',
       structure: [
-        { size: 25, subdivisions: 1, subSizes: [100] },
-        { size: 50, subdivisions: 1, subSizes: [100] },
-        { size: 25, subdivisions: 1, subSizes: [100] },
+        { size: 33, subdivisions: 1, subSizes: [100] },
+        { size: 34, subdivisions: 1, subSizes: [100] },
+        { size: 33, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 1,
       textAlign: 'center',
@@ -451,9 +449,9 @@ export const layoutPresets = [
     layout: {
       type: 'columns',
       structure: [
-        { size: 25, subdivisions: 1, subSizes: [100] },
-        { size: 50, subdivisions: 1, subSizes: [100] },
-        { size: 25, subdivisions: 1, subSizes: [100] },
+        { size: 33, subdivisions: 1, subSizes: [100] },
+        { size: 34, subdivisions: 1, subSizes: [100] },
+        { size: 33, subdivisions: 1, subSizes: [100] },
       ],
       imageCell: 1,
       textAlign: 'center',

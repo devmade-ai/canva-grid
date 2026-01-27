@@ -358,73 +358,52 @@ export function useAdState() {
     setState(defaultState)
   }, [])
 
-  // Apply a complete style preset (theme, fonts, layout, textCells)
-  // Preserves: image, logo, text content, platform
-  // Note: Overlay and filters are now per-image, so presets don't affect them
+  // Apply a look preset (fonts, overlay, alignment, filters)
+  // Preserves: theme, layout structure, image, logo, text content, platform
   const applyStylePreset = useCallback((preset) => {
     if (!preset || !preset.settings) return
 
     const { settings } = preset
 
     setState((prev) => {
-      const newLayout = settings.layout || prev.layout
-      const newCellCount = countCells(newLayout.structure)
+      // Apply overlay and filters to all images that have them
+      const updatedImages = prev.images.map(img => ({
+        ...img,
+        // Apply image filters from preset
+        filters: settings.imageFilters ? {
+          grayscale: settings.imageFilters.grayscale ?? img.filters?.grayscale ?? 0,
+          sepia: settings.imageFilters.sepia ?? img.filters?.sepia ?? 0,
+          blur: settings.imageFilters.blur ?? img.filters?.blur ?? 0,
+          contrast: settings.imageFilters.contrast ?? img.filters?.contrast ?? 100,
+          brightness: settings.imageFilters.brightness ?? img.filters?.brightness ?? 100,
+        } : img.filters,
+        // Apply overlay from preset
+        overlay: settings.overlay ? {
+          type: settings.overlay.type,
+          color: settings.overlay.color,
+          opacity: settings.overlay.opacity,
+        } : img.overlay,
+      }))
 
-      // Clean up cell images for cells that no longer exist
-      const cleanCellImages = { ...prev.cellImages }
-      Object.keys(cleanCellImages).forEach((cellIndex) => {
-        if (parseInt(cellIndex) >= newCellCount) {
-          delete cleanCellImages[cellIndex]
-        }
-      })
-
-      // Clean up padding overrides
-      const cleanPaddingOverrides = { ...prev.padding.cellOverrides }
-      Object.keys(cleanPaddingOverrides).forEach((cellIndex) => {
-        if (parseInt(cellIndex) >= newCellCount) {
-          delete cleanPaddingOverrides[cellIndex]
-        }
-      })
-
-      // Clean up cell frames
-      const cleanCellFrames = { ...prev.frame.cellFrames }
-      Object.keys(cleanCellFrames).forEach((cellIndex) => {
-        if (parseInt(cellIndex) >= newCellCount) {
-          delete cleanCellFrames[cellIndex]
-        }
-      })
+      // Update layout alignment if specified
+      const updatedLayout = {
+        ...prev.layout,
+        textAlign: settings.textAlign ?? prev.layout.textAlign,
+        textVerticalAlign: settings.textVerticalAlign ?? prev.layout.textVerticalAlign,
+      }
 
       return {
         ...prev,
         activeStylePreset: preset.id,
-        // Apply theme
-        theme: settings.theme ? {
-          preset: settings.theme.preset,
-          primary: settings.theme.primary,
-          secondary: settings.theme.secondary,
-          accent: settings.theme.accent,
-        } : prev.theme,
         // Apply fonts
         fonts: settings.fonts ? {
           title: settings.fonts.title,
           body: settings.fonts.body,
         } : prev.fonts,
-        // Apply layout
-        layout: settings.layout ? {
-          ...settings.layout,
-        } : prev.layout,
-        // Apply text cell placements (preset provides valid placements)
-        textCells: settings.textCells ? {
-          title: settings.textCells.title ?? null,
-          tagline: settings.textCells.tagline ?? null,
-          bodyHeading: settings.textCells.bodyHeading ?? null,
-          bodyText: settings.textCells.bodyText ?? null,
-          cta: settings.textCells.cta ?? null,
-          footnote: settings.textCells.footnote ?? null,
-        } : prev.textCells,
-        cellImages: cleanCellImages,
-        padding: { ...prev.padding, cellOverrides: cleanPaddingOverrides },
-        frame: { ...prev.frame, cellFrames: cleanCellFrames },
+        // Apply layout alignment only (not structure)
+        layout: updatedLayout,
+        // Apply filters and overlay to images
+        images: updatedImages,
       }
     })
   }, [])
