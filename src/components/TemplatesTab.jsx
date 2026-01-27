@@ -37,7 +37,8 @@ const ColorInput = memo(function ColorInput({ label, value, onChange }) {
 // Simple look preview swatch
 function LookSwatch({ preset, isActive, theme }) {
   const { style } = preset.preview
-  const { overlay, imageFilters } = preset.settings
+  const imageFilters = preset.imageFilters
+  const overlay = preset.layouts?.['hero']?.imageOverlay
 
   // Use theme colors for the swatch
   const primaryColor = theme?.primary || '#3b82f6'
