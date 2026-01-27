@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { presetThemes } from '../config/themes'
+import { getLookSettingsForLayout } from '../config/stylePresets'
 import { useHistory } from './useHistory'
 
 const defaultTheme = presetThemes[0] // Dark theme
@@ -7,6 +8,8 @@ const defaultTheme = presetThemes[0] // Dark theme
 export const defaultState = {
   // Track active style preset (null = custom/no preset)
   activeStylePreset: null,
+  // Track active layout preset ID (null = custom/no preset)
+  activeLayoutPreset: 'hero',
 
   // Media pool - all uploaded images with their settings
   // Each image: { id, src, name, fit, position, filters }
@@ -290,6 +293,8 @@ export function useAdState() {
         cellImages: cleanCellImages,
         padding: { ...prev.padding, cellOverrides: cleanPaddingOverrides },
         frame: { ...prev.frame, cellFrames: cleanCellFrames },
+        // Clear active layout preset since user is customizing
+        activeLayoutPreset: null,
       }
     })
   }, [])
@@ -359,14 +364,20 @@ export function useAdState() {
   }, [])
 
   // Apply a look preset (fonts, overlay, alignment, filters)
+  // Uses layout-aware settings based on the active layout preset
   // Preserves: theme, layout structure, image, logo, text content, platform
   const applyStylePreset = useCallback((preset) => {
-    if (!preset || !preset.settings) return
-
-    const { settings } = preset
+    if (!preset) return
 
     setState((prev) => {
-      // Apply overlay and filters to all images that have them
+      // Get layout-specific settings for this look
+      // Use active layout preset ID, or default to 'hero' if none
+      const layoutId = prev.activeLayoutPreset || 'hero'
+      const settings = getLookSettingsForLayout(preset.id, layoutId)
+
+      if (!settings) return prev
+
+      // Apply overlay and filters to all images
       const updatedImages = prev.images.map(img => ({
         ...img,
         // Apply image filters from preset
@@ -377,15 +388,15 @@ export function useAdState() {
           contrast: settings.imageFilters.contrast ?? img.filters?.contrast ?? 100,
           brightness: settings.imageFilters.brightness ?? img.filters?.brightness ?? 100,
         } : img.filters,
-        // Apply overlay from preset
-        overlay: settings.overlay ? {
-          type: settings.overlay.type,
-          color: settings.overlay.color,
-          opacity: settings.overlay.opacity,
+        // Apply overlay from preset (layout-aware)
+        overlay: settings.imageOverlay ? {
+          type: settings.imageOverlay.type,
+          color: settings.imageOverlay.color,
+          opacity: settings.imageOverlay.opacity,
         } : img.overlay,
       }))
 
-      // Update layout alignment if specified
+      // Update layout alignment if specified (layout-aware)
       const updatedLayout = {
         ...prev.layout,
         textAlign: settings.textAlign ?? prev.layout.textAlign,
@@ -446,6 +457,8 @@ export function useAdState() {
 
       return {
         ...prev,
+        // Track active layout preset ID for look-aware styling
+        activeLayoutPreset: preset.id,
         // Apply layout settings
         layout: {
           ...preset.layout,
