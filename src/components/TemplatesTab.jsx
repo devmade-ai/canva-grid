@@ -1,11 +1,10 @@
 import { useState, useMemo, memo } from 'react'
 import CollapsibleSection from './CollapsibleSection'
-import { stylePresets, styleCategories, getFilteredStylePresets } from '../config/stylePresets'
+import { lookPresets } from '../config/stylePresets'
 import {
   layoutPresets,
   presetCategories,
   presetIcons,
-  getPresetsByCategory,
   getSuggestedLayouts,
   aspectRatioCategories,
   getPresetsByAspectRatio,
@@ -35,128 +34,58 @@ const ColorInput = memo(function ColorInput({ label, value, onChange }) {
   )
 })
 
-// Preview swatch component for style presets
-function PresetSwatch({ preset, isActive }) {
-  const { bg, accent, style } = preset.preview
+// Simple look preview swatch
+function LookSwatch({ preset, isActive, theme }) {
+  const { style } = preset.preview
+  const { overlay, imageFilters } = preset.settings
+
+  // Use theme colors for the swatch
+  const primaryColor = theme?.primary || '#3b82f6'
+  const secondaryColor = theme?.secondary || '#ffffff'
+
+  // Determine background based on filters
+  const isGrayscale = imageFilters?.grayscale > 50
+  const isSepia = imageFilters?.sepia > 15
+
+  let bgStyle = {}
+  if (isGrayscale) {
+    bgStyle = { background: 'linear-gradient(135deg, #374151, #6b7280)' }
+  } else if (isSepia) {
+    bgStyle = { background: 'linear-gradient(135deg, #92400e, #d97706)' }
+  } else {
+    bgStyle = { background: `linear-gradient(135deg, ${primaryColor}88, ${primaryColor})` }
+  }
+
+  // Overlay indicator
+  const overlayOpacity = overlay?.opacity || 0
+  const hasStrongOverlay = overlayOpacity > 40
 
   return (
     <div
-      className={`w-12 h-8 rounded overflow-hidden border-2 transition-all ${
-        isActive ? 'border-primary ring-2 ring-violet-300' : 'border-transparent'
+      className={`w-10 h-7 rounded overflow-hidden border-2 transition-all relative ${
+        isActive ? 'border-primary ring-2 ring-violet-300' : 'border-zinc-300 dark:border-zinc-600'
       }`}
-      style={{ backgroundColor: bg }}
+      style={bgStyle}
     >
-      {style === 'bold' && (
-        <div className="w-full h-full flex flex-col justify-end p-0.5">
-          <div className="h-1 w-full rounded-sm" style={{ backgroundColor: accent }} />
-          <div className="h-0.5 w-3/4 mt-0.5 rounded-sm bg-white opacity-60" />
-        </div>
+      {/* Overlay indicator */}
+      {hasStrongOverlay && (
+        <div
+          className="absolute inset-0"
+          style={{
+            background: overlay?.type?.includes('gradient-up')
+              ? `linear-gradient(to top, ${primaryColor}${Math.round(overlayOpacity * 2.55).toString(16).padStart(2, '0')}, transparent)`
+              : overlay?.type?.includes('gradient-down')
+              ? `linear-gradient(to bottom, ${primaryColor}${Math.round(overlayOpacity * 2.55).toString(16).padStart(2, '0')}, transparent)`
+              : overlay?.type === 'vignette'
+              ? `radial-gradient(circle, transparent 30%, ${primaryColor}${Math.round(overlayOpacity * 2.55).toString(16).padStart(2, '0')})`
+              : 'transparent'
+          }}
+        />
       )}
-      {style === 'neon' && (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-4 h-4 rounded-full opacity-80" style={{ backgroundColor: accent, boxShadow: `0 0 6px ${accent}` }} />
-        </div>
-      )}
-      {style === 'vibrant' && (
-        <div className="w-full h-full flex flex-col">
-          <div className="flex-1" />
-          <div className="h-2.5" style={{ backgroundColor: accent }} />
-        </div>
-      )}
-      {style === 'corporate' && (
-        <div className="w-full h-full flex">
-          <div className="w-1/2" />
-          <div className="w-1/2 flex flex-col justify-center gap-0.5 pr-0.5">
-            <div className="h-0.5 w-full bg-white opacity-80" />
-            <div className="h-0.5 w-3/4 bg-white opacity-50" />
-          </div>
-        </div>
-      )}
-      {style === 'slate' && (
-        <div className="w-full h-full flex flex-col">
-          <div className="flex-1 flex items-end justify-center pb-0.5">
-            <div className="h-0.5 w-4 bg-white opacity-60" />
-          </div>
-          <div className="h-2" style={{ backgroundColor: '#f1f5f9' }} />
-        </div>
-      )}
-      {style === 'minimal' && (
-        <div className="w-full h-full flex">
-          <div className="w-1/2 bg-zinc-300" />
-          <div className="w-1/2 flex flex-col justify-center gap-0.5 pl-0.5">
-            <div className="h-0.5 w-full" style={{ backgroundColor: accent }} />
-            <div className="h-0.5 w-2/3 bg-zinc-500 opacity-50" />
-          </div>
-        </div>
-      )}
-      {style === 'serif' && (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="text-[8px] font-serif text-zinc-800 opacity-80">Aa</div>
-        </div>
-      )}
-      {style === 'luxury' && (
-        <div className="w-full h-full flex flex-col">
-          <div className="flex-1" />
-          <div className="h-3 flex items-center justify-center">
-            <div className="w-3 h-0.5 rounded" style={{ backgroundColor: '#d4af37' }} />
-          </div>
-        </div>
-      )}
-      {style === 'earth' && (
-        <div className="w-full h-full flex">
-          <div className="w-3/5" />
-          <div className="w-2/5" style={{ backgroundColor: '#fef3c7' }} />
-        </div>
-      )}
-      {style === 'forest' && (
-        <div className="w-full h-full flex flex-col">
-          <div className="flex-1" />
-          <div className="h-3" style={{ backgroundColor: '#f0fdf4' }} />
-        </div>
-      )}
-      {style === 'ocean' && (
-        <div className="w-full h-full flex">
-          <div className="w-2/5" style={{ backgroundColor: '#ecfeff' }} />
-          <div className="w-3/5" />
-        </div>
-      )}
-      {style === 'candy' && (
-        <div className="w-full h-full flex items-center justify-center">
-          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: accent }} />
-        </div>
-      )}
-      {style === 'sunset' && (
-        <div className="w-full h-full flex flex-col">
-          <div className="flex-1" />
-          <div className="h-2.5" style={{ backgroundColor: '#fef3c7' }} />
-        </div>
-      )}
-      {style === 'noir' && (
-        <div className="w-full h-full flex flex-col justify-end p-0.5">
-          <div className="h-0.5 w-full bg-white" />
-          <div className="h-0.5 w-1/2 mt-0.5 bg-white opacity-50" />
-        </div>
-      )}
-      {style === 'grid' && (
-        <div className="w-full h-full flex">
-          <div className="w-1/2" />
-          <div className="w-1/2 flex flex-col" style={{ backgroundColor: '#f1f5f9' }}>
-            <div className="flex-1 border-b border-zinc-300" />
-            <div className="flex-1" />
-          </div>
-        </div>
-      )}
-      {style === 'banner' && (
-        <div className="w-full h-full flex flex-col">
-          <div className="flex-1" />
-          <div className="h-2.5 flex" style={{ backgroundColor: '#ffffff' }}>
-            <div className="w-3/5" />
-            <div className="w-2/5 flex items-center justify-center">
-              <div className="w-2 h-1 rounded-sm" style={{ backgroundColor: accent }} />
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Text indicator */}
+      <div className="absolute inset-0 flex items-end justify-center pb-0.5">
+        <div className="w-4 h-0.5 rounded" style={{ backgroundColor: secondaryColor }} />
+      </div>
     </div>
   )
 }
@@ -194,13 +123,8 @@ export default memo(function TemplatesTab({
   onThemePresetChange,
 }) {
   const isCustomTheme = theme?.preset === 'custom'
-  const [styleCategory, setStyleCategory] = useState('all')
   const [layoutCategory, setLayoutCategory] = useState('all')
   const [aspectRatioFilter, setAspectRatioFilter] = useState('all')
-
-  const displayStylePresets = useMemo(() => {
-    return getFilteredStylePresets(styleCategory, layout.type)
-  }, [styleCategory, layout.type])
 
   const displayLayoutPresets = useMemo(() => {
     // First filter by aspect ratio
@@ -219,7 +143,7 @@ export default memo(function TemplatesTab({
     return presets
   }, [layoutCategory, aspectRatioFilter, imageAspectRatio, platform])
 
-  const activeStylePresetData = stylePresets.find((p) => p.id === activeStylePreset)
+  const activeLookPreset = lookPresets.find((p) => p.id === activeStylePreset)
 
   // Check if a layout preset matches current layout
   const isLayoutPresetActive = (preset) => {
@@ -382,40 +306,23 @@ export default memo(function TemplatesTab({
         </div>
       </CollapsibleSection>
 
-      {/* Style Presets - Complete designs */}
-      <CollapsibleSection title="Complete Designs" defaultExpanded={false}>
+      {/* Looks - Visual effects presets */}
+      <CollapsibleSection title="Looks" defaultExpanded={false}>
         <div className="space-y-3">
-          {/* Active preset indicator */}
-          {activeStylePresetData && (
+          {/* Active look indicator */}
+          {activeLookPreset && (
             <div className="flex items-center gap-2 px-3 py-2 bg-violet-50 dark:bg-violet-900/20 rounded-lg">
-              <PresetSwatch preset={activeStylePresetData} isActive={true} />
+              <LookSwatch preset={activeLookPreset} isActive={true} theme={theme} />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-violet-700 dark:text-violet-300">{activeStylePresetData.name}</p>
-                <p className="text-xs text-primary dark:text-violet-400 truncate">{activeStylePresetData.description}</p>
+                <p className="text-sm font-medium text-violet-700 dark:text-violet-300">{activeLookPreset.name}</p>
+                <p className="text-xs text-primary dark:text-violet-400 truncate">{activeLookPreset.description}</p>
               </div>
             </div>
           )}
 
-          {/* Category pills */}
-          <div className="flex flex-wrap gap-1.5">
-            {styleCategories.map((cat) => (
-              <button
-                key={cat.id}
-                onClick={() => setStyleCategory(cat.id)}
-                className={`px-2.5 py-1 text-xs rounded-lg font-medium transition-all ${
-                  styleCategory === cat.id
-                    ? 'bg-primary text-white shadow-sm'
-                    : 'bg-zinc-100 dark:bg-dark-subtle text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-elevated'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Style preset grid */}
-          <div className="grid grid-cols-3 gap-2">
-            {displayStylePresets.map((preset) => (
+          {/* Look preset grid */}
+          <div className="grid grid-cols-4 gap-2">
+            {lookPresets.map((preset) => (
               <button
                 key={preset.id}
                 onClick={() => onSelectStylePreset(preset)}
@@ -426,7 +333,7 @@ export default memo(function TemplatesTab({
                     : 'hover:bg-zinc-50 dark:hover:bg-dark-subtle'
                 }`}
               >
-                <PresetSwatch preset={preset} isActive={activeStylePreset === preset.id} />
+                <LookSwatch preset={preset} isActive={activeStylePreset === preset.id} theme={theme} />
                 <span
                   className={`text-[10px] leading-tight text-center line-clamp-1 ${
                     activeStylePreset === preset.id
@@ -440,12 +347,8 @@ export default memo(function TemplatesTab({
             ))}
           </div>
 
-          {displayStylePresets.length === 0 && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">No designs match the current layout type</p>
-          )}
-
           <p className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center">
-            Showing designs that match your current layout ({layout.type})
+            Looks apply overlay, fonts, alignment &amp; filters without changing layout or colors
           </p>
         </div>
       </CollapsibleSection>
