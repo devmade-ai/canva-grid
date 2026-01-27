@@ -1,5 +1,7 @@
 import { useCallback } from 'react'
 import { presetThemes } from '../config/themes'
+import { getLookSettingsForLayout } from '../config/stylePresets'
+import { sampleImages } from '../config/sampleImages'
 import { useHistory } from './useHistory'
 
 const defaultTheme = presetThemes[0] // Dark theme
@@ -7,6 +9,8 @@ const defaultTheme = presetThemes[0] // Dark theme
 export const defaultState = {
   // Track active style preset (null = custom/no preset)
   activeStylePreset: null,
+  // Track active layout preset ID (null = custom/no preset)
+  activeLayoutPreset: 'hero',
 
   // Media pool - all uploaded images with their settings
   // Each image: { id, src, name, fit, position, filters }
@@ -290,6 +294,8 @@ export function useAdState() {
         cellImages: cleanCellImages,
         padding: { ...prev.padding, cellOverrides: cleanPaddingOverrides },
         frame: { ...prev.frame, cellFrames: cleanCellFrames },
+        // Clear active layout preset since user is customizing
+        activeLayoutPreset: null,
       }
     })
   }, [])
@@ -359,14 +365,22 @@ export function useAdState() {
   }, [])
 
   // Apply a look preset (fonts, overlay, alignment, filters)
+  // Uses layout-aware settings based on the active layout preset
   // Preserves: theme, layout structure, image, logo, text content, platform
   const applyStylePreset = useCallback((preset) => {
-    if (!preset || !preset.settings) return
-
-    const { settings } = preset
+    if (!preset) return
 
     setState((prev) => {
-      // Apply overlay and filters to all images that have them
+      // Get layout-specific settings for this look
+      // Use active layout preset ID, or default to 'hero' if none
+      const layoutId = prev.activeLayoutPreset || 'hero'
+      const settings = getLookSettingsForLayout(preset.id, layoutId)
+
+      if (!settings) return prev
+
+      // Apply overlay and filters to all images
+      // Looks only affect visual styling (fonts, filters, overlay)
+      // Text alignment is controlled entirely by the layout preset
       const updatedImages = prev.images.map(img => ({
         ...img,
         // Apply image filters from preset
@@ -377,31 +391,22 @@ export function useAdState() {
           contrast: settings.imageFilters.contrast ?? img.filters?.contrast ?? 100,
           brightness: settings.imageFilters.brightness ?? img.filters?.brightness ?? 100,
         } : img.filters,
-        // Apply overlay from preset
-        overlay: settings.overlay ? {
-          type: settings.overlay.type,
-          color: settings.overlay.color,
-          opacity: settings.overlay.opacity,
+        // Apply overlay from preset (layout-aware)
+        overlay: settings.imageOverlay ? {
+          type: settings.imageOverlay.type,
+          color: settings.imageOverlay.color,
+          opacity: settings.imageOverlay.opacity,
         } : img.overlay,
       }))
-
-      // Update layout alignment if specified
-      const updatedLayout = {
-        ...prev.layout,
-        textAlign: settings.textAlign ?? prev.layout.textAlign,
-        textVerticalAlign: settings.textVerticalAlign ?? prev.layout.textVerticalAlign,
-      }
 
       return {
         ...prev,
         activeStylePreset: preset.id,
-        // Apply fonts
+        // Apply fonts only - alignment is controlled by layout preset
         fonts: settings.fonts ? {
           title: settings.fonts.title,
           body: settings.fonts.body,
         } : prev.fonts,
-        // Apply layout alignment only (not structure)
-        layout: updatedLayout,
         // Apply filters and overlay to images
         images: updatedImages,
       }
@@ -446,6 +451,8 @@ export function useAdState() {
 
       return {
         ...prev,
+        // Track active layout preset ID for look-aware styling
+        activeLayoutPreset: preset.id,
         // Apply layout settings
         layout: {
           ...preset.layout,
@@ -462,6 +469,57 @@ export function useAdState() {
         cellImages: cleanCellImages,
         padding: { ...prev.padding, cellOverrides: cleanPaddingOverrides },
         frame: { ...prev.frame, cellFrames: cleanCellFrames },
+      }
+    })
+  }, [])
+
+  // Load sample images and assign them to the layout's image cells
+  const loadSampleImage = useCallback(() => {
+    setState((prev) => {
+      // Don't load if there are already images
+      if (prev.images.length > 0) return prev
+
+      // Get the image cells from the current layout (default to [0])
+      // Support both old imageCell (single) and new imageCells (array) format
+      const imageCells = prev.layout.imageCells ?? (prev.layout.imageCell !== undefined ? [prev.layout.imageCell] : [0])
+
+      // Pick random sample images for each image cell
+      const newImages = []
+      const newCellImages = {}
+      const usedIndices = new Set()
+
+      imageCells.forEach((cellIndex, i) => {
+        // Pick a random sample that hasn't been used yet (if possible)
+        let randomIndex
+        let attempts = 0
+        do {
+          randomIndex = Math.floor(Math.random() * sampleImages.length)
+          attempts++
+        } while (usedIndices.has(randomIndex) && attempts < sampleImages.length)
+
+        usedIndices.add(randomIndex)
+        const sample = sampleImages[randomIndex]
+
+        // Create image entry
+        const id = `img-sample-${Date.now()}-${i}`
+        const newImage = {
+          id,
+          src: sample.file,
+          name: sample.name,
+          fit: prev.defaultImageSettings.fit,
+          position: { ...prev.defaultImageSettings.position },
+          filters: { ...prev.defaultImageSettings.filters },
+          overlay: { ...prev.defaultImageSettings.overlay },
+        }
+
+        newImages.push(newImage)
+        newCellImages[cellIndex] = id
+      })
+
+      return {
+        ...prev,
+        images: newImages,
+        cellImages: newCellImages,
       }
     })
   }, [])
@@ -495,6 +553,7 @@ export function useAdState() {
     applyStylePreset,
     clearStylePreset,
     applyLayoutPreset,
+    loadSampleImage,
     undo,
     redo,
     canUndo,

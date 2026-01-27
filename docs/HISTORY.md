@@ -2,6 +2,53 @@
 
 ## 2026-01-27
 
+### Multi-Image Layout Support
+
+Added support for multiple images per layout:
+
+**New `imageCells` array in layout presets**
+- Changed from single `imageCell` to `imageCells` array
+- Backward compatible - still supports old `imageCell` format
+- Layouts can now define multiple image cells (e.g., `imageCells: [0, 3]` for diagonal images)
+
+**Layouts with multiple images**
+- `quad-grid` - 2 images (diagonal: top-left and bottom-right)
+- `stacked-quad` - 2 images (stacked rows)
+- `header-quad` - 2 images (diagonal in grid)
+- `wide-feature` - 2 images (first column + center)
+- `tall-feature` - 2 images (second + third row)
+- `columns-four` - 2 images (alternating columns)
+- `asymmetric-grid` - 2 images (diagonal)
+
+**Sample images for multi-image layouts**
+- `loadSampleImage` now loads different sample images for each image cell
+- Avoids repeating the same sample image when possible
+
+---
+
+### Layout-Aware Looks System
+
+Implemented intelligent Look presets that apply visual styling based on the current layout:
+
+**Per-layout settings for all 12 Looks**
+- Clean, Minimal, Soft (Clean category)
+- Bold, Dramatic, Punch (Bold category)
+- Vintage, Retro, Film (Vintage category)
+- Noir, Mono, Duotone (Mono category)
+
+Each Look now has unique `imageOverlay` settings for all 28 layouts (336 total combinations).
+
+**Clear separation of concerns**
+- **Looks control**: Fonts, image filters (grayscale, sepia, blur, contrast, brightness), image overlay
+- **Layouts control**: Grid structure, text cell placements, per-cell text alignments (both global and cellAlignments)
+- Looks do NOT override text alignment - this is entirely controlled by the layout preset
+
+**Auto-load sample images**
+- Random sample image loads automatically on app start when no images uploaded
+- Images assigned to layout's image cells
+
+---
+
 ### UI Reorganization and Export Improvements
 
 Completed high-priority TODO items focused on UI workflow and export improvements:

@@ -10,6 +10,9 @@ Future enhancements and ideas for the Social Ad Creator.
 
 - [ ] Save/load designs to localStorage
 - [ ] Template gallery with complete designs
+- [ ] Looks define per-element text colors (title, tagline, CTA, etc.)
+- [ ] Looks define per-element text weight/style (bold, italic)
+- [ ] Looks define text visibility per layout
 
 ### Visual Effects
 
