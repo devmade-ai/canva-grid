@@ -10,6 +10,30 @@ import {
   aspectRatioCategories,
   getPresetsByAspectRatio,
 } from '../config/layoutPresets'
+import { presetThemes } from '../config/themes'
+
+// Color input component for custom theme colors
+const ColorInput = memo(function ColorInput({ label, value, onChange }) {
+  return (
+    <div className="flex items-center gap-3">
+      <input
+        type="color"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-zinc-200 dark:border-zinc-600 shadow-sm"
+      />
+      <div className="flex-1">
+        <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5 block">{label}</label>
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="w-full px-2 py-1.5 text-sm font-mono border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-dark-subtle dark:text-zinc-100"
+        />
+      </div>
+    </div>
+  )
+})
 
 // Preview swatch component for style presets
 function PresetSwatch({ preset, isActive }) {
@@ -165,7 +189,11 @@ export default memo(function TemplatesTab({
   onApplyLayoutPreset,
   imageAspectRatio,
   platform,
+  theme,
+  onThemeChange,
+  onThemePresetChange,
 }) {
+  const isCustomTheme = theme?.preset === 'custom'
   const [styleCategory, setStyleCategory] = useState('all')
   const [layoutCategory, setLayoutCategory] = useState('all')
   const [aspectRatioFilter, setAspectRatioFilter] = useState('all')
@@ -298,6 +326,59 @@ export default memo(function TemplatesTab({
           <p className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center">
             Layout presets change structure without affecting colors or fonts
           </p>
+        </div>
+      </CollapsibleSection>
+
+      {/* Theme Presets */}
+      <CollapsibleSection title="Themes" defaultExpanded={false}>
+        {/* Preset Themes */}
+        <div className="space-y-2">
+          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">Presets</label>
+          <div className="grid grid-cols-3 gap-2">
+            {presetThemes.map((preset) => (
+              <button
+                key={preset.id}
+                onClick={() => onThemePresetChange?.(preset.id)}
+                className={`p-2 rounded-lg border-2 transition-all ${
+                  theme?.preset === preset.id
+                    ? 'border-primary bg-violet-50 dark:bg-violet-900/20 ring-2 ring-primary/20'
+                    : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-dark-subtle'
+                }`}
+              >
+                <div className="flex gap-1 mb-1.5 justify-center">
+                  <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.primary }} />
+                  <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.secondary }} />
+                  <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.accent }} />
+                </div>
+                <span className="text-[10px] text-zinc-700 dark:text-zinc-300 font-medium">{preset.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Custom Colors */}
+        <div className="space-y-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Custom Colors</label>
+            {!isCustomTheme && <span className="text-[10px] text-zinc-400">(Edit to customize)</span>}
+          </div>
+          <div className="space-y-2">
+            <ColorInput
+              label="Primary"
+              value={theme?.primary || '#000000'}
+              onChange={(value) => onThemeChange?.({ preset: 'custom', primary: value })}
+            />
+            <ColorInput
+              label="Secondary"
+              value={theme?.secondary || '#ffffff'}
+              onChange={(value) => onThemeChange?.({ preset: 'custom', secondary: value })}
+            />
+            <ColorInput
+              label="Accent"
+              value={theme?.accent || '#888888'}
+              onChange={(value) => onThemeChange?.({ preset: 'custom', accent: value })}
+            />
+          </div>
         </div>
       </CollapsibleSection>
 
