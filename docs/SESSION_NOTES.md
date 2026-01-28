@@ -5,29 +5,23 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Semantic color system completion
+Removed automatic sample image loading
 
 ## Accomplished
 
-- **Complete semantic color migration**: All 8 components now use semantic color tokens
-  - LogoUploader, ContentTab, PlatformPreview, TemplatesTab
-  - MediaTab, LayoutTab, ExportButtons, StyleTab
-- **CSS reduced**: 32.98 kB → 32.13 kB (fewer duplicate dark mode classes)
-- **Previous session work preserved**:
-  - Collapsible sample images
-  - Two sample images by default
-  - Alpha label in header
-  - Dark mode color fixes
+- **Removed auto-loading of sample images**: App no longer loads 2 random sample images on startup
+- **Added visual placeholder for empty image cells**: Cells designated as image cells (in `layout.imageCells`) now show a checkered pattern with an image icon and "Add image" text when empty
+- **Cleaned up code**: Removed `loadSampleImage` function from useAdState.js
+- **Sample images still available**: Users can manually add sample images via Media tab > Images > Sample Images section
 
 ## Current state
 - **Build**: Passing
-- **Semantic colors**: Fully adopted across all components
-- Colors auto-switch between light/dark via CSS variables
+- Empty image cells show distinct visual placeholder (checkered pattern + icon)
+- Text cells show solid primary color background with secondary color text
+- Sample images available for manual addition in MediaTab
 
 ## Key context
 
-- **Color tokens**: CSS variables in `src/index.css`, Tailwind config under `ui` namespace
-- **Text colors**: `text-ui-text`, `text-ui-text-muted`, `text-ui-text-subtle`, `text-ui-text-faint`
-- **Backgrounds**: `bg-ui-surface`, `bg-ui-surface-elevated`, `bg-ui-surface-inset`, `bg-ui-surface-hover`
-- **Borders**: `border-ui-border`, `border-ui-border-subtle`, `border-ui-border-strong`
-- To change theme colors globally, edit CSS variables in `index.css`
+- **Empty image cell detection**: Uses `layout.imageCells` array to determine which cells should show placeholder
+- **Placeholder styling**: Checkered pattern using CSS gradients + SVG image icon + "Add image" text at 30% opacity
+- Affects both fullbleed and grid layouts

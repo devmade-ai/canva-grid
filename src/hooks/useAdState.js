@@ -1,7 +1,6 @@
 import { useCallback } from 'react'
 import { presetThemes } from '../config/themes'
 import { getLookSettingsForLayout } from '../config/stylePresets'
-import { sampleImages } from '../config/sampleImages'
 import { useHistory } from './useHistory'
 
 const defaultTheme = presetThemes[0] // Dark theme
@@ -474,65 +473,6 @@ export function useAdState() {
     })
   }, [])
 
-  // Load sample images and assign them to the layout's image cells
-  // Called on initial load to populate the library with 2 sample images
-  const loadSampleImage = useCallback(() => {
-    setState((prev) => {
-      // Don't load if there are already images
-      if (prev.images.length > 0) return prev
-
-      // Get the image cells from the current layout (default to [0])
-      // Support both old imageCell (single) and new imageCells (array) format
-      const imageCells = prev.layout.imageCells ?? (prev.layout.imageCell !== undefined ? [prev.layout.imageCell] : [0])
-
-      // Load 2 sample images by default (or more if layout needs more image cells)
-      const numImagesToLoad = Math.max(2, imageCells.length)
-
-      // Pick random sample images
-      const newImages = []
-      const newCellImages = {}
-      const usedIndices = new Set()
-
-      for (let i = 0; i < numImagesToLoad; i++) {
-        // Pick a random sample that hasn't been used yet (if possible)
-        let randomIndex
-        let attempts = 0
-        do {
-          randomIndex = Math.floor(Math.random() * sampleImages.length)
-          attempts++
-        } while (usedIndices.has(randomIndex) && attempts < sampleImages.length)
-
-        usedIndices.add(randomIndex)
-        const sample = sampleImages[randomIndex]
-
-        // Create image entry
-        const id = `img-sample-${Date.now()}-${i}`
-        const newImage = {
-          id,
-          src: sample.file,
-          name: sample.name,
-          fit: prev.defaultImageSettings.fit,
-          position: { ...prev.defaultImageSettings.position },
-          filters: { ...prev.defaultImageSettings.filters },
-          overlay: { ...prev.defaultImageSettings.overlay },
-        }
-
-        newImages.push(newImage)
-
-        // Assign to cell if there's a corresponding image cell
-        if (i < imageCells.length) {
-          newCellImages[imageCells[i]] = id
-        }
-      }
-
-      return {
-        ...prev,
-        images: newImages,
-        cellImages: newCellImages,
-      }
-    })
-  }, [])
-
   return {
     state,
     // Image pool management
@@ -562,7 +502,6 @@ export function useAdState() {
     applyStylePreset,
     clearStylePreset,
     applyLayoutPreset,
-    loadSampleImage,
     undo,
     redo,
     canUndo,
