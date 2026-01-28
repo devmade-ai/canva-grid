@@ -115,7 +115,7 @@ export default function LogoUploader({
 
           {/* Position selector */}
           <div>
-            <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">Position</label>
+            <label className="block text-xs font-medium text-ui-text-muted mb-1">Position</label>
             <div className="grid grid-cols-3 gap-1">
               {positionOptions.map((opt) => (
                 <button
@@ -124,7 +124,7 @@ export default function LogoUploader({
                   className={`px-2 py-1 text-xs rounded transition-colors ${
                     position === opt.id
                       ? 'bg-primary text-white'
-                      : 'bg-zinc-100 dark:bg-dark-subtle text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                      : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
                   }`}
                 >
                   {opt.name}
@@ -135,7 +135,7 @@ export default function LogoUploader({
 
           {/* Size selector */}
           <div>
-            <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300 mb-1">Size</label>
+            <label className="block text-xs font-medium text-ui-text-muted mb-1">Size</label>
             <div className="flex gap-1">
               {sizeOptions.map((opt) => (
                 <button
@@ -144,7 +144,7 @@ export default function LogoUploader({
                   className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
                     size === opt.id
                       ? 'bg-primary text-white'
-                      : 'bg-zinc-100 dark:bg-dark-subtle text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                      : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
                   }`}
                 >
                   {opt.name}

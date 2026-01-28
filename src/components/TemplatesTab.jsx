@@ -22,7 +22,7 @@ const ColorInput = memo(function ColorInput({ label, value, onChange }) {
         className="w-10 h-10 rounded-lg cursor-pointer border-2 border-zinc-200 dark:border-zinc-600 shadow-sm"
       />
       <div className="flex-1">
-        <label className="text-xs text-zinc-500 dark:text-zinc-400 mb-0.5 block">{label}</label>
+        <label className="text-xs text-ui-text-subtle mb-0.5 block">{label}</label>
         <input
           type="text"
           value={value}
@@ -160,14 +160,14 @@ export default memo(function TemplatesTab({
 
   return (
     <div className="space-y-3">
-      <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Presets</h3>
+      <h3 className="text-sm font-semibold text-ui-text">Presets</h3>
 
       {/* Layout Presets - Structure only (shown first) */}
       <CollapsibleSection title="Layout" defaultExpanded={true}>
         <div className="space-y-3">
           {/* Aspect Ratio Filter */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Aspect Ratio</label>
+            <label className="block text-[10px] text-ui-text-subtle uppercase tracking-wide">Aspect Ratio</label>
             <div className="flex gap-1">
               {aspectRatioCategories.map((ar) => (
                 <button
@@ -176,7 +176,7 @@ export default memo(function TemplatesTab({
                   className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium transition-all ${
                     aspectRatioFilter === ar.id
                       ? 'bg-violet-600 text-white shadow-sm'
-                      : 'bg-zinc-100 dark:bg-dark-subtle text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                      : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
                   }`}
                 >
                   {ar.name}
@@ -187,14 +187,14 @@ export default memo(function TemplatesTab({
 
           {/* Category pills */}
           <div className="space-y-1.5">
-            <label className="block text-[10px] text-zinc-500 dark:text-zinc-400 uppercase tracking-wide">Category</label>
+            <label className="block text-[10px] text-ui-text-subtle uppercase tracking-wide">Category</label>
             <div className="flex flex-wrap gap-1.5">
               <button
                 onClick={() => setLayoutCategory('all')}
                 className={`px-2.5 py-1 text-xs rounded-lg font-medium ${
                   layoutCategory === 'all'
                     ? 'bg-primary text-white shadow-sm'
-                    : 'bg-zinc-100 dark:bg-dark-subtle text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                    : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
                 }`}
               >
                 All
@@ -204,7 +204,7 @@ export default memo(function TemplatesTab({
                 className={`px-2.5 py-1 text-xs rounded-lg font-medium ${
                   layoutCategory === 'suggested'
                     ? 'bg-primary text-white shadow-sm'
-                    : 'bg-zinc-100 dark:bg-dark-subtle text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                    : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
                 }`}
               >
                 Suggested
@@ -216,7 +216,7 @@ export default memo(function TemplatesTab({
                   className={`px-2.5 py-1 text-xs rounded-lg font-medium ${
                     layoutCategory === cat.id
                       ? 'bg-primary text-white shadow-sm'
-                      : 'bg-zinc-100 dark:bg-dark-subtle text-zinc-600 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                      : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
                   }`}
                 >
                   {cat.name}
@@ -248,10 +248,10 @@ export default memo(function TemplatesTab({
           </div>
 
           {displayLayoutPresets.length === 0 && (
-            <p className="text-sm text-zinc-500 dark:text-zinc-400 text-center py-4">No layouts match the current filter</p>
+            <p className="text-sm text-ui-text-subtle text-center py-4">No layouts match the current filter</p>
           )}
 
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center">
+          <p className="text-[10px] text-ui-text-subtle text-center">
             Layout presets change structure without affecting colors or fonts
           </p>
         </div>
@@ -261,7 +261,7 @@ export default memo(function TemplatesTab({
       <CollapsibleSection title="Themes" defaultExpanded={false}>
         {/* Preset Themes */}
         <div className="space-y-2">
-          <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">Presets</label>
+          <label className="block text-xs font-medium text-ui-text-muted">Presets</label>
           <div className="grid grid-cols-3 gap-2">
             {presetThemes.map((preset) => (
               <button
@@ -287,8 +287,8 @@ export default memo(function TemplatesTab({
         {/* Custom Colors */}
         <div className="space-y-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
           <div className="flex items-center justify-between">
-            <label className="text-xs font-medium text-zinc-600 dark:text-zinc-300">Custom Colors</label>
-            {!isCustomTheme && <span className="text-[10px] text-zinc-400 dark:text-zinc-500">(Edit to customize)</span>}
+            <label className="text-xs font-medium text-ui-text-muted">Custom Colors</label>
+            {!isCustomTheme && <span className="text-[10px] text-ui-text-faint">(Edit to customize)</span>}
           </div>
           <div className="space-y-2">
             <ColorInput
@@ -342,7 +342,7 @@ export default memo(function TemplatesTab({
                   className={`text-[10px] leading-tight text-center line-clamp-1 ${
                     activeStylePreset === preset.id
                       ? 'text-violet-700 dark:text-violet-300 font-medium'
-                      : 'text-zinc-600 dark:text-zinc-400'
+                      : 'text-ui-text-subtle'
                   }`}
                 >
                   {preset.name}
@@ -351,7 +351,7 @@ export default memo(function TemplatesTab({
             ))}
           </div>
 
-          <p className="text-[10px] text-zinc-500 dark:text-zinc-400 text-center">
+          <p className="text-[10px] text-ui-text-subtle text-center">
             Looks apply overlay, fonts &amp; filters without changing layout or colors
           </p>
         </div>

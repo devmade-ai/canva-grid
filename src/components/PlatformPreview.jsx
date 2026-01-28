@@ -51,7 +51,7 @@ export default memo(function PlatformPreview({ selectedPlatform, onPlatformChang
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-zinc-800 dark:text-zinc-100">Platform</h3>
+        <h3 className="text-sm font-semibold text-ui-text">Platform</h3>
         <span className="text-sm text-zinc-500 dark:text-zinc-400 font-medium">
           {platform.name} ({platform.width} × {platform.height})
         </span>
