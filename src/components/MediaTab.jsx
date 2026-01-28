@@ -62,7 +62,7 @@ function CellGrid({ layout, cellImages, selectedCell, onSelectCell, platform, hi
 
   return (
     <div
-      className="rounded overflow-hidden border border-zinc-300 dark:border-zinc-600 flex"
+      className="rounded overflow-hidden border border-ui-border-strong flex"
       style={{
         aspectRatio,
         maxWidth: '140px',
@@ -96,7 +96,7 @@ function CellGrid({ layout, cellImages, selectedCell, onSelectCell, platform, hi
                   ? 'bg-primary hover:bg-primary-hover text-white ring-2 ring-primary ring-offset-1'
                   : hasImage
                   ? 'bg-violet-200 dark:bg-violet-800 hover:bg-violet-300 dark:hover:bg-violet-700 text-violet-700 dark:text-violet-200'
-                  : 'bg-zinc-200 dark:bg-dark-subtle hover:bg-zinc-300 dark:hover:bg-dark-elevated text-ui-text-subtle'
+                  : 'bg-ui-surface-inset hover:bg-ui-surface-hover text-ui-text-subtle'
               }`}
               style={{ flex: `0 0 ${subSizes[subIndex]}%` }}
             >
@@ -219,7 +219,7 @@ function AIPromptHelper({ theme }) {
               className={`px-2 py-1 text-xs rounded-lg font-medium ${
                 style === opt.id
                   ? 'bg-primary text-white shadow-sm'
-                  : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                  : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
               }`}
             >
               {opt.name}
@@ -239,7 +239,7 @@ function AIPromptHelper({ theme }) {
               className={`px-2 py-1 text-xs rounded-lg font-medium ${
                 mood === opt.id
                   ? 'bg-primary text-white shadow-sm'
-                  : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                  : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
               }`}
             >
               {opt.name}
@@ -259,7 +259,7 @@ function AIPromptHelper({ theme }) {
               className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium ${
                 purpose === opt.id
                   ? 'bg-primary text-white shadow-sm'
-                  : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                  : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
               }`}
             >
               {opt.name}
@@ -282,7 +282,7 @@ function AIPromptHelper({ theme }) {
               className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium ${
                 orientation === opt.id
                   ? 'bg-primary text-white shadow-sm'
-                  : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                  : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
               }`}
             >
               {opt.name}
@@ -300,7 +300,7 @@ function AIPromptHelper({ theme }) {
             className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium ${
               useThemeColors
                 ? 'bg-primary text-white shadow-sm'
-                : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
             }`}
           >
             Use Theme
@@ -310,7 +310,7 @@ function AIPromptHelper({ theme }) {
             className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium ${
               !useThemeColors
                 ? 'bg-primary text-white shadow-sm'
-                : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
             }`}
           >
             Custom
@@ -413,7 +413,7 @@ function SampleImagesSection({ images, sampleImages, loadingSample, sampleError,
                   }}
                 />
                 <div
-                  className="w-full h-full bg-zinc-100 dark:bg-dark-subtle items-center justify-center text-zinc-400 text-[9px] text-center p-0.5"
+                  className="w-full h-full bg-ui-surface-inset items-center justify-center text-ui-text-faint text-[9px] text-center p-0.5"
                   style={{ display: 'none' }}
                 >
                   {sample.name}
@@ -599,7 +599,7 @@ export default memo(function MediaTab({
           >
             <div className="py-2">
               <svg
-                className="w-8 h-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2"
+                className="w-8 h-8 mx-auto text-ui-text-faint mb-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -698,7 +698,7 @@ export default memo(function MediaTab({
                       className={`flex-1 px-3 py-2 text-sm rounded-lg capitalize font-medium ${
                         selectedImage.fit === fit
                           ? 'bg-primary text-white shadow-sm'
-                          : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                          : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                       }`}
                     >
                       {fit}
@@ -728,7 +728,7 @@ export default memo(function MediaTab({
                       className={`px-2 py-1.5 text-sm rounded font-medium ${
                         selectedImage.position?.x === preset.x && selectedImage.position?.y === preset.y
                           ? 'bg-primary text-white shadow-sm'
-                          : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                          : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                       }`}
                     >
                       {preset.label}
@@ -749,7 +749,7 @@ export default memo(function MediaTab({
                   className={`w-full px-3 py-2 text-sm rounded-lg font-medium ${
                     (selectedImage.filters?.grayscale || 0) > 0
                       ? 'bg-primary text-white shadow-sm'
-                      : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                      : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                   }`}
                 >
                   {(selectedImage.filters?.grayscale || 0) > 0 ? 'On' : 'Off'}
@@ -799,7 +799,7 @@ export default memo(function MediaTab({
                 className={`w-full px-3 py-2 text-sm rounded-lg font-medium ${
                   (selectedImage.overlay?.opacity ?? 0) > 0
                     ? 'bg-primary text-white shadow-sm'
-                    : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                 }`}
               >
                 {(selectedImage.overlay?.opacity ?? 0) > 0 ? 'On' : 'Off'}
@@ -823,7 +823,7 @@ export default memo(function MediaTab({
                           className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
                             selectedImage.overlay?.type === t.id
                               ? 'bg-primary text-white shadow-sm'
-                              : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                              : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                           }`}
                           title={t.name}
                         >
@@ -843,7 +843,7 @@ export default memo(function MediaTab({
                           className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
                             selectedImage.overlay?.type === t.id
                               ? 'bg-primary text-white shadow-sm'
-                              : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                              : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                           }`}
                           title={t.name}
                         >
@@ -863,7 +863,7 @@ export default memo(function MediaTab({
                           className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
                             selectedImage.overlay?.type === t.id
                               ? 'bg-primary text-white shadow-sm'
-                              : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                              : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                           }`}
                           title={t.name}
                         >
@@ -883,7 +883,7 @@ export default memo(function MediaTab({
                           className={`px-1.5 py-1.5 text-[10px] rounded-lg font-medium truncate ${
                             selectedImage.overlay?.type === t.id
                               ? 'bg-primary text-white shadow-sm'
-                              : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                              : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                           }`}
                           title={t.name}
                         >
@@ -906,11 +906,11 @@ export default memo(function MediaTab({
                         className={`px-2.5 py-1.5 text-xs rounded-lg font-medium ${
                           selectedImage.overlay?.color === c.id
                             ? 'bg-primary text-white shadow-sm'
-                            : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                            : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                         }`}
                       >
                         <span
-                          className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 border border-zinc-300 dark:border-zinc-600"
+                          className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 border border-ui-border-strong"
                           style={{ backgroundColor: theme?.[c.id] || '#000' }}
                         />
                         {c.name}
@@ -924,11 +924,11 @@ export default memo(function MediaTab({
                         className={`px-2.5 py-1.5 text-xs rounded-lg font-medium ${
                           selectedImage.overlay?.color === c.id
                             ? 'bg-primary text-white shadow-sm'
-                            : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                            : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                         }`}
                       >
                         <span
-                          className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 border border-zinc-300 dark:border-zinc-600"
+                          className="inline-block w-2.5 h-2.5 rounded-full mr-1.5 border border-ui-border-strong"
                           style={{ backgroundColor: c.color }}
                         />
                         {c.name}
@@ -952,7 +952,7 @@ export default memo(function MediaTab({
                     step="5"
                     value={selectedImage.overlay?.opacity ?? 0}
                     onChange={(e) => onUpdateImageOverlay(selectedImageId, { opacity: parseInt(e.target.value, 10) })}
-                    className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+                    className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
                   />
                 </div>
               </>
@@ -981,7 +981,7 @@ export default memo(function MediaTab({
                 step="5"
                 value={selectedImage.filters?.grayscale || 0}
                 onChange={(e) => onUpdateImageFilters(selectedImageId, { grayscale: parseInt(e.target.value, 10) })}
-                className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
@@ -997,7 +997,7 @@ export default memo(function MediaTab({
                 step="5"
                 value={selectedImage.filters?.sepia || 0}
                 onChange={(e) => onUpdateImageFilters(selectedImageId, { sepia: parseInt(e.target.value, 10) })}
-                className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
@@ -1013,7 +1013,7 @@ export default memo(function MediaTab({
                 step="0.5"
                 value={selectedImage.filters?.blur || 0}
                 onChange={(e) => onUpdateImageFilters(selectedImageId, { blur: parseFloat(e.target.value) })}
-                className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
@@ -1029,7 +1029,7 @@ export default memo(function MediaTab({
                 step="5"
                 value={selectedImage.filters?.contrast || 100}
                 onChange={(e) => onUpdateImageFilters(selectedImageId, { contrast: parseInt(e.target.value, 10) })}
-                className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
@@ -1045,7 +1045,7 @@ export default memo(function MediaTab({
                 step="5"
                 value={selectedImage.filters?.brightness || 100}
                 onChange={(e) => onUpdateImageFilters(selectedImageId, { brightness: parseInt(e.target.value, 10) })}
-                className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
               />
             </div>
           </div>
@@ -1061,7 +1061,7 @@ export default memo(function MediaTab({
               onClick={() => logoInputRef.current?.click()}
             >
               <svg
-                className="w-8 h-8 mx-auto text-zinc-300 dark:text-zinc-600 mb-2"
+                className="w-8 h-8 mx-auto text-ui-text-faint mb-2"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -1117,7 +1117,7 @@ export default memo(function MediaTab({
                       className={`px-2 py-1.5 text-xs rounded-lg font-medium ${
                         logoPosition === opt.id
                           ? 'bg-primary text-white shadow-sm'
-                          : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                          : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                       }`}
                     >
                       {opt.name}
@@ -1137,7 +1137,7 @@ export default memo(function MediaTab({
                       className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium ${
                         logoSize === opt.id
                           ? 'bg-primary text-white shadow-sm'
-                          : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                          : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                       }`}
                     >
                       {opt.name}

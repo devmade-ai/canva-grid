@@ -57,7 +57,7 @@ function MiniCellGrid({ layout, cellImages = {}, selectedCell, onSelectCell, pla
 
   return (
     <div
-      className="flex overflow-hidden border border-zinc-300 dark:border-zinc-600 rounded"
+      className="flex overflow-hidden border border-ui-border-strong rounded"
       style={{
         width: '120px',
         height: `${120 / aspectRatio}px`,
@@ -84,7 +84,7 @@ function MiniCellGrid({ layout, cellImages = {}, selectedCell, onSelectCell, pla
             bgClass = 'bg-violet-200 dark:bg-violet-800 hover:bg-violet-300 dark:hover:bg-violet-700'
             content = <span className="text-violet-700 dark:text-violet-200 text-[10px]">📷</span>
           } else {
-            bgClass = 'bg-zinc-200 dark:bg-dark-subtle hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+            bgClass = 'bg-ui-surface-inset hover:bg-ui-surface-hover'
             content = <span className="text-ui-text-subtle text-[10px]">{currentCellIndex + 1}</span>
           }
 
@@ -329,7 +329,7 @@ export default memo(function StyleTab({
                                 className={`px-1.5 py-1 text-[9px] rounded truncate ${
                                   getCellOverlayConfig(selectedOverlayCell)?.type === t.id
                                     ? 'bg-primary text-white'
-                                    : 'bg-zinc-200 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+                                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                                 }`}
                                 title={t.name}
                               >
@@ -349,7 +349,7 @@ export default memo(function StyleTab({
                                 className={`px-1.5 py-1 text-[9px] rounded truncate ${
                                   getCellOverlayConfig(selectedOverlayCell)?.type === t.id
                                     ? 'bg-primary text-white'
-                                    : 'bg-zinc-200 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+                                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                                 }`}
                                 title={t.name}
                               >
@@ -369,7 +369,7 @@ export default memo(function StyleTab({
                                 className={`px-1.5 py-1 text-[9px] rounded truncate ${
                                   getCellOverlayConfig(selectedOverlayCell)?.type === t.id
                                     ? 'bg-primary text-white'
-                                    : 'bg-zinc-200 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+                                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                                 }`}
                                 title={t.name}
                               >
@@ -389,7 +389,7 @@ export default memo(function StyleTab({
                                 className={`px-1.5 py-1 text-[9px] rounded truncate ${
                                   getCellOverlayConfig(selectedOverlayCell)?.type === t.id
                                     ? 'bg-primary text-white'
-                                    : 'bg-zinc-200 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+                                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                                 }`}
                                 title={t.name}
                               >
@@ -432,7 +432,7 @@ export default memo(function StyleTab({
                               className={`w-5 h-5 rounded-full border transition-transform hover:scale-110 ${
                                 getCellOverlayConfig(selectedOverlayCell)?.color === c.id
                                   ? 'ring-2 ring-primary ring-offset-1 border-transparent'
-                                  : 'border-zinc-300 dark:border-zinc-600'
+                                  : 'border-ui-border-strong'
                               }`}
                               style={{ backgroundColor: c.hex }}
                             />
@@ -457,7 +457,7 @@ export default memo(function StyleTab({
                           onChange={(e) =>
                             updateCellOverlay(selectedOverlayCell, { opacity: parseInt(e.target.value, 10) })
                           }
-                          className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+                          className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
                         />
                       </div>
                     </div>
@@ -513,7 +513,7 @@ export default memo(function StyleTab({
               step="5"
               value={padding.global}
               onChange={(e) => onPaddingChange?.({ global: parseInt(e.target.value, 10) })}
-              className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+              className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
             />
           </div>
 
@@ -540,7 +540,7 @@ export default memo(function StyleTab({
                 step="10"
                 value={frame.outer?.percent || 0}
                 onChange={(e) => onFrameChange?.({ outer: { ...frame.outer, percent: parseInt(e.target.value, 10) } })}
-                className="w-full h-2 bg-zinc-200 dark:bg-dark-subtle rounded-lg appearance-none cursor-pointer"
+                className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
               />
             </div>
 
@@ -575,7 +575,7 @@ export default memo(function StyleTab({
                       className={`w-5 h-5 rounded-full border transition-transform hover:scale-110 ${
                         frame.outer?.color === c.id
                           ? 'ring-2 ring-primary ring-offset-1 border-transparent'
-                          : 'border-zinc-300 dark:border-zinc-600'
+                          : 'border-ui-border-strong'
                       }`}
                       style={{ backgroundColor: c.hex }}
                     />
@@ -652,7 +652,7 @@ export default memo(function StyleTab({
                         step="5"
                         value={getCellPaddingValue(selectedSpacingCell)}
                         onChange={(e) => updateCellPadding(selectedSpacingCell, parseInt(e.target.value, 10))}
-                        className="w-full h-2 bg-zinc-200 dark:bg-dark-elevated rounded-lg appearance-none cursor-pointer"
+                        className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
                       />
                     </div>
                   )}
@@ -710,7 +710,7 @@ export default memo(function StyleTab({
                             }
                             onFrameChange?.({ cellFrames: newCellFrames })
                           }}
-                          className="w-full h-2 bg-zinc-200 dark:bg-dark-elevated rounded-lg appearance-none cursor-pointer"
+                          className="w-full h-2 bg-ui-surface-hover rounded-lg appearance-none cursor-pointer"
                         />
                       </div>
 

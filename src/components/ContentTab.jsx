@@ -133,7 +133,7 @@ function MiniCellGrid({ layout, imageCells = [], highlightCell, onSelectCell, pl
 
   return (
     <div
-      className="flex overflow-hidden border border-zinc-300 dark:border-zinc-600 rounded"
+      className="flex overflow-hidden border border-ui-border-strong rounded"
       style={{
         width: '64px',
         height: `${64 / aspectRatio}px`,
@@ -160,7 +160,7 @@ function MiniCellGrid({ layout, imageCells = [], highlightCell, onSelectCell, pl
             bgClass = 'bg-primary hover:bg-primary-hover'
             content = <span className="text-white text-[8px]">📷</span>
           } else {
-            bgClass = 'bg-zinc-200 dark:bg-dark-subtle hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+            bgClass = 'bg-ui-surface-inset hover:bg-ui-surface-hover'
             content = <span className="text-ui-text-subtle text-[8px]">{currentCellIndex + 1}</span>
           }
 
@@ -224,7 +224,7 @@ function TextElementEditor({
         <button
           onClick={() => onTextChange(element.id, { visible: !isVisible })}
           className={`w-6 h-6 rounded-md flex items-center justify-center text-xs shrink-0 ${
-            isVisible ? 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400' : 'bg-zinc-100 dark:bg-dark-subtle text-zinc-400'
+            isVisible ? 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400' : 'bg-ui-surface-inset text-ui-text-faint'
           }`}
           title={isVisible ? 'Visible - click to hide' : 'Hidden - click to show'}
         >
@@ -232,7 +232,7 @@ function TextElementEditor({
         </button>
 
         {/* Label */}
-        <span className={`text-sm flex-1 min-w-0 ${isVisible ? 'text-zinc-700 dark:text-zinc-200' : 'text-zinc-400'}`}>
+        <span className={`text-sm flex-1 min-w-0 ${isVisible ? 'text-ui-text' : 'text-ui-text-faint'}`}>
           {element.label}
         </span>
 
@@ -284,7 +284,7 @@ function TextElementEditor({
               className={`w-6 h-5 rounded flex items-center justify-center transition-colors ${
                 isActive
                   ? 'bg-primary text-white'
-                  : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-subtle hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                  : 'bg-ui-surface-inset text-ui-text-subtle hover:bg-ui-surface-hover'
               }`}
             >
               <align.Icon />
@@ -304,12 +304,12 @@ function TextElementEditor({
             className={`w-5 h-5 rounded-full border-2 transition-transform hover:scale-110 ${
               layerState.color === color.id
                 ? 'border-primary ring-2 ring-primary/20'
-                : 'border-zinc-200 dark:border-zinc-600'
+                : 'border-ui-border'
             }`}
             style={{ backgroundColor: theme[color.id] }}
           />
         ))}
-        <span className="w-px h-3 bg-zinc-200 dark:bg-dark-subtle mx-0.5" />
+        <span className="w-px h-3 bg-ui-surface-hover mx-0.5" />
         {neutralColors.map((color) => (
           <button
             key={color.id}
@@ -318,7 +318,7 @@ function TextElementEditor({
             className={`w-4 h-4 rounded-full border transition-transform hover:scale-110 ${
               layerState.color === color.id
                 ? 'border-primary ring-2 ring-primary/20'
-                : 'border-zinc-300 dark:border-zinc-600'
+                : 'border-ui-border-strong'
             }`}
             style={{ backgroundColor: color.hex }}
           />
@@ -338,7 +338,7 @@ function TextElementEditor({
               className={`w-5 h-5 text-[10px] font-medium rounded ${
                 layerState.size === size.id
                   ? 'bg-primary text-white'
-                  : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                  : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
               }`}
             >
               {size.name}
@@ -354,7 +354,7 @@ function TextElementEditor({
             className={`w-6 h-5 text-[10px] font-bold rounded ${
               layerState.bold
                 ? 'bg-primary text-white'
-                : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
             }`}
           >
             B
@@ -365,7 +365,7 @@ function TextElementEditor({
             className={`w-6 h-5 text-[10px] italic rounded ${
               layerState.italic
                 ? 'bg-primary text-white'
-                : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
             }`}
           >
             I
@@ -383,7 +383,7 @@ function TextElementEditor({
               className={`px-1.5 h-5 text-[10px] rounded ${
                 layerState.letterSpacing === opt.id
                   ? 'bg-primary text-white'
-                  : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                  : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
               }`}
             >
               {opt.label}

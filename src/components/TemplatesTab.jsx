@@ -19,7 +19,7 @@ const ColorInput = memo(function ColorInput({ label, value, onChange }) {
         type="color"
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-zinc-200 dark:border-zinc-600 shadow-sm"
+        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-ui-border shadow-sm"
       />
       <div className="flex-1">
         <label className="text-xs text-ui-text-subtle mb-0.5 block">{label}</label>
@@ -27,7 +27,7 @@ const ColorInput = memo(function ColorInput({ label, value, onChange }) {
           type="text"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full px-2 py-1.5 text-sm font-mono border border-zinc-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-dark-subtle dark:text-zinc-100"
+          className="w-full px-2 py-1.5 text-sm font-mono border border-ui-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary bg-white dark:bg-dark-subtle dark:text-zinc-100"
         />
       </div>
     </div>
@@ -64,7 +64,7 @@ function LookSwatch({ preset, isActive, theme }) {
   return (
     <div
       className={`w-10 h-7 rounded overflow-hidden border-2 transition-all relative ${
-        isActive ? 'border-primary ring-2 ring-violet-300' : 'border-zinc-300 dark:border-zinc-600'
+        isActive ? 'border-primary ring-2 ring-violet-300' : 'border-ui-border-strong'
       }`}
       style={bgStyle}
     >
@@ -176,7 +176,7 @@ export default memo(function TemplatesTab({
                   className={`flex-1 px-2 py-1.5 text-xs rounded-lg font-medium transition-all ${
                     aspectRatioFilter === ar.id
                       ? 'bg-violet-600 text-white shadow-sm'
-                      : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                      : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                   }`}
                 >
                   {ar.name}
@@ -194,7 +194,7 @@ export default memo(function TemplatesTab({
                 className={`px-2.5 py-1 text-xs rounded-lg font-medium ${
                   layoutCategory === 'all'
                     ? 'bg-primary text-white shadow-sm'
-                    : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                 }`}
               >
                 All
@@ -204,7 +204,7 @@ export default memo(function TemplatesTab({
                 className={`px-2.5 py-1 text-xs rounded-lg font-medium ${
                   layoutCategory === 'suggested'
                     ? 'bg-primary text-white shadow-sm'
-                    : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                 }`}
               >
                 Suggested
@@ -216,7 +216,7 @@ export default memo(function TemplatesTab({
                   className={`px-2.5 py-1 text-xs rounded-lg font-medium ${
                     layoutCategory === cat.id
                       ? 'bg-primary text-white shadow-sm'
-                      : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                      : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                   }`}
                 >
                   {cat.name}
@@ -236,7 +236,7 @@ export default memo(function TemplatesTab({
                   className={`p-2 rounded-lg border-2 transition-all flex flex-col items-center gap-1.5 ${
                     isActive
                       ? 'border-primary bg-primary text-white shadow-sm'
-                      : 'border-zinc-200 dark:border-zinc-700 bg-white dark:bg-dark-subtle hover:border-violet-300 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30'
+                      : 'border-ui-border bg-ui-surface hover:border-violet-300 dark:hover:border-violet-500 hover:bg-violet-50 dark:hover:bg-violet-900/30'
                   }`}
                   title={preset.description}
                 >
@@ -270,7 +270,7 @@ export default memo(function TemplatesTab({
                 className={`p-2 rounded-lg border-2 transition-all ${
                   theme?.preset === preset.id
                     ? 'border-primary bg-violet-50 dark:bg-violet-900/20 ring-2 ring-primary/20'
-                    : 'border-zinc-200 dark:border-zinc-700 hover:border-zinc-300 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-dark-subtle'
+                    : 'border-ui-border hover:border-ui-border-strong hover:bg-ui-surface-elevated'
                 }`}
               >
                 <div className="flex gap-1 mb-1.5 justify-center">
@@ -278,14 +278,14 @@ export default memo(function TemplatesTab({
                   <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.secondary }} />
                   <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.accent }} />
                 </div>
-                <span className="text-[10px] text-zinc-700 dark:text-zinc-300 font-medium">{preset.name}</span>
+                <span className="text-[10px] text-ui-text font-medium">{preset.name}</span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Custom Colors */}
-        <div className="space-y-2 pt-3 border-t border-zinc-100 dark:border-zinc-800">
+        <div className="space-y-2 pt-3 border-t border-ui-border-subtle">
           <div className="flex items-center justify-between">
             <label className="text-xs font-medium text-ui-text-muted">Custom Colors</label>
             {!isCustomTheme && <span className="text-[10px] text-ui-text-faint">(Edit to customize)</span>}

@@ -161,7 +161,7 @@ function CellGrid({
     let bgClass, textClass, content
 
     if (mode === 'image') {
-      bgClass = isImage ? 'bg-primary hover:bg-primary-hover' : 'bg-zinc-200 dark:bg-dark-subtle hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+      bgClass = isImage ? 'bg-primary hover:bg-primary-hover' : 'bg-ui-surface-inset hover:bg-ui-surface-hover'
       textClass = isImage ? 'text-white' : 'text-ui-text-subtle'
       content = isImage ? '📷' : cellIndex + 1
     } else if (mode === 'structure') {
@@ -175,7 +175,7 @@ function CellGrid({
         bgClass = 'bg-primary hover:bg-primary-hover'
         textClass = 'text-white'
       } else {
-        bgClass = 'bg-zinc-100 dark:bg-dark-subtle hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+        bgClass = 'bg-ui-surface-inset hover:bg-ui-surface-hover'
         textClass = 'text-ui-text-subtle'
       }
       content = isImage ? '📷' : subdivisions > 1 ? `${Math.round(subSize)}%` : ''
@@ -189,7 +189,7 @@ function CellGrid({
         textClass = 'text-white'
         content = '📷'
       } else {
-        bgClass = 'bg-zinc-200 dark:bg-dark-subtle hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+        bgClass = 'bg-ui-surface-inset hover:bg-ui-surface-hover'
         textClass = 'text-ui-text-subtle'
         content = cellIndex + 1
       }
@@ -202,7 +202,7 @@ function CellGrid({
 
   const renderCells = () => (
     <div
-      className={`flex-1 ${showSectionLabels ? 'rounded-r' : 'rounded'} overflow-hidden border border-zinc-300 dark:border-zinc-600 flex h-full ${
+      className={`flex-1 ${showSectionLabels ? 'rounded-r' : 'rounded'} overflow-hidden border border-ui-border-strong flex h-full ${
         isRows || isFullbleed ? 'flex-col' : 'flex-row'
       }`}
     >
@@ -236,7 +236,7 @@ function CellGrid({
             <div
               key={`cell-${currentCellIndex}`}
               className={`relative cursor-pointer transition-colors min-h-[20px] ${bgClass} ${
-                mode === 'structure' && subdivisions > 1 ? 'border border-zinc-200 dark:border-zinc-600' : ''
+                mode === 'structure' && subdivisions > 1 ? 'border border-ui-border' : ''
               }`}
               style={{ flex: `1 1 ${subSizes[subIndex]}%` }}
               onClick={(e) => {
@@ -284,7 +284,7 @@ function CellGrid({
               } ${
                 isSelected
                   ? 'bg-primary text-white'
-                  : 'bg-zinc-200 dark:bg-dark-subtle text-ui-text-subtle hover:bg-zinc-300 dark:hover:bg-dark-elevated'
+                  : 'bg-ui-surface-inset text-ui-text-subtle hover:bg-ui-surface-hover'
               }`}
               style={{ flex: `0 0 ${sectionSize}%` }}
               onClick={() => onSelectSection?.(sectionIndex)}
@@ -573,7 +573,7 @@ export default memo(function LayoutTab({
                   className={`flex-1 px-3 py-2.5 text-sm rounded-lg flex flex-col items-center gap-1 font-medium ${
                     type === lt.id
                       ? 'bg-primary text-white shadow-sm'
-                      : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                      : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                   }`}
                 >
                   <span className="text-base">{lt.icon}</span>
@@ -653,7 +653,7 @@ export default memo(function LayoutTab({
                 disabled={structure.length >= 4}
                 className={`px-3 py-1.5 text-sm rounded-lg font-medium ${
                   structure.length >= 4
-                    ? 'bg-zinc-100 dark:bg-dark-subtle text-zinc-400 cursor-not-allowed'
+                    ? 'bg-ui-surface-inset text-ui-text-faint cursor-not-allowed'
                     : 'bg-primary text-white hover:bg-primary-hover shadow-sm'
                 }`}
               >
@@ -853,7 +853,7 @@ export default memo(function LayoutTab({
                       className={`flex-1 px-2 py-2 rounded-lg flex items-center justify-center ${
                         isActive
                           ? 'bg-primary text-white shadow-sm'
-                          : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                          : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                       }`}
                     >
                       <align.Icon />
@@ -894,7 +894,7 @@ export default memo(function LayoutTab({
                       className={`flex-1 px-2 py-2 rounded-lg flex items-center justify-center ${
                         isActive
                           ? 'bg-primary text-white shadow-sm'
-                          : 'bg-zinc-100 dark:bg-dark-subtle text-ui-text-muted hover:bg-zinc-200 dark:hover:bg-dark-elevated'
+                          : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
                       }`}
                     >
                       <align.Icon />
