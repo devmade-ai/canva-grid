@@ -137,7 +137,12 @@ function App() {
 
       {/* Header */}
       <header className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm border-b border-zinc-200/60 dark:border-zinc-700/60 px-4 py-3 flex items-center justify-between sticky top-0 z-10">
-        <h1 className="text-lg font-display font-bold text-zinc-800 dark:text-zinc-100 tracking-tight">Social Ad Creator</h1>
+        <div className="flex items-center gap-2">
+          <h1 className="text-lg font-display font-bold text-zinc-800 dark:text-zinc-100 tracking-tight">Social Ad Creator</h1>
+          <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded">
+            Alpha
+          </span>
+        </div>
         <div className="flex gap-1.5">
           <button
             onClick={undo}
