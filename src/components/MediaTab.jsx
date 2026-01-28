@@ -404,7 +404,7 @@ function SampleImagesSection({ images, sampleImages, loadingSample, sampleError,
                 }`}
               >
                 <img
-                  src={import.meta.env.BASE_URL + sample.file.slice(1)}
+                  src={import.meta.env.BASE_URL + sample.file}
                   alt={sample.name}
                   className="w-full h-full object-cover"
                   onError={(e) => {
@@ -493,7 +493,7 @@ export default memo(function MediaTab({
       setLoadingSample(sample.id)
       setSampleError(null)
       try {
-        const response = await fetch(import.meta.env.BASE_URL + sample.file.slice(1))
+        const response = await fetch(import.meta.env.BASE_URL + sample.file)
         if (!response.ok) throw new Error('Image not found')
         const blob = await response.blob()
         const reader = new FileReader()
