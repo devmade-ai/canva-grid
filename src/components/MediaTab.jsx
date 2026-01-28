@@ -389,6 +389,8 @@ export default memo(function MediaTab({
   layout,
   platform,
   theme,
+  // Sample loading
+  onLoadSamples,
 }) {
   const fileInputRef = useRef(null)
   const logoInputRef = useRef(null)
@@ -559,40 +561,57 @@ export default memo(function MediaTab({
 
           {/* Sample Images - show when library is empty */}
           {images.length === 0 && (
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">Or try a sample</label>
-              <div className="grid grid-cols-5 gap-1.5">
-                {sampleImages.map((sample) => (
-                  <button
-                    key={sample.id}
-                    onClick={() => loadSampleImage(sample)}
-                    disabled={loadingSample === sample.id}
-                    title={sample.name}
-                    className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-                      loadingSample === sample.id
-                        ? 'border-violet-400 opacity-50 scale-95'
-                        : 'border-zinc-200 dark:border-zinc-700 hover:border-violet-400 hover:shadow-sm active:scale-95'
-                    }`}
-                  >
-                    <img
-                      src={import.meta.env.BASE_URL + sample.file.slice(1)}
-                      alt={sample.name}
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        e.target.style.display = 'none'
-                        e.target.nextSibling.style.display = 'flex'
-                      }}
-                    />
-                    <div
-                      className="w-full h-full bg-zinc-100 dark:bg-dark-subtle items-center justify-center text-zinc-400 text-[9px] text-center p-0.5"
-                      style={{ display: 'none' }}
+            <div className="space-y-3">
+              {/* Quick fill button */}
+              {onLoadSamples && (
+                <button
+                  onClick={() => onLoadSamples(true)}
+                  className="w-full py-2 px-3 bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 rounded-lg text-sm font-medium hover:bg-violet-200 dark:hover:bg-violet-900/50 transition-colors"
+                >
+                  Fill layout with samples
+                  {layout?.imageCells?.length > 1 && (
+                    <span className="text-violet-500 dark:text-violet-400 font-normal ml-1">
+                      ({layout.imageCells.length} images)
+                    </span>
+                  )}
+                </button>
+              )}
+
+              <div className="space-y-2">
+                <label className="block text-xs font-medium text-zinc-600 dark:text-zinc-300">Or pick a sample</label>
+                <div className="grid grid-cols-5 gap-1.5">
+                  {sampleImages.map((sample) => (
+                    <button
+                      key={sample.id}
+                      onClick={() => loadSampleImage(sample)}
+                      disabled={loadingSample === sample.id}
+                      title={sample.name}
+                      className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+                        loadingSample === sample.id
+                          ? 'border-violet-400 opacity-50 scale-95'
+                          : 'border-zinc-200 dark:border-zinc-700 hover:border-violet-400 hover:shadow-sm active:scale-95'
+                      }`}
                     >
-                      {sample.name}
-                    </div>
-                  </button>
-                ))}
+                      <img
+                        src={import.meta.env.BASE_URL + sample.file.slice(1)}
+                        alt={sample.name}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.style.display = 'none'
+                          e.target.nextSibling.style.display = 'flex'
+                        }}
+                      />
+                      <div
+                        className="w-full h-full bg-zinc-100 dark:bg-dark-subtle items-center justify-center text-zinc-400 text-[9px] text-center p-0.5"
+                        style={{ display: 'none' }}
+                      >
+                        {sample.name}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+                {sampleError && <p className="text-xs text-red-600 dark:text-red-400">{sampleError}</p>}
               </div>
-              {sampleError && <p className="text-xs text-red-600 dark:text-red-400">{sampleError}</p>}
             </div>
           )}
 
@@ -643,6 +662,19 @@ export default memo(function MediaTab({
                   )
                 })}
               </div>
+              {/* Fill empty cells helper */}
+              {onLoadSamples && layout?.imageCells && (() => {
+                const emptyCells = layout.imageCells.filter(cellIndex => !cellImages[cellIndex])
+                if (emptyCells.length === 0) return null
+                return (
+                  <button
+                    onClick={() => onLoadSamples(false)}
+                    className="text-xs text-violet-600 dark:text-violet-400 hover:underline"
+                  >
+                    + Fill {emptyCells.length} empty cell{emptyCells.length !== 1 ? 's' : ''} with samples
+                  </button>
+                )
+              })()}
             </div>
           )}
 

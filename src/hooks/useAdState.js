@@ -475,21 +475,35 @@ export function useAdState() {
   }, [])
 
   // Load sample images and assign them to the layout's image cells
-  const loadSampleImage = useCallback(() => {
+  // If forceReload is true, replaces all images; otherwise only fills empty cells
+  const loadSampleImage = useCallback((forceReload = false) => {
     setState((prev) => {
-      // Don't load if there are already images
-      if (prev.images.length > 0) return prev
-
       // Get the image cells from the current layout (default to [0])
       // Support both old imageCell (single) and new imageCells (array) format
       const imageCells = prev.layout.imageCells ?? (prev.layout.imageCell !== undefined ? [prev.layout.imageCell] : [0])
 
-      // Pick random sample images for each image cell
-      const newImages = []
-      const newCellImages = {}
-      const usedIndices = new Set()
+      // If not forcing reload and all cells have images, skip
+      const emptyCells = imageCells.filter(cellIndex => !prev.cellImages[cellIndex])
+      if (!forceReload && emptyCells.length === 0) return prev
 
-      imageCells.forEach((cellIndex, i) => {
+      // Determine which cells to fill
+      const cellsToFill = forceReload ? imageCells : emptyCells
+
+      // Track which sample indices are already used (by existing images)
+      const usedIndices = new Set()
+      if (!forceReload) {
+        // Mark samples that are already in use
+        prev.images.forEach(img => {
+          const sampleIndex = sampleImages.findIndex(s => s.name === img.name || s.file === img.src)
+          if (sampleIndex >= 0) usedIndices.add(sampleIndex)
+        })
+      }
+
+      // Pick random sample images for each cell to fill
+      const newImages = forceReload ? [] : [...prev.images]
+      const newCellImages = forceReload ? {} : { ...prev.cellImages }
+
+      cellsToFill.forEach((cellIndex, i) => {
         // Pick a random sample that hasn't been used yet (if possible)
         let randomIndex
         let attempts = 0

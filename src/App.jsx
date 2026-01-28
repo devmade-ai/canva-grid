@@ -239,6 +239,7 @@ function App() {
                     layout={state.layout}
                     platform={state.platform}
                     theme={state.theme}
+                    onLoadSamples={loadSampleImage}
                   />
                 )}
               </ErrorBoundary>
