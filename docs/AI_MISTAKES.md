@@ -60,4 +60,29 @@ Record of significant AI mistakes to prevent repetition across sessions.
 
 ---
 
+## 2026-01 | Double BASE_URL in Sample Images Path (User Reported 7+ Times)
+
+**What went wrong:** Sample images weren't loading on GitHub Pages. The user reported this issue multiple times and even suggested it was a path issue related to Vite's base URL.
+
+**Why it happened:** The `sampleImages.js` config was already prepending `import.meta.env.BASE_URL` to file paths:
+```javascript
+file: `${BASE_URL}samples/sample-01.jpg`  // Already /social-ad-creator/samples/...
+```
+
+Then `MediaTab.jsx` was adding BASE_URL again:
+```javascript
+src={import.meta.env.BASE_URL + sample.file.slice(1)}  // Doubled!
+```
+
+Result: `/social-ad-creator/social-ad-creator/samples/sample-01.jpg` (404)
+
+**How to prevent:**
+
+- When dealing with asset paths, trace the full path from config to usage
+- Don't blindly add BASE_URL - check if the path already includes it
+- Test GitHub Pages deployment specifically (paths work differently in dev vs prod)
+- When users report the same issue multiple times and suggest a cause, investigate that cause immediately
+
+---
+
 *Add new entries above this line*

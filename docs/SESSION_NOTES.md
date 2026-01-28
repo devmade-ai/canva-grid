@@ -5,23 +5,24 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Removed automatic sample image loading
+Fixed sample images path issue for GitHub Pages
 
 ## Accomplished
 
-- **Removed auto-loading of sample images**: App no longer loads 2 random sample images on startup
-- **Added visual placeholder for empty image cells**: Cells designated as image cells (in `layout.imageCells`) now show a checkered pattern with an image icon and "Add image" text when empty
-- **Cleaned up code**: Removed `loadSampleImage` function from useAdState.js
-- **Sample images still available**: Users can manually add sample images via Media tab > Images > Sample Images section
+- **Fixed sample images not loading on GitHub Pages**: BASE_URL was being added twice
+  - `sampleImages.js` was prepending BASE_URL to paths
+  - `MediaTab.jsx` was adding BASE_URL again when using the paths
+  - Result: `/social-ad-creator/social-ad-creator/samples/...` (404)
+- **Fix**: Removed BASE_URL from `sampleImages.js`, paths are now relative (`samples/sample-01.jpg`)
+- **Documented in AI_MISTAKES.md**: This issue was reported 7+ times by user
 
 ## Current state
 - **Build**: Passing
-- Empty image cells show distinct visual placeholder (checkered pattern + icon)
-- Text cells show solid primary color background with secondary color text
-- Sample images available for manual addition in MediaTab
+- Sample images should now work on GitHub Pages deployment
+- Sample images available via Media tab > Images > Sample Images section
 
 ## Key context
 
-- **Empty image cell detection**: Uses `layout.imageCells` array to determine which cells should show placeholder
-- **Placeholder styling**: Checkered pattern using CSS gradients + SVG image icon + "Add image" text at 30% opacity
-- Affects both fullbleed and grid layouts
+- Sample image paths in `sampleImages.js` are relative to public folder (no leading slash, no BASE_URL)
+- `MediaTab.jsx` adds `import.meta.env.BASE_URL` when constructing full URLs
+- This pattern ensures paths work both in dev (BASE_URL = `/`) and prod (BASE_URL = `/social-ad-creator/`)
