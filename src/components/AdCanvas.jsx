@@ -658,7 +658,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
         {hasImage && renderCellImage(cellIndex, { position: 'absolute', inset: 0 })}
 
         {/* Overlay for non-image cells (if enabled) */}
-        {!hasImage && !isDesignatedImageCell && cellOverlay && cellOverlay.enabled !== false && renderOverlayLayer(cellOverlay, `cell-${cellIndex}-overlay`)}
+        {!hasImage && cellOverlay && cellOverlay.enabled !== false && renderOverlayLayer(cellOverlay, `cell-${cellIndex}-overlay`)}
 
         {/* Cell frame (inset border) */}
         {frameWidth > 0 && (
