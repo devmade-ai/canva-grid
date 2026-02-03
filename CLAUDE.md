@@ -161,6 +161,7 @@
 - Check for existing patterns in the codebase before creating new ones
 - Commit and push changes before ending a session
 - Clean up completed or obsolete docs/files and remove references to them
+- **CRITICAL: Keep `TutorialModal.jsx` up to date** - This is USER-FACING help content shown in-app. When tabs, sections, or features change, update the tutorial steps to match. Outdated tutorial content confuses users.
 
 ### REMINDER: READ AND FOLLOW THE FUCKING AI NOTES EVERY TIME
 
@@ -218,7 +219,7 @@ This is a workflow-based organization (as of January 2026 refactor):
 - **Media** - Upload images to library, assign to cells, per-image overlay & filters, logo
 - **Content** - Write text, set visibility, cell assignment, alignment, color, size
 - **Structure** - Fine-tune grid structure and cell alignment
-- **Style** - Themes, typography, per-cell overlay, spacing, frames
+- **Style** - Typography, per-cell overlay, spacing, frames
 
 ## Tech Stack
 
@@ -248,7 +249,7 @@ src/
 │   ├── MediaTab.jsx           # Image + logo upload, fit, position, filters
 │   ├── ContentTab.jsx         # Text editing with cell assignment
 │   ├── LayoutTab.jsx          # Grid structure + cell alignment
-│   ├── StyleTab.jsx           # Themes, fonts, overlay, spacing
+│   ├── StyleTab.jsx           # Typography, overlay, spacing (themes in Presets tab)
 │   ├── PlatformPreview.jsx    # Platform selector
 │   ├── ExportButtons.jsx      # Export controls
 │   └── ErrorBoundary.jsx      # Error handling wrapper
@@ -363,10 +364,11 @@ Collapsible sections:
 
 ### Style Tab
 Collapsible sections:
-- **Themes** - 12 preset themes + custom color inputs
 - **Typography** - Title font + body font selectors with preview
 - **Overlay** - Per-cell overlay controls (stacks on top of image overlay)
 - **Spacing** - Global padding + per-cell custom padding, outer frame + cell frames
+
+Note: Color themes are in the Presets tab, not Style.
 
 ## Preset Types
 

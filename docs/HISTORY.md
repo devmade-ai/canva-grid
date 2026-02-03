@@ -2,6 +2,24 @@
 
 ## 2026-02-03
 
+### Documentation Accuracy Fixes
+
+Fixed outdated references to "Complete Designs" across documentation and user-facing content:
+
+**CLAUDE.md updates**
+- Fixed Presets tab description: Layout, Themes, Looks (not "Complete Designs + Layout Only")
+- Fixed Style tab description: Removed "Themes" (themes are in Presets tab, not Style)
+- Updated architecture comments for StyleTab.jsx and TemplatesTab.jsx
+- Added AI Note: "CRITICAL: Keep TutorialModal.jsx up to date" since it's user-facing
+
+**TutorialModal.jsx updates (user-facing!)**
+- Presets step: Now shows Layout, Themes, Looks sections
+- Style step: Removed Themes, added note that themes are in Presets tab
+
+USER_GUIDE.md was already accurate.
+
+---
+
 ### PWA Support
 
 Added Progressive Web App support for installable app and offline capability:
