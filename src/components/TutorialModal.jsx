@@ -23,11 +23,15 @@ const tutorialSteps = [
         <ul className="space-y-2 text-sm">
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
-            <span><strong>Complete Designs:</strong> Apply a full style (theme + fonts + layout) in one click</span>
+            <span><strong>Layout:</strong> Grid structure presets with aspect ratio filtering</span>
           </li>
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
-            <span><strong>Layout Only:</strong> Just change the grid structure. Filter by aspect ratio (Square, Portrait, Landscape)</span>
+            <span><strong>Themes:</strong> Color schemes - 12 presets or custom colors</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-violet-500">•</span>
+            <span><strong>Looks:</strong> Visual effects (fonts, filters, overlay) without changing layout or colors</span>
           </li>
         </ul>
         <p className="text-ui-text-muted text-sm">Tip: Presets are a great starting point - customize everything after!</p>
@@ -123,10 +127,6 @@ const tutorialSteps = [
         <ul className="space-y-2 text-sm">
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
-            <span><strong>Themes:</strong> 12 preset color schemes or custom colors</span>
-          </li>
-          <li className="flex gap-2">
-            <span className="text-violet-500">•</span>
             <span><strong>Typography:</strong> Choose title and body fonts from 15 Google Fonts</span>
           </li>
           <li className="flex gap-2">
@@ -138,6 +138,7 @@ const tutorialSteps = [
             <span><strong>Spacing:</strong> Global padding, per-cell padding, and frames</span>
           </li>
         </ul>
+        <p className="text-ui-text-muted text-sm">Note: Color themes are in the Presets tab.</p>
       </div>
     ),
   },
