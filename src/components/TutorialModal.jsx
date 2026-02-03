@@ -182,6 +182,10 @@ const tutorialSteps = [
           </li>
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
+            <span><strong>Refresh:</strong> Use the refresh button to reload the app (useful for PWA)</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-violet-500">•</span>
             <span><strong>Install App:</strong> Use the Install button to add to your device</span>
           </li>
           <li className="flex gap-2">
