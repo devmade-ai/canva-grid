@@ -135,7 +135,11 @@ const tutorialSteps = [
           </li>
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
-            <span><strong>Spacing:</strong> Global padding, per-cell padding, and frames</span>
+            <span><strong>Spacing:</strong> Global padding and per-cell custom padding</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-violet-500">•</span>
+            <span><strong>Frames:</strong> Add colored borders around the canvas or individual cells</span>
           </li>
         </ul>
         <p className="text-ui-text-muted text-sm">Note: Color themes are in the Presets tab.</p>
