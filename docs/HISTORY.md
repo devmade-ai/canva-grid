@@ -31,6 +31,18 @@ Re-added x/y position sliders for precise image positioning:
 - Shows current percentage value next to each slider
 - Works alongside preset buttons for quick + fine control
 
+### Added Corner Radial Overlay Types
+
+Added 4 new radial gradient overlays that emanate from corners:
+
+**layouts.js**
+- `radial-tl` (Corner ↖) - Radial from top-left corner
+- `radial-tr` (Corner ↗) - Radial from top-right corner
+- `radial-bl` (Corner ↙) - Radial from bottom-left corner
+- `radial-br` (Corner ↘) - Radial from bottom-right corner
+
+Note: Diagonal linear gradients (↖ ↗ ↙ ↘) already existed.
+
 ---
 
 ## 2026-02-03

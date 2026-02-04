@@ -11,7 +11,6 @@ Future enhancements and ideas for the Social Ad Creator.
 | Item | Effort | Description |
 |------|--------|-------------|
 | **Looks define per-element text styling** | Medium | Extend `stylePresets.js` to include text colors and bold/italic per element. Makes presets feel more polished. |
-| **More overlay types** | Low-Medium | Add diagonal gradients and radial-from-corner options. Update `layouts.js` and `AdCanvas.jsx`. |
 
 ### Low Priority (Long-term)
 
