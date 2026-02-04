@@ -116,6 +116,43 @@ export const overlayTypes = [
       return `radial-gradient(circle at center, transparent 30%, ${rgbaColor} 50%, transparent 70%)`
     },
   },
+  // Radial from corners
+  {
+    id: 'radial-tl',
+    name: 'Corner ↖',
+    category: 'radial',
+    getCss: (color, opacity) => {
+      const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
+      return `radial-gradient(ellipse at top left, ${rgbaColor} 0%, transparent 70%)`
+    },
+  },
+  {
+    id: 'radial-tr',
+    name: 'Corner ↗',
+    category: 'radial',
+    getCss: (color, opacity) => {
+      const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
+      return `radial-gradient(ellipse at top right, ${rgbaColor} 0%, transparent 70%)`
+    },
+  },
+  {
+    id: 'radial-bl',
+    name: 'Corner ↙',
+    category: 'radial',
+    getCss: (color, opacity) => {
+      const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
+      return `radial-gradient(ellipse at bottom left, ${rgbaColor} 0%, transparent 70%)`
+    },
+  },
+  {
+    id: 'radial-br',
+    name: 'Corner ↘',
+    category: 'radial',
+    getCss: (color, opacity) => {
+      const rgbaColor = color.replace(')', `, ${opacity / 100})`).replace('rgb', 'rgba')
+      return `radial-gradient(ellipse at bottom right, ${rgbaColor} 0%, transparent 70%)`
+    },
+  },
   // Edge Effects
   {
     id: 'blur-edges',

@@ -4,27 +4,29 @@ Future enhancements and ideas for the Social Ad Creator.
 
 ---
 
-## Potential Improvements
+## Prioritized Improvements
 
-### Content & Presets
+### Medium Priority
 
-- [ ] Save/load designs to localStorage
-- [ ] Template gallery with complete designs
-- [ ] Looks define per-element text colors (title, tagline, CTA, etc.)
-- [ ] Looks define per-element text weight/style (bold, italic)
-- [ ] Looks define text visibility per layout
+| Item | Effort | Description |
+|------|--------|-------------|
+| **Looks define per-element text styling** | Medium | Extend `stylePresets.js` to include text colors and bold/italic per element. Makes presets feel more polished. |
 
-### Visual Effects
+### Low Priority (Long-term)
 
-- [ ] More overlay types (diagonal gradient, radial from corner)
-- [ ] Animation preview for story formats
+| Item | Effort | Description |
+|------|--------|-------------|
+| **TypeScript migration** | High | Incremental approach: start with config files and hooks, then components. Do when there's dedicated time. |
+| **Unit tests for config utilities** | Low-Medium | Test helpers in `stylePresets.js`, `layoutPresets.js`. Do alongside TS migration or when configs change. |
 
-### Usability
+---
 
-- [ ] Aspect ratio lock for custom sizes
-- [ ] Image cropping/repositioning within frame
+## Considered & Declined
 
-### Technical
-
-- [ ] TypeScript migration
-- [ ] Unit tests for config utilities
+| Item | Reason |
+|------|--------|
+| Template gallery with complete designs | Overlaps with save/load. Base64 images make templates heavy. Revisit after save/load is implemented. |
+| Looks define text visibility per layout | Visibility feels like layout's job, not a "look". Could confuse users. |
+| Animation preview for story formats | High complexity, low ROI for a static ad creator. Out of scope. |
+| Aspect ratio lock for custom sizes | 20 platform presets already cover most use cases. Niche need. |
+| Image cropping within frame | Repositioning exists (preset grid + sliders planned). True cropping would need a crop UI - revisit if users request it. |
