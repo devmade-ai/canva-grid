@@ -71,6 +71,10 @@ export function usePWAInstall() {
     const installedHandler = () => {
       setCanInstall(false)
       deferredPrompt = null
+      // Track install in Google Analytics
+      if (typeof gtag === 'function') {
+        gtag('event', 'app_install', { method: browser })
+      }
     }
 
     window.addEventListener('beforeinstallprompt', handler)
