@@ -243,7 +243,7 @@ function App() {
 
     resizeObserver.observe(container)
     return () => resizeObserver.disconnect()
-  }, [])
+  }, [isReaderMode])
 
   // Calculate scale to fit preview in container
   const previewScale = useMemo(() => {
