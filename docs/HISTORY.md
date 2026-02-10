@@ -2,6 +2,12 @@
 
 ## 2026-02-10
 
+### Auto-assign images, header page nav, export fix
+
+- **Auto-assign images to cells**: `addImage` now assigns new images to the first unoccupied image cell based on `layout.imageCells`
+- **Page selector in header**: Desktop header split into two rows (title + page nav / action buttons). Mobile shows compact page nav (arrows + count) next to title
+- **Fixed multi-page export**: Was exporting first page twice with overlaid text. Fixed by adding double `requestAnimationFrame` wait for browser paint between page switches, and always restoring to original page after export
+
 ### UI Fixes: Presets, Pages, Content
 
 - Removed confusing blue/green indicator dots from page thumbnails (too small, no legend)

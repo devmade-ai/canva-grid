@@ -275,15 +275,45 @@ function App() {
 
       {/* Header */}
       <header className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm border-b border-zinc-200/60 dark:border-zinc-700/60 px-4 py-3 sticky top-0 z-10">
-        {/* Desktop: single row */}
-        <div className="hidden sm:flex sm:items-center sm:justify-between">
-          <div className="flex items-center gap-2">
-            <h1 className="text-lg font-display font-bold text-ui-text tracking-tight">Social Ad Creator</h1>
-            <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded">
-              Research Preview
-            </span>
+        {/* Desktop: two rows */}
+        <div className="hidden sm:block space-y-2">
+          {/* Row 1: Title left, Page nav right */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-display font-bold text-ui-text tracking-tight">Social Ad Creator</h1>
+              <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded">
+                Research Preview
+              </span>
+            </div>
+            {/* Page selector */}
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => state.activePage > 0 && setActivePage(state.activePage - 1)}
+                disabled={state.activePage === 0}
+                title="Previous page"
+                className="p-1 rounded text-ui-text-muted hover:text-ui-text hover:bg-zinc-100 dark:hover:bg-dark-subtle disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="text-sm font-medium text-ui-text min-w-[80px] text-center">
+                Page {state.activePage + 1} / {pageCount}
+              </span>
+              <button
+                onClick={() => state.activePage < pageCount - 1 && setActivePage(state.activePage + 1)}
+                disabled={state.activePage >= pageCount - 1}
+                title="Next page"
+                className="p-1 rounded text-ui-text-muted hover:text-ui-text hover:bg-zinc-100 dark:hover:bg-dark-subtle disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
-          <div className="flex gap-1.5">
+          {/* Row 2: Action buttons */}
+          <div className="flex justify-end gap-1.5">
             <button
               onClick={undo}
               disabled={!canUndo}
@@ -310,6 +340,7 @@ function App() {
               <span>↷</span>
               <span>Redo</span>
             </button>
+            <div className="w-px bg-zinc-200 dark:bg-zinc-700 mx-0.5" />
             {/* View / Reader mode toggle */}
             <button
               onClick={() => setIsReaderMode(true)}
@@ -400,12 +431,37 @@ function App() {
 
         {/* Mobile: stacked rows */}
         <div className="flex flex-col gap-2 sm:hidden">
-          {/* Row 1: Title */}
-          <div className="flex items-center justify-center gap-2">
-            <h1 className="text-lg font-display font-bold text-ui-text tracking-tight">Social Ad Creator</h1>
-            <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded">
-              Research Preview
-            </span>
+          {/* Row 1: Title + Page selector */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg font-display font-bold text-ui-text tracking-tight">Social Ad Creator</h1>
+              <span className="px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide bg-amber-100 dark:bg-amber-900/50 text-amber-700 dark:text-amber-300 rounded">
+                Research Preview
+              </span>
+            </div>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => state.activePage > 0 && setActivePage(state.activePage - 1)}
+                disabled={state.activePage === 0}
+                className="p-1 rounded text-ui-text-muted hover:text-ui-text disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                </svg>
+              </button>
+              <span className="text-xs font-medium text-ui-text-muted">
+                {state.activePage + 1}/{pageCount}
+              </span>
+              <button
+                onClick={() => state.activePage < pageCount - 1 && setActivePage(state.activePage + 1)}
+                disabled={state.activePage >= pageCount - 1}
+                className="p-1 rounded text-ui-text-muted hover:text-ui-text disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                </svg>
+              </button>
+            </div>
           </div>
 
           {/* Row 2: Utility buttons (centered) */}

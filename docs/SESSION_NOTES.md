@@ -5,38 +5,32 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-UI fixes for Presets/Pages/Content tabs based on user feedback
+Three UX improvements: auto-assign images, header page nav, multi-page export fix
 
 ## Accomplished
 
-1. **Removed confusing page indicator dots** from PageStrip thumbnails
-   - Blue/green dots were 1x1 pixels with no legend - users couldn't understand them
-   - Removed entirely for cleaner page thumbnails
+1. **Auto-assign images to cells on add**
+   - `addImage` in `useAdState.js` now auto-assigns new images to the first unoccupied image cell
+   - Based on `layout.imageCells` - finds the first cell without an assigned image
+   - Works for both sample images and user uploads
 
-2. **Fixed PageStrip mobile wrapping**
-   - Thumbnails now wrap on mobile instead of being squeezed into a tiny scroll area
-   - Action buttons align right with `ml-auto` on mobile
-   - Thumbnails get full width on mobile via `order-last` and `w-full`
+2. **Page selector moved to header**
+   - Desktop: Header split into two rows - title left + page nav right (top row), action buttons (bottom row)
+   - Mobile: Page nav added to right side of title row (compact: arrows + "1/3" format)
+   - Page navigation always visible regardless of scroll position
+   - PageStrip with thumbnails still exists below platform selector for visual page management
 
-3. **Fixed markdown rendering in canvas**
-   - `whiteSpace: 'pre-wrap'` was applied to markdown HTML container
-   - This caused raw newlines from source text to appear as visible line breaks in addition to HTML structure from `marked`
-   - Fixed by using `whiteSpace: 'normal'` for markdown mode
-
-4. **Made Auto alignment icon distinct from Center**
-   - AlignAutoIcon and AlignCenterIcon had identical SVG geometry (Auto just had lower opacity)
-   - Redesigned Auto icon to show mixed alignment (left-shifted, center-shifted, right-shifted lines)
-
-5. **Moved Sample Images to Presets tab**
-   - Sample images are now in Presets tab as "Sample Images" section (auto-expanded when no images)
-   - Removed from Media tab
-   - Better fits the "start here" workflow of the Presets tab
+3. **Fixed multi-page export bug**
+   - Was exporting first page twice with overlaid text from both pages
+   - Root cause: insufficient wait time for React re-render + browser paint between page switches
+   - Fix: Added `requestAnimationFrame` double-frame wait + increased timeout to 300ms
+   - Also fixed: always restore to original page after export (was using stale closure comparison)
 
 ## Current state
 - **Build**: Passes successfully
-- All changes are UI/UX improvements, no state structure changes
+- All three changes working together
 
 ## Key context
-- Presets tab now accepts `images` and `onAddImage` props for sample images
-- MediaTab no longer imports `sampleImages` config
-- PageStrip uses `flex-wrap` for mobile responsiveness
+- `addImage` now returns id AND auto-assigns to cells (changed signature behavior)
+- Header is now two rows on desktop (title + page nav row, then action buttons row)
+- Export uses `waitForPaint()` helper with double rAF for reliable DOM capture
