@@ -237,13 +237,6 @@ export default memo(function TemplatesTab({
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-ui-text">Presets</h3>
 
-      {/* Sample Images - Quick start */}
-      {onAddImage && (
-        <CollapsibleSection title="Sample Images" defaultExpanded={images.length === 0}>
-          <SampleImagesSection images={images} onAddImage={onAddImage} />
-        </CollapsibleSection>
-      )}
-
       {/* Layout Presets - Structure only (shown first) */}
       <CollapsibleSection title="Layout" defaultExpanded={false}>
         <div className="space-y-3">
@@ -338,6 +331,13 @@ export default memo(function TemplatesTab({
           </p>
         </div>
       </CollapsibleSection>
+
+      {/* Sample Images */}
+      {onAddImage && (
+        <CollapsibleSection title="Sample Images" defaultExpanded={false}>
+          <SampleImagesSection images={images} onAddImage={onAddImage} />
+        </CollapsibleSection>
+      )}
 
       {/* Theme Presets */}
       <CollapsibleSection title="Themes" defaultExpanded={false}>
