@@ -585,7 +585,12 @@ export default memo(function MediaTab({
       {/* Images Section */}
       <CollapsibleSection title="Images" defaultExpanded={false}>
         <div className="space-y-3">
-          {/* Upload area - first, to build library */}
+          {/* Sample Images - collapsed by default, above upload */}
+          <CollapsibleSection title="Sample Images" defaultExpanded={false}>
+            <SampleImagesSection images={images} onAddImage={onAddImage} selectedCell={selectedCell} />
+          </CollapsibleSection>
+
+          {/* Upload area */}
           <div
             className="border-2 border-dashed border-ui-border rounded-xl p-4 text-center cursor-pointer hover:border-violet-400 hover:bg-violet-50/30 dark:hover:bg-violet-900/30 transition-all"
             onDrop={handleDrop}
@@ -794,10 +799,6 @@ export default memo(function MediaTab({
             </div>
           )}
 
-          {/* Sample Images - collapsed by default */}
-          <CollapsibleSection title="Sample Images" defaultExpanded={false}>
-            <SampleImagesSection images={images} onAddImage={onAddImage} selectedCell={selectedCell} />
-          </CollapsibleSection>
         </div>
       </CollapsibleSection>
 
