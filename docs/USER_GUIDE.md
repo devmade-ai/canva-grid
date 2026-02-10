@@ -83,7 +83,10 @@ When a new version is available, you'll see an **Update** button in the header. 
 
 ### Presets Tab
 
-The starting point for most designs. Contains three sections:
+The starting point for most designs. Contains four sections:
+
+#### Sample Images
+Quick-start sample images to add to your library. Auto-expands when your library is empty. Click any sample to add it.
 
 #### Layout
 Grid templates that change your structure without affecting colors or fonts:
@@ -142,7 +145,6 @@ Click **Copy** to copy the prompt to your clipboard for use in any AI image gene
 #### Images
 Upload and manage your image library:
 - **Upload:** Drag-drop images or click to browse (supports multiple images)
-- **Sample Images:** Expand to try sample images as a starting point
 - **Image Library:** Click any image to select it for editing
 
 **Selected Image Settings:**

@@ -24,7 +24,7 @@ Run these tests after making changes to ensure nothing is broken.
 
 ---
 
-## Templates Tab Tests
+## Presets Tab Tests
 
 ### T1: Apply Complete Design
 
@@ -32,7 +32,7 @@ Run these tests after making changes to ensure nothing is broken.
 
 | Step | Action | Where | Expected |
 |------|--------|-------|----------|
-| 1 | Click "Templates" tab | Top tab bar | Templates tab opens, shows two sections |
+| 1 | Click "Presets" tab | Top tab bar | Presets tab opens with sections |
 | 2 | Find "Complete Designs" section | Templates tab | Section visible with design thumbnails |
 | 3 | Click any design thumbnail | Complete Designs grid | Preview updates immediately |
 | 4 | Check Style tab | Click Style tab | Theme, fonts match the preset |
@@ -267,8 +267,8 @@ Run these tests after making changes to ensure nothing is broken.
 
 | Step | Action | Where | Expected |
 |------|--------|-------|----------|
-| 1 | Click "Style" tab | Top tab bar | Style tab opens |
-| 2 | Expand "Themes" section | Style tab | 12 theme thumbnails visible |
+| 1 | Click "Presets" tab | Top tab bar | Presets tab opens |
+| 2 | Expand "Themes" section | Presets tab | 12 theme thumbnails visible |
 | 3 | Click a different theme | Theme grid | Preview colors change |
 | 4 | Check text colors | Preview | Text uses theme colors |
 
@@ -278,7 +278,7 @@ Run these tests after making changes to ensure nothing is broken.
 
 | Step | Action | Where | Expected |
 |------|--------|-------|----------|
-| 1 | Expand custom colors area | Style → Themes | Color input fields visible |
+| 1 | Expand custom colors area | Presets → Themes | Color input fields visible |
 | 2 | Change "Primary" color | Primary color input | Primary text color changes |
 | 3 | Change "Background" color | Background color input | Background color changes |
 
