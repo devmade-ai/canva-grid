@@ -23,6 +23,10 @@ const tutorialSteps = [
         <ul className="space-y-2 text-sm">
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
+            <span><strong>Sample Images:</strong> Quick-start images to try out layouts and effects</span>
+          </li>
+          <li className="flex gap-2">
+            <span className="text-violet-500">•</span>
             <span><strong>Layout:</strong> Grid structure presets with aspect ratio filtering</span>
           </li>
           <li className="flex gap-2">
