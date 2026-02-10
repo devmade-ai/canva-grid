@@ -5,32 +5,42 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Three UX improvements: auto-assign images, header page nav, multi-page export fix
+Global cell selection, sticky context bar, canvas click-to-select, export fix, auto-assign images
 
 ## Accomplished
 
 1. **Auto-assign images to cells on add**
    - `addImage` in `useAdState.js` now auto-assigns new images to the first unoccupied image cell
-   - Based on `layout.imageCells` - finds the first cell without an assigned image
-   - Works for both sample images and user uploads
+   - Based on `layout.imageCells` array
 
-2. **Page selector moved to header**
-   - Desktop: Header split into two rows - title left + page nav right (top row), action buttons (bottom row)
-   - Mobile: Page nav added to right side of title row (compact: arrows + "1/3" format)
-   - Page navigation always visible regardless of scroll position
-   - PageStrip with thumbnails still exists below platform selector for visual page management
+2. **Global selectedCell state + ContextBar**
+   - New `selectedCell` state in App.jsx (UI state, not design state)
+   - New `ContextBar.jsx` component: compact sticky bar with page nav + miniature cell grid + undo/redo
+   - Header is now non-sticky (scrolls away), ContextBar is sticky (always visible)
+   - Undo/redo and page nav moved from header to ContextBar
+   - `selectedCell` passed to StyleTab, ContentTab, MediaTab
 
-3. **Fixed multi-page export bug**
-   - Was exporting first page twice with overlaid text from both pages
-   - Root cause: insufficient wait time for React re-render + browser paint between page switches
-   - Fix: Added `requestAnimationFrame` double-frame wait + increased timeout to 300ms
-   - Also fixed: always restore to original page after export (was using stale closure comparison)
+3. **Canvas click-to-select cell**
+   - `CanvasCellOverlay` component renders invisible clickable cells over the canvas preview
+   - Clicking a cell in the preview sets the global `selectedCell`
+   - Shows a subtle border on the selected cell
+
+4. **StyleTab + ContentTab use global selectedCell**
+   - StyleTab: overlay and spacing sections now use global `selectedCell` instead of local state
+   - ContentTab: freeform mode uses global `selectedCell` instead of local state
+   - Both removed their `useState` for cell selection
+
+5. **Fixed multi-page export**
+   - Added `waitForPaint()` helper with double rAF
+   - Always restore to original page (was stale closure)
 
 ## Current state
 - **Build**: Passes successfully
-- All three changes working together
+- Global cell selection wired to StyleTab (overlay + spacing) and ContentTab (freeform)
+- MediaTab receives selectedCell prop but doesn't use it yet (image assignment is different from cell editing)
 
 ## Key context
-- `addImage` now returns id AND auto-assigns to cells (changed signature behavior)
-- Header is now two rows on desktop (title + page nav row, then action buttons row)
-- Export uses `waitForPaint()` helper with double rAF for reliable DOM capture
+- `selectedCell` is UI state in App.jsx, NOT design state (not saved/loaded)
+- `selectedCell` auto-clamps to valid range when layout changes (useEffect in App.jsx)
+- ContextBar is the ONLY sticky element now (header scrolls away)
+- MediaTab still has its own CellGrid for image assignment (toggle assign/unassign) - this is a different concept from "which cell am I editing"

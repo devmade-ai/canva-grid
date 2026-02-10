@@ -1,4 +1,4 @@
-import { useState, useMemo, memo } from 'react'
+import { useMemo, memo } from 'react'
 import CollapsibleSection from './CollapsibleSection'
 import { neutralColors } from '../config/themes'
 import { fonts } from '../config/fonts'
@@ -126,10 +126,15 @@ export default memo(function StyleTab({
   frame = { outer: { percent: 0, color: 'primary' }, cellFrames: {} },
   onFrameChange,
   cellImages = {},
+  selectedCell: selectedCellProp = 0,
+  onSelectCell,
 }) {
   const { cellOverlays = {} } = layout
-  const [selectedOverlayCell, setSelectedOverlayCell] = useState(null)
-  const [selectedSpacingCell, setSelectedSpacingCell] = useState(null)
+  // Use global selectedCell for both overlay and spacing
+  const selectedOverlayCell = selectedCellProp
+  const setSelectedOverlayCell = onSelectCell || (() => {})
+  const selectedSpacingCell = selectedCellProp
+  const setSelectedSpacingCell = onSelectCell || (() => {})
 
   // Determine which cells have images
   const cellHasImage = (cellIndex) => !!cellImages[cellIndex]
