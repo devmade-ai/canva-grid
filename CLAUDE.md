@@ -162,6 +162,7 @@
 - Commit and push changes before ending a session
 - Clean up completed or obsolete docs/files and remove references to them
 - **CRITICAL: Keep `TutorialModal.jsx` up to date** - This is USER-FACING help content shown in-app. When tabs, sections, or features change, update the tutorial steps to match. Outdated tutorial content confuses users.
+- **ASK before assuming.** When a user reports a bug, ask clarifying questions (which mode? what did you type? what do you see?) BEFORE writing code. Don't guess the cause and build a fix on an assumption - you'll waste time fixing the wrong thing. One clarifying question saves multiple wrong commits.
 
 ### REMINDER: READ AND FOLLOW THE FUCKING AI NOTES EVERY TIME
 

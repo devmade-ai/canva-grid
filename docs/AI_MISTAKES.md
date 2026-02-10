@@ -85,4 +85,23 @@ Result: `/social-ad-creator/social-ad-creator/samples/sample-01.jpg` (404)
 
 ---
 
+## 2026-02 | Fixed Wrong Thing 3 Times Before Asking (Markdown Rendering)
+
+**What went wrong:** User reported "markdown is still not rendering correctly on the display." Instead of asking what they were doing, AI made three wrong assumptions in sequence:
+1. Assumed it was a CSS styling issue (fixed list-style-type, added pre/code styles)
+2. Assumed user was in structured mode (added `marked.parseInline()` to structured text)
+3. Finally learned user was in freeform mode typing `# Title` - the real issue was freeform mode required a hidden MD toggle that defaulted to off
+
+Each wrong assumption led to a commit that didn't solve the actual problem. Three commits wasted before the real fix.
+
+**Why it happened:** AI jumped to writing code instead of asking "which mode are you in?" and "what exactly did you type?" One clarifying question would have immediately revealed the issue.
+
+**How to prevent:**
+- When a user reports a bug, **ask what they're doing** before writing any code
+- Don't assume which feature/mode/path the user is using
+- A single clarifying question ("Are you in freeform mode with MD toggled on?") would have saved 3 wrong commits
+- The cost of asking is low; the cost of fixing the wrong thing is high
+
+---
+
 *Add new entries above this line*
