@@ -614,9 +614,6 @@ export default memo(function MediaTab({
             <input ref={fileInputRef} type="file" accept="image/*" multiple className="hidden" onChange={handleFileSelect} />
           </div>
 
-          {/* Sample Images */}
-          <SampleImagesSection images={images} onAddImage={onAddImage} selectedCell={selectedCell} />
-
           {/* Image Library - click to select an image */}
           {images.length > 0 && (
             <div className="space-y-2">
@@ -796,6 +793,11 @@ export default memo(function MediaTab({
               </div>
             </div>
           )}
+
+          {/* Sample Images - collapsed by default */}
+          <CollapsibleSection title="Sample Images" defaultExpanded={false}>
+            <SampleImagesSection images={images} onAddImage={onAddImage} selectedCell={selectedCell} />
+          </CollapsibleSection>
         </div>
       </CollapsibleSection>
 
