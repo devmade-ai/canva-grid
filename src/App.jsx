@@ -94,6 +94,7 @@ function App() {
   const [activeSection, setActiveSection] = useState('templates')
   const [imageAspectRatio] = useState(null) // TODO: Calculate from first image in pool
   const [containerWidth, setContainerWidth] = useState(600)
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight)
   const [isExporting, setIsExporting] = useState(false)
   const [showInstallModal, setShowInstallModal] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
@@ -213,6 +214,21 @@ function App() {
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [undo, redo, isReaderMode, state.activePage, pageCount, setActivePage])
 
+  // Track window height for reader mode scaling
+  useEffect(() => {
+    const handleResize = () => setWindowHeight(window.innerHeight)
+    window.addEventListener('resize', handleResize)
+    // Also listen to orientationchange for mobile
+    window.addEventListener('orientationchange', () => {
+      // Delay to let the browser update layout after orientation change
+      setTimeout(handleResize, 100)
+    })
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      window.removeEventListener('orientationchange', handleResize)
+    }
+  }, [])
+
   // Track container width for responsive preview
   useEffect(() => {
     const container = previewContainerRef.current
@@ -231,14 +247,16 @@ function App() {
 
   // Calculate scale to fit preview in container
   const previewScale = useMemo(() => {
-    const maxWidth = Math.max(containerWidth - 32, 200)
+    const maxWidth = isReaderMode
+      ? Math.max(containerWidth - 16, 200)  // Tight margins in reader mode
+      : Math.max(containerWidth - 32, 200)
     const maxHeight = isReaderMode
-      ? window.innerHeight - 120 // Full viewport minus header and nav
-      : Math.min(window.innerHeight * 0.6, 600)
+      ? windowHeight - (hasMultiplePages ? 100 : 64) // Header ~44px + padding + nav
+      : Math.min(windowHeight * 0.6, 600)
     const scaleX = maxWidth / platform.width
     const scaleY = maxHeight / platform.height
     return Math.min(scaleX, scaleY, 1)
-  }, [platform, containerWidth, isReaderMode])
+  }, [platform, containerWidth, isReaderMode, windowHeight, hasMultiplePages])
 
   // New workflow-based tabs
   const sections = [
@@ -252,41 +270,43 @@ function App() {
   // Reader mode - minimal UI with page navigation
   if (isReaderMode) {
     return (
-      <div className="min-h-screen bg-zinc-100 dark:bg-dark-page">
+      <div className="h-[100dvh] flex flex-col bg-zinc-100 dark:bg-dark-page">
         {/* Load fonts */}
         {fonts.map((font) => (
           <link key={font.id} rel="stylesheet" href={font.url} />
         ))}
 
-        {/* Reader header */}
-        <header className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm border-b border-zinc-200/60 dark:border-zinc-700/60 px-4 py-3 sticky top-0 z-10">
+        {/* Reader header - compact */}
+        <header className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm border-b border-zinc-200/60 dark:border-zinc-700/60 px-3 py-2 shrink-0">
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsReaderMode(false)}
-              className="px-3 py-1.5 text-sm rounded-lg flex items-center gap-1.5 font-medium bg-zinc-100 dark:bg-dark-subtle text-ui-text hover:bg-zinc-200 dark:hover:bg-dark-elevated active:scale-95 transition-all"
+              className="px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-lg flex items-center gap-1.5 font-medium bg-zinc-100 dark:bg-dark-subtle text-ui-text hover:bg-zinc-200 dark:hover:bg-dark-elevated active:scale-95 transition-all"
             >
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
-              <span>Back to Editor</span>
+              <span className="hidden sm:inline">Back to Editor</span>
             </button>
 
-            <span className="text-sm font-medium text-ui-text-muted">
-              Page {state.activePage + 1} of {pageCount}
-            </span>
+            {hasMultiplePages && (
+              <span className="text-sm font-medium text-ui-text-muted">
+                {state.activePage + 1} / {pageCount}
+              </span>
+            )}
 
             <button
               onClick={toggleDarkMode}
               title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="px-3 py-1.5 text-sm rounded-lg font-medium bg-zinc-100 dark:bg-dark-subtle text-ui-text hover:bg-zinc-200 dark:hover:bg-dark-elevated active:scale-95 transition-all"
+              className="px-2 py-1 sm:px-3 sm:py-1.5 text-sm rounded-lg font-medium bg-zinc-100 dark:bg-dark-subtle text-ui-text hover:bg-zinc-200 dark:hover:bg-dark-elevated active:scale-95 transition-all"
             >
               {isDark ? '☀️' : '🌙'}
             </button>
           </div>
         </header>
 
-        {/* Reader canvas */}
-        <main className="flex flex-col items-center py-4 px-4">
+        {/* Reader canvas - fills remaining space */}
+        <main className="flex-1 flex flex-col items-center justify-center px-2 py-1 sm:px-4 sm:py-2 min-h-0">
           <div
             ref={previewContainerRef}
             className="w-full flex justify-center"
@@ -303,15 +323,15 @@ function App() {
             </div>
           </div>
 
-          {/* Reader page navigation */}
+          {/* Reader page navigation - compact */}
           {hasMultiplePages && (
-            <div className="flex items-center gap-4 mt-6">
+            <div className="flex items-center gap-3 mt-2 shrink-0">
               <button
                 onClick={() => setActivePage(state.activePage - 1)}
                 disabled={state.activePage === 0}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-white dark:bg-dark-card border border-ui-border text-ui-text hover:bg-zinc-50 dark:hover:bg-dark-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-dark-card border border-ui-border text-ui-text hover:bg-zinc-50 dark:hover:bg-dark-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
-                Previous
+                Prev
               </button>
 
               <div className="flex gap-1.5">
@@ -319,7 +339,7 @@ function App() {
                   <button
                     key={index}
                     onClick={() => setActivePage(index)}
-                    className={`w-2.5 h-2.5 rounded-full transition-all ${
+                    className={`w-2 h-2 rounded-full transition-all ${
                       index === state.activePage
                         ? 'bg-primary scale-125'
                         : 'bg-zinc-300 dark:bg-zinc-600 hover:bg-zinc-400'
@@ -332,16 +352,12 @@ function App() {
               <button
                 onClick={() => setActivePage(state.activePage + 1)}
                 disabled={state.activePage === pageCount - 1}
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-white dark:bg-dark-card border border-ui-border text-ui-text hover:bg-zinc-50 dark:hover:bg-dark-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-dark-card border border-ui-border text-ui-text hover:bg-zinc-50 dark:hover:bg-dark-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 Next
               </button>
             </div>
           )}
-
-          <p className="text-xs text-ui-text-faint mt-4">
-            {hasMultiplePages ? 'Use arrow keys to navigate pages. Press Esc to exit.' : 'Press Esc to exit reader mode.'}
-          </p>
         </main>
       </div>
     )
@@ -604,9 +620,6 @@ function App() {
                     theme={state.theme}
                     onThemeChange={setTheme}
                     onThemePresetChange={setThemePreset}
-                    images={state.images}
-                    onAddImage={addImage}
-                    selectedCell={selectedCell}
                   />
                 )}
               </ErrorBoundary>

@@ -225,7 +225,7 @@ Core features working:
 
 This is a workflow-based organization (as of January 2026 refactor):
 - **Presets** - Start here: Layout presets (with aspect ratio filtering), color themes, and visual looks
-- **Media** - Upload images to library, assign to cells, per-image overlay & filters, logo
+- **Media** - Sample images, upload images to library, assign to cells, per-image overlay & filters, logo
 - **Content** - Write text, set visibility, cell assignment, alignment, color, size
 - **Structure** - Fine-tune grid structure and cell alignment
 - **Style** - Typography, per-cell overlay, spacing, frames
@@ -255,8 +255,8 @@ src/
 ├── components/     # React components
 │   ├── AdCanvas.jsx           # Core rendering (cell-based layout)
 │   ├── CollapsibleSection.jsx # Reusable collapsible section for tab content
-│   ├── TemplatesTab.jsx       # Sample images, layout presets, themes, and looks
-│   ├── MediaTab.jsx           # Image + logo upload, fit, position, filters
+│   ├── TemplatesTab.jsx       # Layout presets, themes, and looks
+│   ├── MediaTab.jsx           # Sample images, image + logo upload, fit, position, filters
 │   ├── ContentTab.jsx         # Text editing with cell assignment
 │   ├── LayoutTab.jsx          # Grid structure + cell alignment
 │   ├── StyleTab.jsx           # Typography, overlay, spacing (themes in Presets tab)
@@ -365,14 +365,14 @@ textCells: {
 ## Tab Details (New Workflow-Based UI)
 
 ### Presets Tab (formerly Templates)
-Entry point for users. Four sections:
-- **Sample Images** - Quick-start sample images to add to library (auto-expanded when no images)
+Entry point for users. Three sections:
 - **Layout** - Grid structure presets with aspect ratio filtering (All, Square, Portrait, Landscape) and category filtering
 - **Themes** - 12 preset color themes + custom color inputs
 - **Looks** - Visual effect presets that apply overlay, fonts, and filters without changing layout or colors
 
 ### Media Tab
 Collapsible sections:
+- **Sample Images** - Quick-start sample images to add to library (auto-expanded when no images)
 - **AI Image Prompt** - Helper for generating AI image prompts
 - **Images** - Upload to library, cell selector, assign images to cells, per-image settings (fit, position)
 - **Image Overlay** - Per-image overlay controls (type, color, opacity) for selected image

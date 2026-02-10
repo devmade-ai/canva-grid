@@ -1,4 +1,4 @@
-import { useState, useMemo, useCallback, memo } from 'react'
+import { useState, useMemo, memo } from 'react'
 import CollapsibleSection from './CollapsibleSection'
 import { lookPresets } from '../config/stylePresets'
 import {
@@ -10,7 +10,6 @@ import {
   getPresetsByAspectRatio,
 } from '../config/layoutPresets'
 import { presetThemes } from '../config/themes'
-import { sampleImages } from '../config/sampleImages'
 
 // Color input component for custom theme colors
 const ColorInput = memo(function ColorInput({ label, value, onChange }) {
@@ -113,78 +112,6 @@ function LayoutPresetIcon({ presetId, isActive }) {
   )
 }
 
-// Sample Images Section
-function SampleImagesSection({ images, onAddImage, selectedCell }) {
-  const [loadingSample, setLoadingSample] = useState(null)
-  const [sampleError, setSampleError] = useState(null)
-
-  const loadSampleImage = useCallback(
-    async (sample) => {
-      setLoadingSample(sample.id)
-      setSampleError(null)
-      try {
-        const response = await fetch(import.meta.env.BASE_URL + sample.file)
-        if (!response.ok) throw new Error('Image not found')
-        const blob = await response.blob()
-        const reader = new FileReader()
-        reader.onload = (event) => {
-          onAddImage(event.target.result, sample.name, selectedCell)
-          setLoadingSample(null)
-        }
-        reader.onerror = () => {
-          setSampleError('Failed to load image')
-          setLoadingSample(null)
-        }
-        reader.readAsDataURL(blob)
-      } catch {
-        setSampleError(`Add ${sample.name} to public/samples/`)
-        setLoadingSample(null)
-      }
-    },
-    [onAddImage]
-  )
-
-  return (
-    <div className="space-y-2">
-      <p className="text-xs text-ui-text-subtle">
-        {images.length === 0 ? 'Add a sample image to get started' : 'Add sample images to your library'}
-      </p>
-      <div className="grid grid-cols-5 gap-1.5">
-        {sampleImages.map((sample) => (
-          <button
-            key={sample.id}
-            onClick={() => loadSampleImage(sample)}
-            disabled={loadingSample === sample.id}
-            title={`Add ${sample.name} to library`}
-            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
-              loadingSample === sample.id
-                ? 'border-violet-400 opacity-50 scale-95'
-                : 'border-ui-border hover:border-violet-400 hover:shadow-sm active:scale-95'
-            }`}
-          >
-            <img
-              src={import.meta.env.BASE_URL + sample.file}
-              alt={sample.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.style.display = 'none'
-                e.target.nextSibling.style.display = 'flex'
-              }}
-            />
-            <div
-              className="w-full h-full bg-ui-surface-inset items-center justify-center text-ui-text-faint text-[9px] text-center p-0.5"
-              style={{ display: 'none' }}
-            >
-              {sample.name}
-            </div>
-          </button>
-        ))}
-      </div>
-      {sampleError && <p className="text-xs text-red-600 dark:text-red-400">{sampleError}</p>}
-    </div>
-  )
-}
-
 export default memo(function TemplatesTab({
   activeStylePreset,
   onSelectStylePreset,
@@ -195,9 +122,6 @@ export default memo(function TemplatesTab({
   theme,
   onThemeChange,
   onThemePresetChange,
-  images = [],
-  onAddImage,
-  selectedCell = 0,
 }) {
   const isCustomTheme = theme?.preset === 'custom'
   const [layoutCategory, setLayoutCategory] = useState('all')
@@ -332,13 +256,6 @@ export default memo(function TemplatesTab({
           </p>
         </div>
       </CollapsibleSection>
-
-      {/* Sample Images */}
-      {onAddImage && (
-        <CollapsibleSection title="Sample Images" defaultExpanded={false}>
-          <SampleImagesSection images={images} onAddImage={onAddImage} selectedCell={selectedCell} />
-        </CollapsibleSection>
-      )}
 
       {/* Theme Presets */}
       <CollapsibleSection title="Themes" defaultExpanded={false}>

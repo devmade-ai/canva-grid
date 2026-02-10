@@ -3,6 +3,7 @@ import CollapsibleSection from './CollapsibleSection'
 import { platforms } from '../config/platforms'
 import { overlayTypes } from '../config/layouts'
 import { neutralColors } from '../config/themes'
+import { sampleImages } from '../config/sampleImages'
 
 // Theme color options for overlay
 const themeColorOptions = [
@@ -366,6 +367,78 @@ function AIPromptHelper({ theme }) {
 }
 
 
+// Sample Images Section
+function SampleImagesSection({ images, onAddImage, selectedCell }) {
+  const [loadingSample, setLoadingSample] = useState(null)
+  const [sampleError, setSampleError] = useState(null)
+
+  const loadSampleImage = useCallback(
+    async (sample) => {
+      setLoadingSample(sample.id)
+      setSampleError(null)
+      try {
+        const response = await fetch(import.meta.env.BASE_URL + sample.file)
+        if (!response.ok) throw new Error('Image not found')
+        const blob = await response.blob()
+        const reader = new FileReader()
+        reader.onload = (event) => {
+          onAddImage(event.target.result, sample.name, selectedCell)
+          setLoadingSample(null)
+        }
+        reader.onerror = () => {
+          setSampleError('Failed to load image')
+          setLoadingSample(null)
+        }
+        reader.readAsDataURL(blob)
+      } catch {
+        setSampleError(`Add ${sample.name} to public/samples/`)
+        setLoadingSample(null)
+      }
+    },
+    [onAddImage, selectedCell]
+  )
+
+  return (
+    <div className="space-y-2">
+      <p className="text-xs text-ui-text-subtle">
+        {images.length === 0 ? 'Add a sample image to get started' : 'Add sample images to your library'}
+      </p>
+      <div className="grid grid-cols-5 gap-1.5">
+        {sampleImages.map((sample) => (
+          <button
+            key={sample.id}
+            onClick={() => loadSampleImage(sample)}
+            disabled={loadingSample === sample.id}
+            title={`Add ${sample.name} to library`}
+            className={`aspect-square rounded-lg overflow-hidden border-2 transition-all ${
+              loadingSample === sample.id
+                ? 'border-violet-400 opacity-50 scale-95'
+                : 'border-ui-border hover:border-violet-400 hover:shadow-sm active:scale-95'
+            }`}
+          >
+            <img
+              src={import.meta.env.BASE_URL + sample.file}
+              alt={sample.name}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.style.display = 'none'
+                e.target.nextSibling.style.display = 'flex'
+              }}
+            />
+            <div
+              className="w-full h-full bg-ui-surface-inset items-center justify-center text-ui-text-faint text-[9px] text-center p-0.5"
+              style={{ display: 'none' }}
+            >
+              {sample.name}
+            </div>
+          </button>
+        ))}
+      </div>
+      {sampleError && <p className="text-xs text-red-600 dark:text-red-400">{sampleError}</p>}
+    </div>
+  )
+}
+
 export default memo(function MediaTab({
   // Image pool
   images = [],
@@ -503,6 +576,11 @@ export default memo(function MediaTab({
   return (
     <div className="space-y-3">
       <h3 className="text-sm font-semibold text-ui-text">Media</h3>
+
+      {/* Sample Images */}
+      <CollapsibleSection title="Sample Images" defaultExpanded={images.length === 0}>
+        <SampleImagesSection images={images} onAddImage={onAddImage} selectedCell={selectedCell} />
+      </CollapsibleSection>
 
       {/* AI Image Prompt Helper Section - collapsed by default */}
       <CollapsibleSection title="AI Image Prompt" defaultExpanded={false}>
