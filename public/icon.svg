@@ -13,19 +13,25 @@
   <!-- Main rounded square -->
   <rect x="32" y="32" width="448" height="448" rx="64" fill="url(#bg)"/>
 
-  <!-- Image area (top-left diagonal) -->
-  <path d="M80 96 L320 96 L80 336 Z" fill="url(#accent)" opacity="0.4"/>
+  <!-- 2x3 grid of cells with gap -->
+  <!-- Row 1 -->
+  <rect x="80" y="80" width="168" height="104" rx="12" fill="white" opacity="0.9"/>
+  <rect x="264" y="80" width="168" height="104" rx="12" fill="url(#accent)" opacity="0.5"/>
 
-  <!-- Stylized image placeholder -->
-  <rect x="96" y="112" width="160" height="120" rx="12" fill="white" opacity="0.9"/>
-  <circle cx="140" cy="156" r="20" fill="url(#accent)"/>
-  <path d="M108 220 L156 172 L196 212 L220 188 L244 220 Z" fill="url(#accent)" opacity="0.7"/>
+  <!-- Row 2 -->
+  <rect x="80" y="200" width="168" height="104" rx="12" fill="url(#accent)" opacity="0.35"/>
+  <rect x="264" y="200" width="168" height="104" rx="12" fill="white" opacity="0.9"/>
 
-  <!-- Text lines -->
-  <rect x="96" y="264" width="320" height="24" rx="6" fill="white" opacity="0.9"/>
-  <rect x="96" y="304" width="240" height="16" rx="4" fill="white" opacity="0.6"/>
-  <rect x="96" y="336" width="280" height="16" rx="4" fill="white" opacity="0.6"/>
+  <!-- Row 3 -->
+  <rect x="80" y="320" width="168" height="104" rx="12" fill="white" opacity="0.6"/>
+  <rect x="264" y="320" width="168" height="104" rx="12" fill="url(#accent)" opacity="0.25"/>
 
-  <!-- CTA button hint -->
-  <rect x="96" y="384" width="120" height="40" rx="8" fill="white" opacity="0.9"/>
+  <!-- Small image hint in top-left cell -->
+  <circle cx="132" cy="116" r="12" fill="url(#accent)" opacity="0.7"/>
+  <path d="M92 172 L124 140 L156 168 L172 152 L236 172 Z" fill="url(#accent)" opacity="0.5"/>
+
+  <!-- Text line hints in middle-right cell -->
+  <rect x="280" y="228" width="136" height="12" rx="3" fill="url(#bg)" opacity="0.4"/>
+  <rect x="280" y="248" width="100" height="10" rx="3" fill="url(#bg)" opacity="0.25"/>
+  <rect x="280" y="266" width="116" height="10" rx="3" fill="url(#bg)" opacity="0.25"/>
 </svg>
