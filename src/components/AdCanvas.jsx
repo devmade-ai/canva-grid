@@ -621,7 +621,8 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
             style={{
               position: 'absolute',
               inset: 0,
-              boxShadow: `inset 0 0 0 ${frameWidth}px ${frameColor}`,
+              border: `${frameWidth}px solid ${frameColor}`,
+              boxSizing: 'border-box',
               pointerEvents: 'none',
               zIndex: 5,
             }}
@@ -711,7 +712,8 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
             style={{
               position: 'absolute',
               inset: 0,
-              boxShadow: `inset 0 0 0 ${frameWidth}px ${frameColor}`,
+              border: `${frameWidth}px solid ${frameColor}`,
+              boxSizing: 'border-box',
               pointerEvents: 'none',
               zIndex: 5,
             }}
@@ -802,7 +804,8 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           style={{
             position: 'absolute',
             inset: 0,
-            boxShadow: `inset 0 0 0 ${outerFrameWidth}px ${outerFrameColor}`,
+            border: `${outerFrameWidth}px solid ${outerFrameColor}`,
+            boxSizing: 'border-box',
             pointerEvents: 'none',
             zIndex: 9,
           }}
