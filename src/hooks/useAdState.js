@@ -4,15 +4,17 @@ import { getLookSettingsForLayout } from '../config/stylePresets'
 import { useHistory } from './useHistory'
 
 const defaultTheme = presetThemes[0] // Dark theme
-const STORAGE_KEY = 'grumpy-campaign-kit-designs'
+const STORAGE_KEY = 'grumpy-cam-canvas-designs'
 
-// Migrate from old localStorage key
+// Migrate from old localStorage keys
 if (typeof window !== 'undefined') {
-  const OLD_KEY = 'social-ad-creator-designs'
-  const old = localStorage.getItem(OLD_KEY)
-  if (old && !localStorage.getItem(STORAGE_KEY)) {
-    localStorage.setItem(STORAGE_KEY, old)
-    localStorage.removeItem(OLD_KEY)
+  const OLD_KEYS = ['social-ad-creator-designs', 'grumpy-campaign-kit-designs']
+  for (const oldKey of OLD_KEYS) {
+    const old = localStorage.getItem(oldKey)
+    if (old && !localStorage.getItem(STORAGE_KEY)) {
+      localStorage.setItem(STORAGE_KEY, old)
+    }
+    if (old) localStorage.removeItem(oldKey)
   }
 }
 
