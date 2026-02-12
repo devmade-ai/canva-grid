@@ -19,11 +19,9 @@ function CellGrid({ layout, cellImages = {}, selectedCell, onSelectCell, platfor
 
   return (
     <div
-      className="flex overflow-hidden border border-ui-border-strong rounded"
+      className="flex overflow-hidden border border-ui-border-strong rounded w-16 sm:w-12"
       style={{
-        width: '48px',
-        height: `${48 / aspectRatio}px`,
-        minHeight: '32px',
+        aspectRatio: `${aspectRatio}`,
         flexDirection: isRows || isFullbleed ? 'column' : 'row',
       }}
     >
@@ -51,12 +49,12 @@ function CellGrid({ layout, cellImages = {}, selectedCell, onSelectCell, platfor
           sectionCells.push(
             <div
               key={`cell-${currentCellIndex}`}
-              className={`relative cursor-pointer transition-colors min-h-[8px] ${bgClass} flex items-center justify-center`}
+              className={`relative cursor-pointer transition-colors min-h-[6px] ${bgClass} flex items-center justify-center`}
               style={{ flex: `1 1 ${subSizes[subIndex]}%` }}
               onClick={() => onSelectCell(currentCellIndex)}
               title={`Cell ${currentCellIndex + 1}`}
             >
-              <span className={`text-[8px] font-medium leading-none ${isSelected ? 'text-white' : hasImage ? 'text-violet-700 dark:text-violet-200' : 'text-ui-text-faint'}`}>
+              <span className={`text-[9px] sm:text-[8px] font-medium leading-none ${isSelected ? 'text-white' : hasImage ? 'text-violet-700 dark:text-violet-200' : 'text-ui-text-faint'}`}>
                 {currentCellIndex + 1}
               </span>
             </div>
