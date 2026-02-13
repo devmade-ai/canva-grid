@@ -6,7 +6,7 @@ const tutorialSteps = [
     icon: '👋',
     content: (
       <div className="space-y-3">
-        <p>CanvaGrid helps you design professional social media ads in minutes.</p>
+        <p>CanvaGrid helps you create visual designs — social posts, ads, presentations, stories, and more.</p>
         <p className="text-ui-text-muted">Follow this quick guide to learn the basics, or explore on your own!</p>
         <div className="bg-ui-surface-inset rounded-lg p-3 text-sm">
           <strong>Workflow:</strong> Presets → Media → Content → Structure → Style → Export
@@ -71,7 +71,7 @@ const tutorialSteps = [
     icon: '✏️',
     content: (
       <div className="space-y-3">
-        <p>Write your ad copy. Toggle between two modes:</p>
+        <p>Add text to your design. Toggle between two modes:</p>
         <ul className="space-y-2 text-sm">
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
@@ -143,7 +143,7 @@ const tutorialSteps = [
     icon: '📤',
     content: (
       <div className="space-y-3">
-        <p>Download your finished ad.</p>
+        <p>Download your finished design.</p>
         <ul className="space-y-2 text-sm">
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
