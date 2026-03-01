@@ -91,10 +91,14 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         },
       })
 
-      const link = document.createElement('a')
-      link.download = `ad-${platform.id}-${platform.width}x${platform.height}.png`
-      link.href = dataUrl
-      link.click()
+      // Requirement: Reliable single-image download across all browsers/contexts
+      // Approach: Convert data URL to blob and use file-saver's saveAs
+      // Alternatives:
+      //   - Detached <a> link.click(): Rejected - fails in Safari, PWA contexts,
+      //     and with large data URLs (print sizes). This was the previous approach.
+      const response = await fetch(dataUrl)
+      const blob = await response.blob()
+      saveAs(blob, `ad-${platform.id}-${platform.width}x${platform.height}.png`)
     } catch (error) {
       console.error('Export failed:', error)
       alert('Export failed. Please try again.')
