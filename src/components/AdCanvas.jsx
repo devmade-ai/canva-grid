@@ -726,12 +726,12 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     )
   }
 
+  // Requirement: Use pre-computed cellInfo instead of mutable cellIndex during render (#15)
+  // Approach: Use cellInfo.cells which maps each cell to its section/sub indices
   const renderGridLayout = () => {
     const { type, structure } = layout
     const isRows = type === 'rows'
     const sections = structure || [{ size: 100, subdivisions: 1, subSizes: [100] }]
-
-    let cellIndex = 0
 
     return (
       <div
@@ -745,27 +745,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       >
         {sections.map((section, sectionIndex) => {
           const sectionSize = section.size || 100
-          const subdivisions = section.subdivisions || 1
-          const subSizes = section.subSizes || [100]
-
-          const sectionCells = []
-          for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
-            const currentCellIndex = cellIndex
-            cellIndex++
-
-            sectionCells.push(
-              <div
-                key={`cell-${currentCellIndex}`}
-                style={{
-                  flex: `0 0 ${subSizes[subIndex] || (100 / subdivisions)}%`,
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                {renderCellContent(currentCellIndex)}
-              </div>
-            )
-          }
+          const sectionCellData = cellInfo.cells.filter(c => c.sectionIndex === sectionIndex)
 
           return (
             <div
@@ -773,12 +753,23 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
               style={{
                 flex: `0 0 ${sectionSize}%`,
                 display: 'flex',
-                flexDirection: isRows ? 'row' : 'column', // Subdivisions go perpendicular
+                flexDirection: isRows ? 'row' : 'column',
                 position: 'relative',
                 overflow: 'hidden',
               }}
             >
-              {sectionCells}
+              {sectionCellData.map(({ index: currentCellIndex, subSize }) => (
+                <div
+                  key={`cell-${currentCellIndex}`}
+                  style={{
+                    flex: `0 0 ${subSize}%`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {renderCellContent(currentCellIndex)}
+                </div>
+              ))}
             </div>
           )
         })}
