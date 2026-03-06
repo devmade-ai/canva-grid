@@ -12,27 +12,26 @@ A browser-based visual design tool. Upload images, add text overlays, choose lay
 - **Looks** - One-click visual presets that apply fonts, filters, and overlay without changing layout or colors
 
 ### Media
-- **Image upload** - Drag-drop or click to upload background images
-- **Object fit** - Cover (fill) or Contain (fit) modes
+- **Sample images** - Browse CDN-hosted sample images with category filtering
+- **Image library** - Upload multiple images and assign them to individual cells
+- **Object fit** - Cover (fill) or Contain (fit) modes per image
 - **Position control** - Adjust image position within frame
-- **Advanced filters** - Grayscale, sepia, blur, contrast, brightness
+- **Image overlay** - Per-image overlay controls (type, color, opacity)
+- **Advanced filters** - Grayscale, sepia, blur, contrast, brightness per image
 - **Logo upload** - Add your brand logo with position (corners/center) and size controls
 
 ### Content
-Six text elements organized into groups:
+Two modes: **Structured** and **Freeform**
+
+**Structured mode** - Six text elements organized into groups:
 - **Title & Tagline** - Main headline and supporting text (paired)
 - **Body Heading & Body Text** - Section content (paired)
 - **CTA** - Call to action button text
 - **Footnote** - Fine print or disclaimers
 
-Each text element supports:
-- Visibility toggle
-- Cell placement (which layout cell it appears in)
-- Horizontal alignment (left, center, right, or auto)
-- Color selection (theme colors + neutrals)
-- Size adjustment
-- Bold/italic styling
-- Letter spacing (tight, normal, wide, wider)
+Each text element supports: visibility toggle, cell placement, alignment, color, size, bold/italic, letter spacing.
+
+**Freeform mode** - Per-cell text editors with independent content, optional markdown rendering per cell.
 
 ### Structure
 - **Layout Type** - Choose Full Bleed, Rows, or Columns with adjustable sizes
@@ -40,21 +39,31 @@ Each text element supports:
 
 ### Style
 - **Typography** - 15 Google Fonts (sans-serif, serif, display categories) with separate title and body font selection
-- **Overlay** - Per-cell overlay controls (solid, 8 gradient directions, vignette, spotlight) with adjustable opacity
-- **Spacing** - Global padding plus per-cell custom padding
+- **Overlay** - Per-cell overlay with 34 effects (solid, 8 gradient directions, radial variants, blend modes, textures) with adjustable opacity
+- **Spacing** - Global padding plus per-cell custom padding, outer frame and cell frames
+
+### Multi-Page
+- Create multi-page documents (books, stories, presentations)
+- Add, duplicate, delete, reorder pages
+- Per-page: images, layout, text, overlays, padding, frames
+- Shared across pages: theme, fonts, platform, logo
+- **Reader mode** - Clean full-screen view with page navigation
 
 ### Export
-- **22 platforms** across 6 categories:
-  - **Social** - Instagram Square/Story, TikTok, LinkedIn (Square/Portrait/Landscape), Facebook Post, Twitter/X
+- **28 formats** across 12 platform groups in 6 categories:
+  - **Social** - Instagram (Feed Portrait/Square/Feed Landscape/Story), Facebook (Feed/Square/Story/Cover), TikTok, LinkedIn (Square/Portrait/Landscape), Twitter/X
   - **Website** - Hero (Standard/Tall/Full HD), OG Image
   - **Banners** - LinkedIn Banner, YouTube Banner
   - **Email** - Email Header
   - **Print** - A3, A4, A5 (Portrait & Landscape at 150 DPI)
   - **Other** - Zoom Background
-- **Single download** - Export current platform as PNG
-- **Batch download** - ZIP file with all platform sizes
-- **PDF export** - Save as PDF for LinkedIn carousels and print (uses browser print dialog)
-- **Progress indicator** - Visual feedback during export
+- **Format selection** - PNG, JPG, or WebP with per-platform recommendations
+- **Two-level platform selector** - Browse by category → platform → format, with tips and file size limits
+- **Single download** - Export current platform in selected format
+- **Multi-page ZIP** - Export all pages as a ZIP archive
+- **Multi-platform ZIP** - Select multiple platforms and export as ZIP
+- **PDF export** - Save as PDF via jsPDF (for LinkedIn carousels, works on mobile)
+- **Progress indicator** - Visual feedback during batch exports
 
 ## Quick Start
 
@@ -92,7 +101,10 @@ npm run preview  # Preview production build
 - Tailwind CSS
 - html-to-image for rendering
 - JSZip + file-saver for batch export
+- jsPDF for PDF export
+- marked for markdown parsing (freeform text mode)
 - Vercel deployment
+- PWA support (installable, offline capable)
 
 ## Deployment
 

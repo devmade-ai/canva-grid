@@ -347,31 +347,35 @@ Run these tests after making changes to ensure nothing is broken.
 
 | Step | Action | Where | Expected |
 |------|--------|-------|----------|
-| 1 | Click "LinkedIn" | Platform buttons below preview | Preview shows 1200×627 aspect ratio |
-| 2 | Click "Instagram Square" | Platform buttons | Preview shows square (1080×1080) |
-| 3 | Click "Instagram Story" | Platform buttons | Preview shows tall (1080×1920) |
-| 4 | Click "TikTok" | Platform buttons | Preview shows tall (1080×1920) |
+| 1 | Expand Social → LinkedIn | Platform selector below preview | Shows Square, Portrait, Landscape options |
+| 2 | Click "Square" under LinkedIn | Platform selector | Preview shows 1080×1080 aspect ratio |
+| 3 | Click "Portrait" under LinkedIn | Platform selector | Preview shows 1080×1350 aspect ratio |
+| 4 | Expand Social → Instagram | Platform selector | Shows Feed Portrait, Square, Feed Landscape, Story options |
+| 5 | Click "Story / Reels" under Instagram | Platform selector | Preview shows tall (1080×1920) |
 
 ### E2: Single Download
 
-**Scenario:** Download button exports current platform as PNG.
+**Scenario:** Download button exports current platform in selected format.
 
 | Step | Action | Where | Expected |
 |------|--------|-------|----------|
-| 1 | Select a platform | Platform buttons | Platform selected |
-| 2 | Click "Download" | Export buttons | PNG file downloads |
-| 3 | Open downloaded file | File system | Image matches preview, correct dimensions |
+| 1 | Select a platform | Platform selector | Platform selected |
+| 2 | Select format (PNG/JPG/WebP) | File Format buttons | Format highlighted |
+| 3 | Click "Download Current" | Export buttons | File downloads with timestamp filename |
+| 4 | Open downloaded file | File system | Image matches preview, correct dimensions, correct format |
 
-### E3: Batch Download
+### E3: Multi-Platform Download
 
-**Scenario:** Download All creates ZIP with all platforms.
+**Scenario:** Download Multiple Platforms creates ZIP with selected platforms.
 
 | Step | Action | Where | Expected |
 |------|--------|-------|----------|
-| 1 | Click "Download All" | Export buttons | Progress indicator appears |
-| 2 | Wait for completion | Progress indicator | ZIP file downloads |
-| 3 | Extract ZIP | File system | Contains 6 PNG files, one per platform |
-| 4 | Check dimensions | Each file | Correct dimensions for each platform |
+| 1 | Click "Download Multiple Platforms (ZIP)" | Export buttons | Platform selection UI appears |
+| 2 | Click "Select All" | Multi-select panel | All 28 platforms selected |
+| 3 | Click "Export 28 Platforms" | Multi-select panel | Progress indicator appears |
+| 4 | Wait for completion | Progress indicator | ZIP file downloads |
+| 5 | Extract ZIP | File system | Contains 28 image files, one per format |
+| 6 | Check dimensions | Each file | Correct dimensions for each platform |
 
 ---
 

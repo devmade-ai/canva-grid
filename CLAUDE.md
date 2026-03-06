@@ -344,7 +344,7 @@ Core features working:
   - CTA (independent)
   - Footnote (independent)
 - Theme system with 12 color themes and custom colors
-- Overlay system with 26 effects:
+- Overlay system with 34 effects:
   - Basic: Solid color
   - Linear gradients: 8 directions (↑↓←→ and diagonals)
   - Radial: Vignette, Spotlight, Radial Soft, Radial Ring, 4 corner radials (↖↗↙↘)
@@ -429,8 +429,8 @@ src/
 │   ├── ErrorBoundary.jsx      # Error handling wrapper
 │   └── DebugPill.jsx          # Floating debug panel (separate React root, dev only)
 ├── config/         # Configuration
-│   ├── layouts.js        # 26 overlay types (solid, gradients, radial, effects, blends, textures)
-│   ├── layoutPresets.js  # 27 layouts with SVG icons and categories
+│   ├── layouts.js        # 34 overlay types (solid, gradients, radial, effects, blends, textures)
+│   ├── layoutPresets.js  # 35 layouts with SVG icons and categories
 │   ├── stylePresets.js   # Look presets (fonts + filters + overlay effects per layout)
 │   ├── platforms.js      # 28 formats across 12 platform groups (nested: platformGroups + flat: platforms)
 │   ├── sampleImages.js   # CDN manifest URL for sample images (fetched at runtime)
@@ -443,7 +443,6 @@ src/
 │   ├── usePWAInstall.js  # PWA install prompt state
 │   └── usePWAUpdate.js   # PWA update detection state
 ├── utils/
-│   ├── export.js         # Export utilities
 │   └── debugLog.js       # In-memory debug event store (200-entry circular buffer)
 ├── App.jsx
 └── main.jsx

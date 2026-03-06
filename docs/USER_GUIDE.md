@@ -235,7 +235,7 @@ Per-cell text editors with independent content per cell. Each cell gets its own 
 
 - Text content area
 - Alignment, color, and size controls
-- Markdown rendering (content is always parsed as markdown)
+- Optional markdown toggle per cell (MD button enables rendering via `marked`)
 
 ---
 
@@ -277,11 +277,12 @@ Fine-tune typography, overlays, and spacing.
 Controls per-cell overlays that help text stand out. Select a cell to configure:
 - **Enable/Disable:** Toggle overlay for each cell (defaults to on for image cells)
 - **Custom Settings:** Enable to override with your own type, color, and opacity
-- **Type:** Choose from multiple overlay categories:
+- **Type:** Choose from 34 overlay effects:
   - Basic & Gradients: Solid, 8 gradient directions
-  - Radial: Vignette, Spotlight, Radial Soft, Radial Ring
-  - Effects: Blur Edges, Frame, Duotone, Noise, Film Grain
+  - Radial: Vignette, Spotlight, Radial Soft, Radial Ring, 4 corner radials
+  - Effects: Blur Edges, Frame, Duotone
   - Blend Modes: Multiply, Screen, Overlay, Color Burn
+  - Textures: Noise, Film Grain
 - **Color:** Theme colors (Primary, Secondary, Accent) or neutrals
 - **Opacity:** Adjust transparency (0-100%)
 
@@ -330,46 +331,43 @@ Click **View** in the header to enter a clean full-screen view of your pages.
 Located below the preview area.
 
 ### Platform Selection
-Click any platform button to see how your ad looks at that size. Platforms are organized by category:
+A two-level selector organized by category → platform → format. Click categories to expand, then select a format. Platforms with a single format select directly; platforms with multiple formats expand to show options. Tips and file size limits are shown for each platform.
+
+28 formats across 12 platform groups:
 
 **Social Media:**
-- Instagram Square (1080×1080)
-- TikTok (1080×1920)
-- Instagram Story (1080×1920)
-- LinkedIn Square (1080×1080) - Most versatile, mobile-optimized
-- LinkedIn Portrait (1080×1350) - Maximizes vertical feed space
-- LinkedIn Landscape (1920×1080) - Desktop/cinematic content
-- Facebook Post (1200×630)
-- Twitter/X (1600×900)
+- Instagram: Feed Portrait (1080×1350), Square (1080×1080), Feed Landscape (1080×566), Story/Reels (1080×1920)
+- Facebook: Feed Post (1200×630), Square (1080×1080), Story (1080×1920), Cover Photo (1640×624)
+- TikTok: Video Cover (1080×1920)
+- LinkedIn: Square (1080×1080), Portrait (1080×1350), Landscape (1920×1080)
+- Twitter/X: Post (1600×900)
 
 **Website:**
-- Hero Standard (1920×600) - Standard website hero banner
-- Hero Tall (1920×800) - Taller hero for more impact
-- Hero Full HD (1920×1080) - Full viewport hero
-- OG Image (1200×630) - Social share preview image
+- Hero Banner: Standard (1920×600), Tall (1920×800), Full HD (1920×1080)
+- Social Preview (OG): OG Image (1200×630)
 
 **Banners:**
-- LinkedIn Banner (1584×396) - Profile/company banner
-- YouTube Banner (2560×1440) - Channel art
+- LinkedIn Banner (1584×396)
+- YouTube Banner (2560×1440)
+
+**Email:**
+- Email Header (800×400)
 
 **Print (150 DPI):**
-- A3 Portrait (1754×2480)
-- A3 Landscape (2480×1754)
-- A4 Portrait (1240×1754)
-- A4 Landscape (1754×1240)
-- A5 Portrait (874×1240)
-- A5 Landscape (1240×874)
+- A3 Portrait/Landscape, A4 Portrait/Landscape, A5 Portrait/Landscape
 
 **Other:**
-- Email Header (800×400) - Email campaign header
-- Zoom Background (1920×1080) - Virtual meeting background
+- Zoom Background (1920×1080)
+
+### File Format
+Choose PNG, JPG, or WebP before exporting. Each platform shows a recommended format — click "Use recommended" to switch. PNG for graphics/text, JPG for photos, WebP for smallest files.
 
 ### Download Options
 
-- **Download:** Export the current platform as a PNG file
-- **Download Multiple (ZIP):** Select platforms and export as a ZIP
-- **Download All Pages (ZIP):** Export every page as a numbered PNG in a ZIP (appears when multiple pages exist)
-- **Save as PDF:** Opens your browser's print dialog — select "Save as PDF" to create a PDF document. For multi-page designs, each page becomes a separate PDF page (ideal for LinkedIn carousel documents)
+- **Download Current** - Export the current platform in selected format
+- **Download All Pages (ZIP)** - Export every page as a numbered image in a ZIP (appears when multiple pages exist)
+- **Download as PDF** - Save as PDF via jsPDF (for LinkedIn carousels, works on mobile). Multi-page designs get one PDF page per document page.
+- **Download Multiple Platforms (ZIP)** - Select multiple platforms and export as a ZIP
 
 ---
 
