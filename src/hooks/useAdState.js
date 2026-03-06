@@ -176,6 +176,7 @@ export const defaultState = {
   },
 
   platform: 'instagram-square',
+  exportFormat: 'png',
 
   // pages[activePage] = null because active page data lives at top-level state
   // (so existing components read state.layout, state.text etc. without knowing about pages)
@@ -472,6 +473,10 @@ export function useAdState() {
 
   const setPlatform = useCallback((platform) => {
     setState((prev) => ({ ...prev, platform }))
+  }, [])
+
+  const setExportFormat = useCallback((exportFormat) => {
+    setState((prev) => ({ ...prev, exportFormat }))
   }, [])
 
   const resetState = useCallback(() => {
@@ -843,6 +848,7 @@ export function useAdState() {
     setOuterFrame,
     setCellFrame,
     setPlatform,
+    setExportFormat,
     resetState,
     applyStylePreset,
     clearStylePreset,

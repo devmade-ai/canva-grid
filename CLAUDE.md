@@ -352,14 +352,16 @@ Core features working:
   - Blend modes: Multiply, Screen, Overlay, Color Burn
   - Textures: Noise, Film Grain
 - 15 Google Fonts (sans-serif, serif, display categories)
-- Export to 22 platforms:
-  - Social: Instagram Square/Story, TikTok, LinkedIn (Square/Portrait/Landscape), Facebook, Twitter/X
+- Export to 28 formats across 12 platform groups:
+  - Social: Instagram (Feed Portrait/Square/Feed Landscape/Story), Facebook (Feed/Square/Story/Cover), TikTok, LinkedIn (Square/Portrait/Landscape), Twitter/X
   - Website: Hero (Standard/Tall/Full HD), OG Image
   - Banners: LinkedIn Banner, YouTube Banner
   - Print: A3, A4, A5 (Portrait & Landscape at 150 DPI)
   - Other: Email Header, Zoom Background
+- **Export format selection**: PNG, JPG, or WebP with per-platform recommendations
 - Single download, ZIP batch download, multi-page ZIP export, and PDF export
-- **PDF export**: Save as PDF via browser print dialog (zero dependencies, for LinkedIn carousels)
+- **PDF export**: Save as PDF via jsPDF (for LinkedIn carousels, works on mobile)
+- **Platform specs**: Two-level selector (platform → format), tips, file size limits, recommended formats
 - Responsive preview that adapts to device width
 - **PWA support**: Installable app with offline capability and update prompts
   - Inline `beforeinstallprompt` capture in index.html (race condition fix)
@@ -430,7 +432,7 @@ src/
 │   ├── layouts.js        # 26 overlay types (solid, gradients, radial, effects, blends, textures)
 │   ├── layoutPresets.js  # 27 layouts with SVG icons and categories
 │   ├── stylePresets.js   # Look presets (fonts + filters + overlay effects per layout)
-│   ├── platforms.js      # 22 platform sizes (social, web, banners, print, other)
+│   ├── platforms.js      # 28 formats across 12 platform groups (nested: platformGroups + flat: platforms)
 │   ├── sampleImages.js   # CDN manifest URL for sample images (fetched at runtime)
 │   ├── themes.js         # 12 color themes
 │   └── fonts.js          # 15 Google Fonts
@@ -458,7 +460,7 @@ activePage: 0  // Index of active page
 
 // Per-page fields: activeStylePreset, activeLayoutPreset, images, cellImages,
 //   defaultImageSettings, text, textCells, layout, padding, frame, textMode, freeformText
-// Shared fields: theme, fonts, platform, logo, logoPosition, logoSize
+// Shared fields: theme, fonts, platform, exportFormat, logo, logoPosition, logoSize
 
 // Text mode: 'structured' (text groups) or 'freeform' (per-cell text)
 textMode: 'structured'

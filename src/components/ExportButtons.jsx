@@ -1,24 +1,74 @@
 import { useState, useCallback, memo, useMemo } from 'react'
-import { toPng } from 'html-to-image'
+import { toPng, toJpeg, toCanvas } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
-import { platforms } from '../config/platforms'
+import { platforms, categoryLabels, categoryOrder as defaultCategoryOrder, findFormat } from '../config/platforms'
 
-const categoryLabels = {
-  social: 'Social Media',
-  web: 'Website',
-  banner: 'Banners',
-  email: 'Email',
-  print: 'Print',
-  other: 'Other',
+// Requirement: Export in multiple image formats (PNG, JPG, WebP)
+// Approach: Format toggle above export buttons, shared captureElement helper
+// Why: Different platforms recommend different formats. JPG for photos (smaller),
+//   PNG for text/graphics (lossless), WebP for best compression.
+// Alternatives:
+//   - Always PNG: Rejected - users asked for format choice, platforms recommend JPG
+//   - Auto-detect from platform: Rejected - user should have final say
+
+const FORMAT_OPTIONS = [
+  { id: 'png', label: 'PNG', description: 'Lossless, best for text & graphics' },
+  { id: 'jpg', label: 'JPG', description: 'Smaller files, best for photos' },
+  { id: 'webp', label: 'WebP', description: 'Smallest files, modern format' },
+]
+
+// Capture element as blob in the selected format
+async function captureAsBlob(element, width, height, format) {
+  const options = {
+    width,
+    height,
+    pixelRatio: 1,
+    style: { opacity: '1', transform: 'scale(1)' },
+  }
+
+  if (format === 'jpg') {
+    const dataUrl = await toJpeg(element, { ...options, quality: 0.92 })
+    const response = await fetch(dataUrl)
+    return response.blob()
+  }
+
+  if (format === 'webp') {
+    const canvas = await toCanvas(element, options)
+    return new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 0.92))
+  }
+
+  // Default: PNG
+  const dataUrl = await toPng(element, options)
+  const response = await fetch(dataUrl)
+  return response.blob()
 }
 
-export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportingChange, pageCount = 1, getPageState, onSetActivePage }) {
+// Capture element as data URL (for PDF embedding, always PNG)
+async function captureAsDataUrl(element, width, height) {
+  return toPng(element, {
+    width,
+    height,
+    pixelRatio: 1,
+    style: { opacity: '1', transform: 'scale(1)' },
+  })
+}
+
+function getFileExtension(format) {
+  if (format === 'jpg') return 'jpg'
+  if (format === 'webp') return 'webp'
+  return 'png'
+}
+
+export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, pageCount = 1, getPageState, onSetActivePage }) {
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(null)
   const [showMultiSelect, setShowMultiSelect] = useState(false)
   const [selectedPlatforms, setSelectedPlatforms] = useState(() => new Set())
+
+  const exportFormat = state.exportFormat || 'png'
+  const currentFormat = findFormat(state.platform)
 
   const groupedPlatforms = useMemo(() => {
     const groups = {}
@@ -30,7 +80,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     return groups
   }, [])
 
-  const categoryOrder = ['social', 'web', 'banner', 'email', 'print', 'other']
+  const categoryOrder = defaultCategoryOrder
 
   const togglePlatform = useCallback((platformId) => {
     setSelectedPlatforms((prev) => {
@@ -83,35 +133,19 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     canvasRef.current.style.opacity = '0'
 
     try {
-      // Wait for React re-render from updateExporting() to settle
       await new Promise((resolve) => setTimeout(resolve, 100))
 
-      // Set transform AFTER re-render so it won't be overwritten
       const originalTransform = canvasRef.current.style.transform
       canvasRef.current.style.transform = 'scale(1)'
 
       await new Promise((resolve) => setTimeout(resolve, 50))
 
-      const dataUrl = await toPng(canvasRef.current, {
-        width: platform.width,
-        height: platform.height,
-        pixelRatio: 1,
-        style: {
-          opacity: '1',
-          transform: 'scale(1)',
-        },
-      })
+      const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
 
       canvasRef.current.style.transform = originalTransform
 
-      // Requirement: Reliable single-image download across all browsers/contexts
-      // Approach: Convert data URL to blob and use file-saver's saveAs
-      // Alternatives:
-      //   - Detached <a> link.click(): Rejected - fails in Safari, PWA contexts,
-      //     and with large data URLs (print sizes). This was the previous approach.
-      const response = await fetch(dataUrl)
-      const blob = await response.blob()
-      saveAs(blob, `ad-${platform.id}-${platform.width}x${platform.height}.png`)
+      const ext = getFileExtension(exportFormat)
+      saveAs(blob, `ad-${platform.id}-${platform.width}x${platform.height}.${ext}`)
     } catch (error) {
       console.error('Export failed:', error)
       alert('Export failed. Please try again.')
@@ -119,7 +153,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       canvasRef.current.style.opacity = originalOpacity
       updateExporting(false)
     }
-  }, [canvasRef, state.platform, updateExporting])
+  }, [canvasRef, state.platform, exportFormat, updateExporting])
 
   const handleExportAllPages = useCallback(async () => {
     if (!canvasRef.current || pageCount <= 1) return
@@ -134,7 +168,6 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     const originalOpacity = canvasRef.current.style.opacity
     canvasRef.current.style.opacity = '0'
 
-    // Helper: wait for React re-render + browser paint
     const waitForPaint = () => new Promise((resolve) => {
       requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 100)))
     })
@@ -143,9 +176,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       for (let i = 0; i < pageCount; i++) {
         setExportProgress({ current: i + 1, total: pageCount, name: `Page ${i + 1}` })
 
-        // Switch to the target page
         onSetActivePage(i)
-        // Wait for React state update, re-render, and browser paint
         await new Promise((resolve) => setTimeout(resolve, 300))
         await waitForPaint()
 
@@ -153,25 +184,18 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         canvasRef.current.style.transform = 'scale(1)'
         await waitForPaint()
 
-        const dataUrl = await toPng(canvasRef.current, {
-          width: platform.width,
-          height: platform.height,
-          pixelRatio: 1,
-          style: { opacity: '1', transform: 'scale(1)' },
-        })
+        const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
 
         canvasRef.current.style.transform = originalTransform
 
-        const response = await fetch(dataUrl)
-        const blob = await response.blob()
         const pageNum = String(i + 1).padStart(3, '0')
-        zip.file(`page-${pageNum}-${platform.width}x${platform.height}.png`, blob)
+        const ext = getFileExtension(exportFormat)
+        zip.file(`page-${pageNum}-${platform.width}x${platform.height}.${ext}`, blob)
       }
 
       const content = await zip.generateAsync({ type: 'blob' })
       saveAs(content, 'pages.zip')
 
-      // Always restore to original page
       onSetActivePage(originalActivePage)
     } catch (error) {
       console.error('Page export failed:', error)
@@ -182,7 +206,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       updateExporting(false)
       setExportProgress(null)
     }
-  }, [canvasRef, state.platform, state.activePage, pageCount, onSetActivePage, updateExporting])
+  }, [canvasRef, state.platform, state.activePage, exportFormat, pageCount, onSetActivePage, updateExporting])
 
   // Requirement: PDF export for LinkedIn carousel documents and general print-to-PDF
   // Approach: Capture pages as PNGs, build PDF with jsPDF using exact platform dimensions
@@ -193,6 +217,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   // Alternatives:
   //   - window.open + window.print: Rejected - broken on mobile (about:blank, wrong sizes)
   //   - Direct window.print() on app: Rejected - prints entire UI, not just canvas
+  // Note: PDF always uses PNG internally for lossless quality regardless of exportFormat
   const handleExportPDF = useCallback(async () => {
     if (!canvasRef.current) return
 
@@ -227,12 +252,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         canvasRef.current.style.transform = 'scale(1)'
         await waitForPaint()
 
-        const dataUrl = await toPng(canvasRef.current, {
-          width: platform.width,
-          height: platform.height,
-          pixelRatio: 1,
-          style: { opacity: '1', transform: 'scale(1)' },
-        })
+        const dataUrl = await captureAsDataUrl(canvasRef.current, platform.width, platform.height)
 
         canvasRef.current.style.transform = originalTransform
         pageDataUrls.push(dataUrl)
@@ -307,21 +327,12 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
         await new Promise((resolve) => setTimeout(resolve, 50))
 
-        const dataUrl = await toPng(canvasRef.current, {
-          width: platform.width,
-          height: platform.height,
-          pixelRatio: 1,
-          style: {
-            opacity: '1',
-            transform: 'scale(1)',
-          },
-        })
+        const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
 
         canvasRef.current.style.transform = originalTransform
 
-        const response = await fetch(dataUrl)
-        const blob = await response.blob()
-        zip.file(`ad-${platform.id}-${platform.width}x${platform.height}.png`, blob)
+        const ext = getFileExtension(exportFormat)
+        zip.file(`ad-${platform.id}-${platform.width}x${platform.height}.${ext}`, blob)
       }
 
       const content = await zip.generateAsync({ type: 'blob' })
@@ -338,16 +349,47 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       updateExporting(false)
       setExportProgress(null)
     }
-  }, [canvasRef, state.platform, onPlatformChange, updateExporting, selectedPlatforms])
+  }, [canvasRef, state.platform, exportFormat, onPlatformChange, updateExporting, selectedPlatforms])
 
   return (
     <div className="space-y-3">
+      {/* Format selector */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-ui-text-muted">File Format</span>
+          {currentFormat.recommendedFormat && currentFormat.recommendedFormat !== exportFormat && (
+            <button
+              onClick={() => onExportFormatChange(currentFormat.recommendedFormat)}
+              className="text-[10px] text-primary hover:text-primary-hover transition-colors"
+            >
+              Use recommended ({currentFormat.recommendedFormat.toUpperCase()})
+            </button>
+          )}
+        </div>
+        <div className="flex gap-1">
+          {FORMAT_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => onExportFormatChange(opt.id)}
+              title={opt.description}
+              className={`flex-1 px-2 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                exportFormat === opt.id
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <button
         onClick={handleExportSingle}
         disabled={isExporting}
         className="w-full px-4 py-3 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-glow active:scale-[0.98] btn-scale"
       >
-        {isExporting && !exportProgress ? 'Exporting...' : 'Download Current'}
+        {isExporting && !exportProgress ? 'Exporting...' : `Download Current (.${getFileExtension(exportFormat)})`}
       </button>
 
       {/* Download all pages as ZIP */}

@@ -33,15 +33,12 @@ export async function exportAllPlatforms(canvasRef, state, onProgress) {
     onProgress?.({ current: i + 1, total: platforms.length, platform: platform.name })
 
     try {
-      // We need to render at each platform size
-      // This is handled by temporarily switching the platform in the parent component
       const dataUrl = await toPng(canvasRef.current, {
         width: platform.width,
         height: platform.height,
         pixelRatio: 1,
       })
 
-      // Convert data URL to blob
       const response = await fetch(dataUrl)
       const blob = await response.blob()
 
