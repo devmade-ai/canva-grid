@@ -763,3 +763,115 @@ Amazon's automated scanning enforces main image requirements strictly. Over 70% 
 | Mini shop banner | 1600 × 213 px |
 | Big banner | 1600 × 400 px |
 | Shop icon | 500 × 500 px (square) |
+
+---
+
+## Google Ads
+
+Google Display ads have a 150 KB file size limit per image. The six sizes that cover the most inventory: 300 × 250, 728 × 90, 160 × 600, 300 × 600, 320 × 50, and 320 × 100.
+
+### Standard display ad sizes (uploaded image ads)
+
+| Name | Dimensions | Placement |
+|------|-----------|-----------|
+| Medium Rectangle | 300 × 250 | Desktop + mobile (highest inventory) |
+| Large Rectangle | 336 × 280 | Desktop articles |
+| Leaderboard | 728 × 90 | Desktop headers |
+| Wide Skyscraper | 160 × 600 | Desktop sidebars |
+| Half Page | 300 × 600 | Desktop sidebars |
+| Billboard | 970 × 250 | Premium desktop headers |
+| Large Leaderboard | 970 × 90 | Desktop headers |
+| Mobile Banner | 320 × 50 | Mobile top/bottom |
+| Large Mobile Banner | 320 × 100 | Mobile |
+| Square | 250 × 250 | Desktop + mobile |
+| Small Square | 200 × 200 | Desktop + mobile |
+| Portrait | 300 × 1050 | Desktop sidebars |
+| Banner | 468 × 60 | Desktop (legacy) |
+| Mobile Interstitial | 320 × 480 / 480 × 320 | Mobile portrait/landscape |
+
+- File types: JPG, PNG, GIF. Max: 150 KB
+- Animated GIFs: ≤30 seconds, ≤5 FPS, must stop after 30 seconds
+- HTML5 ads: ZIP ≤150 KB, max 40 files
+- Text overlay ≤20% of image area
+
+### Responsive Display Ads (RDAs)
+
+| Asset | Ratio | Recommended | Minimum |
+|-------|-------|-------------|---------|
+| Landscape image | 1.91:1 | 1200 × 628 px | 600 × 314 px |
+| Square image | 1:1 | 1200 × 1200 px | 300 × 300 px |
+| Portrait image | 4:5 | 1200 × 1500 px | 320 × 400 px |
+| Square logo | 1:1 | 1200 × 1200 px | 128 × 128 px |
+| Wide logo | 4:1 | 1200 × 300 px | 512 × 128 px |
+
+- JPG or PNG only. Max 5 MB. 1–15 images per type (5+ recommended)
+- Google may crop up to 5% — keep focal points centered
+- No overlaid text, logos, or buttons on images
+- Short headline: 30 chars (up to 5). Long headline: 90 chars. Description: 90 chars (up to 5)
+
+### Google Shopping ads (Merchant Center)
+
+- Min: 100 × 100 px (non-apparel), 250 × 250 px (apparel)
+- Recommended: 1500 × 1500 px or 2000 × 2000 px. Max: 64 megapixels / 16 MB
+- File types: JPEG (preferred), PNG, GIF, WebP, BMP, TIFF. RGB color mode
+- Product should occupy ≥75% of frame. White/neutral background recommended
+- No watermarks, promotional text, or borders
+- Up to 12 images per product (1 primary + 10 additional + 1 lifestyle)
+- AI-generated images must be labeled with IPTC metadata
+
+### YouTube ads
+
+| Format | Duration | Notes |
+|--------|----------|-------|
+| Skippable in-stream | No max (12 sec–3 min recommended) | Skip after 5 seconds. 16:9, 9:16, 1:1 |
+| Non-skippable in-stream | 15 sec (up to 30 sec on CTV) | Target CPM bidding |
+| Bumper ads | 6 seconds | Non-skippable, brand recall focus |
+| In-feed (discovery) | Any length | Shows in search/Watch Next, pay per click |
+| Masthead | Any (30 sec autoplay) | Reservation only, top of homepage |
+| Shorts ads | Any (15–30 sec optimal) | 1080 × 1920 (9:16), between Shorts |
+
+- All YouTube ads must be uploaded to YouTube (public or unlisted)
+- Companion banner (desktop): 300 × 60 px
+
+### Performance Max campaigns
+
+| Asset | Dimensions | Ratio |
+|-------|-----------|-------|
+| Landscape image | 1200 × 628 px | 1.91:1 |
+| Square image | 1200 × 1200 px | 1:1 |
+| Portrait image | 960 × 1200 px | 4:5 |
+| Square logo | 1200 × 1200 px | 1:1 |
+| Landscape logo | 1200 × 300 px | 4:1 |
+
+- JPG/PNG, 5 MB max, up to 20 images per type
+- Videos: hosted on YouTube, min 10 seconds, horizontal + square + vertical recommended
+- If no video provided, Google auto-generates from other assets
+
+---
+
+## Meta Ads (Facebook + Instagram)
+
+The three ratios to master for Meta Ads:
+
+| Ratio | Dimensions | Coverage |
+|-------|-----------|----------|
+| 1:1 (square) | 1080 × 1080 px | Works across 80% of placements |
+| 4:5 (vertical) | 1080 × 1350 px | Best feed performance on mobile |
+| 9:16 (full-screen) | 1080 × 1920 px | Stories and Reels |
+
+- Meta now recommends uploading at 1440 px resolution for high-density screens: 1440 × 1440 (square), 1440 × 1800 (vertical), 1440 × 2560 (full-screen)
+- Universal max: 30 MB images, 4 GB video. H.264/AAC standard
+- Primary text: 125 characters before truncation
+- The 20% text rule was removed but minimal text still yields better delivery and lower costs
+
+---
+
+## TikTok Ads
+
+TikTok ad specs mirror organic video specs (1080 × 1920 px, 9:16, MP4/MOV, 500 MB max) with additional restrictions.
+
+- **In-feed ad safe zones:** 80 px sides, 160 px top, 440 px bottom
+- With shopping anchors, the bottom 25–30% is essentially off-limits
+- Brand name: 2–20 characters (no emojis)
+- UGC-style content delivers 30%+ higher CTR than polished production
+- Full specifications are detailed in the TikTok section above
