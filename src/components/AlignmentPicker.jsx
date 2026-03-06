@@ -5,11 +5,13 @@
 //   - Dropdown select: Rejected - buttons are more discoverable for alignment
 import { memo } from 'react'
 
+// Visually distinct from Center: staggered lines suggest "no specific alignment"
+// (left-aligned short line, full-width line, right-aligned short line) at reduced opacity
 const AlignDefaultIcon = () => (
   <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor" opacity="0.4">
-    <rect x="2" y="0" width="10" height="2" />
+    <rect x="0" y="0" width="8" height="2" />
     <rect x="0" y="4" width="14" height="2" />
-    <rect x="3" y="8" width="8" height="2" />
+    <rect x="6" y="8" width="8" height="2" />
   </svg>
 )
 const AlignLeftIcon = () => (

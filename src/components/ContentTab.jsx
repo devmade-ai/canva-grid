@@ -86,7 +86,8 @@ function getCellInfo(layout) {
 function getCellPositionLabel(layout, cellIndex, totalCells) {
   if (totalCells <= 1) return ''
   const { type, structure } = layout
-  if (!structure || structure.length === 0) return ''
+  // Fullbleed has no structure to derive positions from
+  if (type === 'fullbleed' || !structure || structure.length === 0) return ''
 
   // Rows: sections stack vertically (top/bottom), subs go horizontally (left/right)
   // Columns: sections stack horizontally (left/right), subs go vertically (top/bottom)
@@ -449,7 +450,12 @@ const markdownFormats = [
 
 // Requirement: Toolbar needs visual separators between groups and horizontal scroll on narrow screens (#8)
 // Approach: Group buttons by type (inline/block/insert) with dividers, flex-nowrap + overflow-x-auto
-const markdownGroups = ['inline', 'block', 'insert']
+// Pre-grouped to avoid .filter() on every render
+const groupedMarkdownFormats = [
+  { id: 'inline', formats: markdownFormats.filter(f => f.group === 'inline') },
+  { id: 'block', formats: markdownFormats.filter(f => f.group === 'block') },
+  { id: 'insert', formats: markdownFormats.filter(f => f.group === 'insert') },
+]
 
 function MarkdownToolbar({ textareaRef, content, onContentChange }) {
   const applyFormat = useCallback(
@@ -489,10 +495,10 @@ function MarkdownToolbar({ textareaRef, content, onContentChange }) {
 
   return (
     <div className="flex items-center gap-0.5 flex-nowrap overflow-x-auto scrollbar-thin">
-      {markdownGroups.map((group, gi) => (
+      {groupedMarkdownFormats.map(({ id: group, formats }, gi) => (
         <div key={group} className="flex items-center gap-0.5 shrink-0">
           {gi > 0 && <span className="w-px h-4 bg-ui-border-subtle mx-0.5 shrink-0" />}
-          {markdownFormats.filter(f => f.group === group).map((fmt) => (
+          {formats.map((fmt) => (
             <button
               key={fmt.title}
               type="button"
@@ -515,7 +521,6 @@ function FreeformCellEditor({
   cellData,
   onFreeformTextChange,
   theme,
-  layout,
 }) {
   const textareaRef = useRef(null)
   const data = cellData || {
@@ -766,7 +771,6 @@ export default memo(function ContentTab({
             cellData={freeformText[activeCell]}
             onFreeformTextChange={onFreeformTextChange}
             theme={theme}
-            layout={layout}
           />
         </div>
       )}
