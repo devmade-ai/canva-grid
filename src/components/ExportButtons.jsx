@@ -1,36 +1,101 @@
-import { useState, useCallback, memo, useMemo } from 'react'
-import { toPng } from 'html-to-image'
+import { useState, useCallback, memo } from 'react'
+import { toPng, toCanvas } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
-import { platforms } from '../config/platforms'
+import { platforms, categoryLabels, categoryOrder, platformsByCategory, findFormat } from '../config/platforms'
 
-const categoryLabels = {
-  social: 'Social Media',
-  web: 'Website',
-  banner: 'Banners',
-  email: 'Email',
-  print: 'Print',
-  other: 'Other',
+// Requirement: Export in multiple image formats (PNG, JPG, WebP)
+// Approach: Format toggle above export buttons, shared captureElement helper
+// Why: Different platforms recommend different formats. JPG for photos (smaller),
+//   PNG for text/graphics (lossless), WebP for best compression.
+// Alternatives:
+//   - Always PNG: Rejected - users asked for format choice, platforms recommend JPG
+//   - Auto-detect from platform: Rejected - user should have final say
+
+const FORMAT_OPTIONS = [
+  { id: 'png', label: 'PNG', description: 'Lossless, best for text & graphics' },
+  { id: 'jpg', label: 'JPG', description: 'Smaller files, best for photos' },
+  { id: 'webp', label: 'WebP', description: 'Smallest files, modern format' },
+]
+
+const FILE_EXTENSIONS = { jpg: 'jpg', webp: 'webp', png: 'png' }
+
+// Requirement: Timestamp-first filenames for chronological sort in downloads folder
+// Approach: YYMMdd-HHmm prefix ensures newest files sort first alphabetically.
+//   Also avoids browser "already exists" prompts on repeated downloads.
+// Alternatives:
+//   - App name prefix (canvagrid-): Rejected - adds noise, doesn't help sorting
+//   - Full ISO timestamp: Rejected - too long, clutters filename
+//   - Unix epoch: Rejected - not human-readable
+function getTimestamp() {
+  const now = new Date()
+  const yy = String(now.getFullYear()).slice(2)
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  const dd = String(now.getDate()).padStart(2, '0')
+  const hh = String(now.getHours()).padStart(2, '0')
+  const min = String(now.getMinutes()).padStart(2, '0')
+  return `${yy}${mm}${dd}-${hh}${min}`
 }
 
-export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportingChange, pageCount = 1, getPageState, onSetActivePage }) {
+// Wait for React re-render + browser paint to settle before canvas capture
+function waitForPaint() {
+  return new Promise((resolve) => {
+    requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 100)))
+  })
+}
+
+// Temporarily hide canvas during export and restore after.
+// Returns a restore function to call in finally blocks.
+function hideCanvas(element) {
+  const originalOpacity = element.style.opacity
+  element.style.opacity = '0'
+  return () => { element.style.opacity = originalOpacity }
+}
+
+// Set canvas to full size for capture, returns restore function
+function setFullScale(element) {
+  const originalTransform = element.style.transform
+  element.style.transform = 'scale(1)'
+  return () => { element.style.transform = originalTransform }
+}
+
+// Capture element as blob in the selected format.
+// Uses toCanvas → canvas.toBlob for all formats to avoid the wasteful
+// fetch(dataUrl) round-trip that the toJpeg/toPng → fetch pattern requires.
+const MIME_TYPES = { jpg: 'image/jpeg', webp: 'image/webp', png: 'image/png' }
+
+async function captureAsBlob(element, width, height, format) {
+  const canvas = await toCanvas(element, {
+    width,
+    height,
+    pixelRatio: 1,
+    style: { opacity: '1', transform: 'scale(1)' },
+  })
+  const mime = MIME_TYPES[format] || 'image/png'
+  const quality = format === 'png' ? undefined : 0.92
+  return new Promise((resolve) => canvas.toBlob(resolve, mime, quality))
+}
+
+// Capture element as data URL (for PDF embedding, always PNG)
+async function captureAsDataUrl(element, width, height) {
+  return toPng(element, {
+    width,
+    height,
+    pixelRatio: 1,
+    style: { opacity: '1', transform: 'scale(1)' },
+  })
+}
+
+export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, pageCount = 1, onSetActivePage }) {
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(null)
   const [showMultiSelect, setShowMultiSelect] = useState(false)
   const [selectedPlatforms, setSelectedPlatforms] = useState(() => new Set())
 
-  const groupedPlatforms = useMemo(() => {
-    const groups = {}
-    platforms.forEach((p) => {
-      const cat = p.category || 'other'
-      if (!groups[cat]) groups[cat] = []
-      groups[cat].push(p)
-    })
-    return groups
-  }, [])
-
-  const categoryOrder = ['social', 'web', 'banner', 'email', 'print', 'other']
+  const exportFormat = state.exportFormat || 'png'
+  const ext = FILE_EXTENSIONS[exportFormat] || 'png'
+  const currentFormat = findFormat(state.platform)
 
   const togglePlatform = useCallback((platformId) => {
     setSelectedPlatforms((prev) => {
@@ -53,10 +118,10 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   }, [])
 
   const selectCategory = useCallback((category) => {
-    const categoryPlatforms = platforms.filter((p) => (p.category || 'other') === category)
+    const catPlatforms = platforms.filter((p) => (p.category || 'other') === category)
     setSelectedPlatforms((prev) => {
       const next = new Set(prev)
-      categoryPlatforms.forEach((p) => next.add(p.id))
+      catPlatforms.forEach((p) => next.add(p.id))
       return next
     })
   }, [])
@@ -67,7 +132,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   }, [onExportingChange])
 
   // Requirement: Single-image download matching the multi-platform export reliability
-  // Approach: Set transform AFTER React re-render settles (same pattern as handleExportMultiple)
+  // Approach: Set transform AFTER React re-render settles
   // Alternatives:
   //   - Set transform before waiting: Rejected - React re-render from updateExporting()
   //     overwrites the manual transform back to scale(previewScale) during the wait
@@ -78,48 +143,28 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     if (!platform) return
 
     updateExporting(true)
-
-    const originalOpacity = canvasRef.current.style.opacity
-    canvasRef.current.style.opacity = '0'
+    const restoreOpacity = hideCanvas(canvasRef.current)
 
     try {
-      // Wait for React re-render from updateExporting() to settle
-      await new Promise((resolve) => setTimeout(resolve, 100))
+      await waitForPaint()
 
-      // Set transform AFTER re-render so it won't be overwritten
-      const originalTransform = canvasRef.current.style.transform
-      canvasRef.current.style.transform = 'scale(1)'
+      const restoreTransform = setFullScale(canvasRef.current)
+      await waitForPaint()
 
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
+      restoreTransform()
 
-      const dataUrl = await toPng(canvasRef.current, {
-        width: platform.width,
-        height: platform.height,
-        pixelRatio: 1,
-        style: {
-          opacity: '1',
-          transform: 'scale(1)',
-        },
-      })
-
-      canvasRef.current.style.transform = originalTransform
-
-      // Requirement: Reliable single-image download across all browsers/contexts
-      // Approach: Convert data URL to blob and use file-saver's saveAs
-      // Alternatives:
-      //   - Detached <a> link.click(): Rejected - fails in Safari, PWA contexts,
-      //     and with large data URLs (print sizes). This was the previous approach.
-      const response = await fetch(dataUrl)
-      const blob = await response.blob()
-      saveAs(blob, `ad-${platform.id}-${platform.width}x${platform.height}.png`)
+      const ts = getTimestamp()
+      const pageSuffix = pageCount > 1 ? `-p${String(state.activePage + 1).padStart(2, '0')}` : ''
+      saveAs(blob, `${ts}-${platform.id}-${platform.width}x${platform.height}${pageSuffix}.${ext}`)
     } catch (error) {
       console.error('Export failed:', error)
       alert('Export failed. Please try again.')
     } finally {
-      canvasRef.current.style.opacity = originalOpacity
+      restoreOpacity()
       updateExporting(false)
     }
-  }, [canvasRef, state.platform, updateExporting])
+  }, [canvasRef, state.platform, state.activePage, exportFormat, ext, pageCount, updateExporting])
 
   const handleExportAllPages = useCallback(async () => {
     if (!canvasRef.current || pageCount <= 1) return
@@ -130,59 +175,41 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     if (!platform) { updateExporting(false); return }
 
     const originalActivePage = state.activePage
-
-    const originalOpacity = canvasRef.current.style.opacity
-    canvasRef.current.style.opacity = '0'
-
-    // Helper: wait for React re-render + browser paint
-    const waitForPaint = () => new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 100)))
-    })
+    const restoreOpacity = hideCanvas(canvasRef.current)
 
     try {
       for (let i = 0; i < pageCount; i++) {
         setExportProgress({ current: i + 1, total: pageCount, name: `Page ${i + 1}` })
 
-        // Switch to the target page
         onSetActivePage(i)
-        // Wait for React state update, re-render, and browser paint
         await new Promise((resolve) => setTimeout(resolve, 300))
         await waitForPaint()
 
-        const originalTransform = canvasRef.current.style.transform
-        canvasRef.current.style.transform = 'scale(1)'
+        const restoreTransform = setFullScale(canvasRef.current)
         await waitForPaint()
 
-        const dataUrl = await toPng(canvasRef.current, {
-          width: platform.width,
-          height: platform.height,
-          pixelRatio: 1,
-          style: { opacity: '1', transform: 'scale(1)' },
-        })
+        const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
+        restoreTransform()
 
-        canvasRef.current.style.transform = originalTransform
-
-        const response = await fetch(dataUrl)
-        const blob = await response.blob()
-        const pageNum = String(i + 1).padStart(3, '0')
-        zip.file(`page-${pageNum}-${platform.width}x${platform.height}.png`, blob)
+        const pageNum = String(i + 1).padStart(2, '0')
+        zip.file(`${platform.id}-${platform.width}x${platform.height}-p${pageNum}.${ext}`, blob)
       }
 
       const content = await zip.generateAsync({ type: 'blob' })
-      saveAs(content, 'pages.zip')
+      const ts = getTimestamp()
+      saveAs(content, `${ts}-pages.zip`)
 
-      // Always restore to original page
       onSetActivePage(originalActivePage)
     } catch (error) {
       console.error('Page export failed:', error)
       alert('Export failed. Please try again.')
       onSetActivePage(originalActivePage)
     } finally {
-      canvasRef.current.style.opacity = originalOpacity
+      restoreOpacity()
       updateExporting(false)
       setExportProgress(null)
     }
-  }, [canvasRef, state.platform, state.activePage, pageCount, onSetActivePage, updateExporting])
+  }, [canvasRef, state.platform, state.activePage, exportFormat, ext, pageCount, onSetActivePage, updateExporting])
 
   // Requirement: PDF export for LinkedIn carousel documents and general print-to-PDF
   // Approach: Capture pages as PNGs, build PDF with jsPDF using exact platform dimensions
@@ -193,6 +220,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   // Alternatives:
   //   - window.open + window.print: Rejected - broken on mobile (about:blank, wrong sizes)
   //   - Direct window.print() on app: Rejected - prints entire UI, not just canvas
+  // Note: PDF always uses PNG internally for lossless quality regardless of exportFormat
   const handleExportPDF = useCallback(async () => {
     if (!canvasRef.current) return
 
@@ -200,13 +228,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     if (!platform) return
 
     updateExporting(true)
-
-    const originalOpacity = canvasRef.current.style.opacity
-    canvasRef.current.style.opacity = '0'
-
-    const waitForPaint = () => new Promise((resolve) => {
-      requestAnimationFrame(() => requestAnimationFrame(() => setTimeout(resolve, 100)))
-    })
+    const restoreOpacity = hideCanvas(canvasRef.current)
 
     const pageDataUrls = []
     const originalActivePage = state.activePage
@@ -220,21 +242,14 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
           await new Promise((resolve) => setTimeout(resolve, 300))
           await waitForPaint()
         } else {
-          await new Promise((resolve) => setTimeout(resolve, 100))
+          await waitForPaint()
         }
 
-        const originalTransform = canvasRef.current.style.transform
-        canvasRef.current.style.transform = 'scale(1)'
+        const restoreTransform = setFullScale(canvasRef.current)
         await waitForPaint()
 
-        const dataUrl = await toPng(canvasRef.current, {
-          width: platform.width,
-          height: platform.height,
-          pixelRatio: 1,
-          style: { opacity: '1', transform: 'scale(1)' },
-        })
-
-        canvasRef.current.style.transform = originalTransform
+        const dataUrl = await captureAsDataUrl(canvasRef.current, platform.width, platform.height)
+        restoreTransform()
         pageDataUrls.push(dataUrl)
       }
 
@@ -264,7 +279,8 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         pdf.addImage(pageDataUrls[i], 'PNG', 0, 0, widthPt, heightPt)
       }
 
-      pdf.save(`canvagrid-${platform.id}-${platform.width}x${platform.height}.pdf`)
+      const ts = getTimestamp()
+      pdf.save(`${ts}-${platform.id}-${platform.width}x${platform.height}.pdf`)
     } catch (error) {
       console.error('PDF export failed:', error)
       alert('PDF export failed. Please try again.')
@@ -272,7 +288,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         onSetActivePage(originalActivePage)
       }
     } finally {
-      canvasRef.current.style.opacity = originalOpacity
+      restoreOpacity()
       updateExporting(false)
       setExportProgress(null)
     }
@@ -290,9 +306,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     const originalPlatform = state.platform
 
     const platformsToExport = platforms.filter((p) => selectedPlatforms.has(p.id))
-
-    const originalOpacity = canvasRef.current.style.opacity
-    canvasRef.current.style.opacity = '0'
+    const restoreOpacity = hideCanvas(canvasRef.current)
 
     try {
       for (let i = 0; i < platformsToExport.length; i++) {
@@ -300,32 +314,20 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         setExportProgress({ current: i + 1, total: platformsToExport.length, name: platform.name })
 
         onPlatformChange(platform.id)
-        await new Promise((resolve) => setTimeout(resolve, 100))
+        await waitForPaint()
 
-        const originalTransform = canvasRef.current.style.transform
-        canvasRef.current.style.transform = 'scale(1)'
+        const restoreTransform = setFullScale(canvasRef.current)
+        await waitForPaint()
 
-        await new Promise((resolve) => setTimeout(resolve, 50))
+        const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
+        restoreTransform()
 
-        const dataUrl = await toPng(canvasRef.current, {
-          width: platform.width,
-          height: platform.height,
-          pixelRatio: 1,
-          style: {
-            opacity: '1',
-            transform: 'scale(1)',
-          },
-        })
-
-        canvasRef.current.style.transform = originalTransform
-
-        const response = await fetch(dataUrl)
-        const blob = await response.blob()
-        zip.file(`ad-${platform.id}-${platform.width}x${platform.height}.png`, blob)
+        zip.file(`${platform.id}-${platform.width}x${platform.height}.${ext}`, blob)
       }
 
       const content = await zip.generateAsync({ type: 'blob' })
-      saveAs(content, 'social-ads.zip')
+      const ts = getTimestamp()
+      saveAs(content, `${ts}-multi.zip`)
 
       onPlatformChange(originalPlatform)
       setShowMultiSelect(false)
@@ -334,20 +336,51 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       alert('Export failed. Please try again.')
       onPlatformChange(originalPlatform)
     } finally {
-      canvasRef.current.style.opacity = originalOpacity
+      restoreOpacity()
       updateExporting(false)
       setExportProgress(null)
     }
-  }, [canvasRef, state.platform, onPlatformChange, updateExporting, selectedPlatforms])
+  }, [canvasRef, state.platform, exportFormat, ext, onPlatformChange, updateExporting, selectedPlatforms])
 
   return (
     <div className="space-y-3">
+      {/* Format selector */}
+      <div className="space-y-1.5">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-medium text-ui-text-muted">File Format</span>
+          {currentFormat.recommendedFormat && currentFormat.recommendedFormat !== exportFormat && (
+            <button
+              onClick={() => onExportFormatChange(currentFormat.recommendedFormat)}
+              className="text-[10px] text-primary hover:text-primary-hover transition-colors"
+            >
+              Use recommended ({currentFormat.recommendedFormat.toUpperCase()})
+            </button>
+          )}
+        </div>
+        <div className="flex gap-1">
+          {FORMAT_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              onClick={() => onExportFormatChange(opt.id)}
+              title={opt.description}
+              className={`flex-1 px-2 py-1.5 text-xs font-semibold rounded-lg transition-all ${
+                exportFormat === opt.id
+                  ? 'bg-primary text-white shadow-sm'
+                  : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
+              }`}
+            >
+              {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <button
         onClick={handleExportSingle}
         disabled={isExporting}
         className="w-full px-4 py-3 text-sm font-semibold text-white bg-primary rounded-xl hover:bg-primary-hover disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-sm hover:shadow-glow active:scale-[0.98] btn-scale"
       >
-        {isExporting && !exportProgress ? 'Exporting...' : 'Download Current'}
+        {isExporting && !exportProgress ? 'Exporting...' : `Download Current (.${ext})`}
       </button>
 
       {/* Download all pages as ZIP */}
@@ -409,11 +442,11 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
           <div className="space-y-2 max-h-48 overflow-y-auto">
             {categoryOrder.map((category) => {
-              const categoryPlatforms = groupedPlatforms[category]
-              if (!categoryPlatforms || categoryPlatforms.length === 0) return null
+              const catPlatforms = platformsByCategory[category]
+              if (!catPlatforms || catPlatforms.length === 0) return null
 
-              const allSelected = categoryPlatforms.every((p) => selectedPlatforms.has(p.id))
-              const someSelected = categoryPlatforms.some((p) => selectedPlatforms.has(p.id))
+              const allSelected = catPlatforms.every((p) => selectedPlatforms.has(p.id))
+              const someSelected = catPlatforms.some((p) => selectedPlatforms.has(p.id))
 
               return (
                 <div key={category} className="space-y-1">
@@ -425,7 +458,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
                     {someSelected && !allSelected && <span className="ml-1 text-primary">+</span>}
                   </button>
                   <div className="flex flex-wrap gap-1">
-                    {categoryPlatforms.map((p) => (
+                    {catPlatforms.map((p) => (
                       <button
                         key={p.id}
                         onClick={() => togglePlatform(p.id)}

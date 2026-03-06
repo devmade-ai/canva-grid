@@ -330,7 +330,7 @@ Core features working:
 - **Reader mode**: Clean full-screen view with page navigation (arrow keys, buttons, dots)
 - **Freeform text mode**: Toggle on Content tab between Structured and Freeform
   - Per-cell text editors with independent content, color, size, alignment
-  - Optional markdown per cell (uses `marked` library)
+  - Automatic markdown rendering (uses `marked` library)
 - Multi-image system: Image library with per-cell assignment
   - Upload multiple images to a shared library
   - Assign different images to different cells (1 per cell)
@@ -344,7 +344,7 @@ Core features working:
   - CTA (independent)
   - Footnote (independent)
 - Theme system with 12 color themes and custom colors
-- Overlay system with 26 effects:
+- Overlay system with 34 effects:
   - Basic: Solid color
   - Linear gradients: 8 directions (↑↓←→ and diagonals)
   - Radial: Vignette, Spotlight, Radial Soft, Radial Ring, 4 corner radials (↖↗↙↘)
@@ -352,14 +352,16 @@ Core features working:
   - Blend modes: Multiply, Screen, Overlay, Color Burn
   - Textures: Noise, Film Grain
 - 15 Google Fonts (sans-serif, serif, display categories)
-- Export to 22 platforms:
-  - Social: Instagram Square/Story, TikTok, LinkedIn (Square/Portrait/Landscape), Facebook, Twitter/X
+- Export to 28 formats across 12 platform groups:
+  - Social: Instagram (Feed Portrait/Square/Feed Landscape/Story), Facebook (Feed/Square/Story/Cover), TikTok, LinkedIn (Square/Portrait/Landscape), Twitter/X
   - Website: Hero (Standard/Tall/Full HD), OG Image
   - Banners: LinkedIn Banner, YouTube Banner
   - Print: A3, A4, A5 (Portrait & Landscape at 150 DPI)
   - Other: Email Header, Zoom Background
+- **Export format selection**: PNG, JPG, or WebP with per-platform recommendations
 - Single download, ZIP batch download, multi-page ZIP export, and PDF export
-- **PDF export**: Save as PDF via browser print dialog (zero dependencies, for LinkedIn carousels)
+- **PDF export**: Save as PDF via jsPDF (for LinkedIn carousels, works on mobile)
+- **Platform specs**: Two-level selector (platform → format), tips, file size limits, recommended formats
 - Responsive preview that adapts to device width
 - **PWA support**: Installable app with offline capability and update prompts
   - Inline `beforeinstallprompt` capture in index.html (race condition fix)
@@ -427,10 +429,10 @@ src/
 │   ├── ErrorBoundary.jsx      # Error handling wrapper
 │   └── DebugPill.jsx          # Floating debug panel (separate React root, dev only)
 ├── config/         # Configuration
-│   ├── layouts.js        # 26 overlay types (solid, gradients, radial, effects, blends, textures)
-│   ├── layoutPresets.js  # 27 layouts with SVG icons and categories
+│   ├── layouts.js        # 34 overlay types (solid, gradients, radial, effects, blends, textures)
+│   ├── layoutPresets.js  # 35 layouts with SVG icons and categories
 │   ├── stylePresets.js   # Look presets (fonts + filters + overlay effects per layout)
-│   ├── platforms.js      # 22 platform sizes (social, web, banners, print, other)
+│   ├── platforms.js      # 28 formats across 12 platform groups (nested: platformGroups + flat: platforms)
 │   ├── sampleImages.js   # CDN manifest URL for sample images (fetched at runtime)
 │   ├── themes.js         # 12 color themes
 │   └── fonts.js          # 15 Google Fonts
@@ -441,7 +443,6 @@ src/
 │   ├── usePWAInstall.js  # PWA install prompt state
 │   └── usePWAUpdate.js   # PWA update detection state
 ├── utils/
-│   ├── export.js         # Export utilities
 │   └── debugLog.js       # In-memory debug event store (200-entry circular buffer)
 ├── App.jsx
 └── main.jsx
@@ -458,15 +459,16 @@ activePage: 0  // Index of active page
 
 // Per-page fields: activeStylePreset, activeLayoutPreset, images, cellImages,
 //   defaultImageSettings, text, textCells, layout, padding, frame, textMode, freeformText
-// Shared fields: theme, fonts, platform, logo, logoPosition, logoSize
+// Shared fields: theme, fonts, platform, exportFormat, logo, logoPosition, logoSize
 
 // Text mode: 'structured' (text groups) or 'freeform' (per-cell text)
 textMode: 'structured'
 
 // Freeform text (per-cell content, active when textMode='freeform')
+// Content is always parsed as markdown via `marked` — no per-cell toggle
 freeformText: {
-  0: { content: 'Hello **world**', markdown: true, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null },
-  1: { content: 'Plain text here', markdown: false, color: 'primary', size: 0.8, bold: false, italic: false, letterSpacing: 0, textAlign: null },
+  0: { content: 'Hello **world**', color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null },
+  1: { content: 'Plain text here', color: 'primary', size: 0.8, bold: false, italic: false, letterSpacing: 0, textAlign: null },
 }
 
 // Image library - all uploaded images with individual settings including overlay
@@ -560,7 +562,7 @@ Top-level toggle: **Structured** / **Freeform**
 **Freeform mode** - Per-cell text editors:
 - One text block per cell with independent content
 - Per-cell controls: alignment, color, size
-- MD toggle per cell for markdown formatting (renders via `marked`)
+- Automatic markdown rendering (content always parsed via `marked`)
 
 ### Structure Tab (formerly Layout)
 Collapsible sections:

@@ -10,6 +10,7 @@ Future enhancements and ideas for CanvaGrid.
 
 | Item | Effort | Description |
 |------|--------|-------------|
+| **Phase 4: Add remaining platform format data** | Medium | `platforms.js` — Add format specs for: Pinterest (Pin, Story), Snapchat (Snap Ad, Story), YouTube (Thumbnail, End Screen), WhatsApp (Status), Threads (Post, Story). Add e-commerce category: Takealot, Amazon (Product, Storefront), Shopify, Etsy. Each needs formats array with dimensions, tips, recommendedFormat, maxFileSize. |
 | **Validate loaded design state** | Low | `useAdState.js:766` — `loadDesign()` doesn't bounds-check `activePage` against `pages.length`. Corrupted or outdated saves could crash the app. Add field validation and fallbacks. |
 | **Replace history JSON.stringify comparison** | Medium | `useHistory.js:16` — `JSON.stringify(prev) === JSON.stringify(newState)` runs on every state update. With large designs (many pages, base64 images), this is expensive. Use shallow key comparison or a change flag instead. |
 | **Multi-page export uses arbitrary timeout** | Low | `ExportButtons.jsx:133` — `setTimeout(resolve, 300)` to wait for React re-render before capturing page. If state update is slow, captures stale canvas. Use a callback or ref-based signal instead of timing. |
@@ -20,7 +21,7 @@ Future enhancements and ideas for CanvaGrid.
 |------|--------|-------------|
 | **Looks define per-element text styling** | Medium | Extend `stylePresets.js` to include text colors and bold/italic per element. Makes presets feel more polished. |
 | **Extract large components** | Medium | `MediaTab.jsx` (1328), `LayoutTab.jsx` (911), `useAdState.js` (852), `AdCanvas.jsx` (818), `App.jsx` (815) all exceed the 800-line threshold. Extract sub-components when next modifying these files. |
-| **Replace browser confirm() in SaveLoadModal** | Low | `SaveLoadModal.jsx:34` — `confirm('Delete this design?')` is not accessible and doesn't explain consequences. Use an inline confirmation with clear messaging per UX standards. |
+| **Replace browser confirm() in SaveLoadModal and ContextBar** | Low | `SaveLoadModal.jsx:34` and `ContextBar.jsx:210` — `confirm()` is not accessible and doesn't explain consequences. Use inline confirmations with clear messaging per UX standards. |
 | **Save feedback** | Low | `SaveLoadModal.jsx` — No success confirmation after saving a design. User must switch to Load tab to verify. Add a brief toast or inline confirmation. |
 | **Unassigned image feedback** | Low | `useAdState.js:224` — `addImage()` auto-assigns to first unoccupied image cell, but if all cells are occupied the image is added to the library with no cell and no feedback to the user about why. |
 

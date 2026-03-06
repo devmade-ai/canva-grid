@@ -136,6 +136,7 @@ function App() {
     setOuterFrame,
     setCellFrame,
     setPlatform,
+    setExportFormat,
     applyStylePreset,
     applyLayoutPreset,
     undo,
@@ -782,9 +783,9 @@ function App() {
                   canvasRef={canvasRef}
                   state={state}
                   onPlatformChange={setPlatform}
+                  onExportFormatChange={setExportFormat}
                   onExportingChange={setIsExporting}
                   pageCount={pageCount}
-                  getPageState={getPageState}
                   onSetActivePage={setActivePage}
                 />
               </ErrorBoundary>

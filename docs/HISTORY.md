@@ -1,5 +1,36 @@
 # Changelog
 
+## 2026-03-06
+
+### Platform specs system and export format selection
+
+**platforms.js restructured** — Flat array replaced with nested `platformGroups` structure:
+- Each platform group has: id, name, category, tips[], formats[]
+- Each format has: id, name, width, height, recommendedFormat, maxFileSize
+- Flat `platforms` export derived from groups for backward compatibility
+- Helper functions: `findFormat(id)`, `findPlatformGroup(id)`
+- Centralized `categoryLabels` and `categoryOrder` (removed duplicates from components)
+
+**Platform selector redesigned** — Two-level hierarchy in PlatformPreview.jsx:
+- Category → Platform → Format nesting
+- Single-format platforms select on click, multi-format expand to show variants
+- Info bar shows current format specs (dimensions, recommended format, max file size)
+- Collapsible tips per platform with practical advice
+
+**Export format selection** — PNG/JPG/WebP toggle in ExportButtons.jsx:
+- Three-button toggle above export buttons, persists in state as `exportFormat`
+- "Use recommended" link when platform suggests a different format
+- All export paths updated: single, multi-platform ZIP, all-pages ZIP
+- PDF export always uses PNG internally for lossless quality
+- Uses html-to-image's `toJpeg` for JPG, `toCanvas` + `canvas.toBlob` for WebP
+
+**Format additions:**
+- Instagram: 2 → 4 formats (added Feed Portrait 1080×1350, Feed Landscape 1080×566)
+- Facebook: 1 → 4 formats (added Square Post, Story, Cover Photo)
+- All existing platforms now have tips and file spec metadata
+
+---
+
 ## 2026-03-03
 
 ### Documentation audit and code comment compliance

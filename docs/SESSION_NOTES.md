@@ -5,29 +5,28 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-LinkedIn aspect ratio support and PDF export feature.
+Platform specs system: nested data structure, two-level selector UI, export format selection.
 
 ## Accomplished
 
-1. **Updated LinkedIn platforms** — Replaced single LinkedIn Post (1200×627) with three LinkedIn-recommended formats:
-   - LinkedIn Square (1080×1080) — most versatile, mobile-optimized
-   - LinkedIn Portrait (1080×1350) — maximizes vertical feed space
-   - LinkedIn Landscape (1920×1080) — desktop/cinematic content
-   - LinkedIn Banner (1584×396) unchanged
-2. **Added PDF export** — "Save as PDF" button in ExportButtons using browser's native print dialog:
-   - Single page: captures current page as PNG, opens in print window
-   - Multi-page: captures all pages, one per PDF page (for LinkedIn carousel documents)
-   - Zero dependencies — uses `window.print()` approach from glow-props sister project
-3. **Updated documentation** — CLAUDE.md, README.md, USER_GUIDE.md, SESSION_NOTES.md updated to reflect 22 platforms (was 20) and PDF export feature
+1. **Restructured platforms.js** — Flat array → nested `platformGroups` with parent platforms containing `formats[]`, `tips[]`, `recommendedFormat`, `maxFileSize`. Flat `platforms` export preserved for backward compatibility with all 10 consumers.
+2. **Two-level platform selector** — `PlatformPreview.jsx` rewritten: Category → Platform → Format nesting. Single-format platforms select directly, multi-format platforms expand. Info bar shows selected format specs + collapsible tips per platform.
+3. **Export format selection** — PNG/JPG/WebP toggle in ExportButtons. Uses `toJpeg` for JPG, `toCanvas` + `canvas.toBlob` for WebP, `toPng` for PNG. Format persists in state as `exportFormat`. PDF always uses PNG internally. "Use recommended" link shown when platform suggests a different format.
+4. **Instagram formats expanded** — Was 2 formats (Square, Story). Now 4: Feed Portrait (1080×1350), Square (1080×1080), Feed Landscape (1080×566), Story/Reels (1080×1920).
+5. **Facebook formats expanded** — Was 1 format (Post). Now 4: Feed Post, Square Post, Story, Cover Photo.
+6. **Added `categoryLabels` and `categoryOrder` to platforms.js** — Centralized, removed duplicates from PlatformPreview and ExportButtons.
 
 ## Current state
 
 - **Working** — Build passes, all features functional
-- Platform count: 22 (was 20, net +2 from LinkedIn split)
-- PDF export supports both single and multi-page documents
+- Platform count: 28 formats across 12 platform groups (was 22 flat entries)
+- New `exportFormat` state field (shared across pages, defaults to 'png')
+- Phase 4 (remaining platform data: Pinterest, Snapchat, YouTube, e-commerce) tracked in TODO.md
 
 ## Key context
 
-- Old `linkedin` platform ID removed — no other code referenced it, clean replacement
-- PDF export opens a new browser window; users need pop-ups enabled for this site
-- 5 files still exceed 800-line refactor threshold (unchanged from previous session)
+- Old format IDs preserved for saved design compatibility (`instagram-square`, `facebook`, `twitter`, etc.)
+- New format IDs added: `instagram-feed-portrait`, `instagram-feed-landscape`, `facebook-square`, `facebook-story`, `facebook-cover`
+- `platformGroups` is the source of truth; `platforms` flat array is derived from it
+- `findFormat(id)` and `findPlatformGroup(id)` helper exports added to platforms.js
+- `ecommerce` category label defined but no platforms in it yet (Phase 4)

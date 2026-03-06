@@ -14,18 +14,6 @@ import { useHistory } from './useHistory'
 const defaultTheme = presetThemes[0] // Dark theme
 const STORAGE_KEY = 'canvagrid-designs'
 
-// Migrate from old localStorage keys
-if (typeof window !== 'undefined') {
-  const OLD_KEYS = ['social-ad-creator-designs', 'grumpy-campaign-kit-designs', 'grumpy-cam-canvas-designs']
-  for (const oldKey of OLD_KEYS) {
-    const old = localStorage.getItem(oldKey)
-    if (old && !localStorage.getItem(STORAGE_KEY)) {
-      localStorage.setItem(STORAGE_KEY, old)
-    }
-    if (old) localStorage.removeItem(oldKey)
-  }
-}
-
 // Fields that are unique per page (swapped in/out when switching pages).
 // Everything NOT listed here is shared across all pages (theme, fonts, platform, logo).
 const PAGE_FIELDS = [
@@ -176,6 +164,7 @@ export const defaultState = {
   },
 
   platform: 'instagram-square',
+  exportFormat: 'png',
 
   // pages[activePage] = null because active page data lives at top-level state
   // (so existing components read state.layout, state.text etc. without knowing about pages)
@@ -472,7 +461,11 @@ export function useAdState() {
 
   const setPlatform = useCallback((platform) => {
     setState((prev) => ({ ...prev, platform }))
-  }, [])
+  }, [setState])
+
+  const setExportFormat = useCallback((exportFormat) => {
+    setState((prev) => ({ ...prev, exportFormat }))
+  }, [setState])
 
   const resetState = useCallback(() => {
     setState(defaultState)
@@ -766,18 +759,7 @@ export function useAdState() {
       const designs = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]')
       const design = designs.find(d => d.id === designId)
       if (design && design.state) {
-        // Legacy designs (pre-multi-page) don't have these fields
         const loadedState = { ...design.state }
-        if (!loadedState.pages) {
-          loadedState.pages = [null]
-          loadedState.activePage = 0
-        }
-        if (!loadedState.textMode) {
-          loadedState.textMode = 'structured'
-        }
-        if (!loadedState.freeformText) {
-          loadedState.freeformText = {}
-        }
         // saveDesign syncs all pages to non-null, so restore the active one to top-level
         const activePage = loadedState.activePage || 0
         if (loadedState.pages[activePage] !== null) {
@@ -843,6 +825,7 @@ export function useAdState() {
     setOuterFrame,
     setCellFrame,
     setPlatform,
+    setExportFormat,
     resetState,
     applyStylePreset,
     clearStylePreset,
