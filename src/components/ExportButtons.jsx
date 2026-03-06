@@ -239,7 +239,11 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       }
 
       // Build print-optimized HTML with one image per page
-      const isLandscape = platform.width > platform.height
+      // Requirement: PDF page size must match platform dimensions exactly to prevent
+      //   letterboxing on LinkedIn carousels (e.g. 1080x1080 for square, 1080x1350 for portrait)
+      // Approach: Use exact pixel dimensions in @page size instead of generic landscape/portrait
+      // Why: Generic "portrait"/"landscape" maps to paper sizes (A4/Letter), causing white bars
+      //   around non-standard aspect ratios like 1:1 or 4:5
       const printWindow = window.open('', '_blank')
       if (!printWindow) {
         alert('Pop-up blocked. Please allow pop-ups for this site to save as PDF.')
@@ -258,14 +262,14 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   <title>CanvaGrid Export</title>
   <style>
     @page {
-      size: ${isLandscape ? 'landscape' : 'portrait'};
+      size: ${platform.width}px ${platform.height}px;
       margin: 0;
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: white; }
     .page {
-      width: 100vw;
-      height: 100vh;
+      width: ${platform.width}px;
+      height: ${platform.height}px;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -277,8 +281,8 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       break-after: auto;
     }
     img {
-      max-width: 100%;
-      max-height: 100%;
+      width: 100%;
+      height: 100%;
       object-fit: contain;
     }
   </style>
