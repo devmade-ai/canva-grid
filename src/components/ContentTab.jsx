@@ -7,7 +7,7 @@
 //     gives power users full control for custom text-heavy designs (stories, presentations).
 //   - Rich text editor (Quill, TipTap): Rejected - adds large dependency for features most
 //     users don't need; markdown toggle covers formatting needs.
-import { memo, useMemo } from 'react'
+import { memo, useMemo, useRef, useCallback } from 'react'
 import CollapsibleSection from './CollapsibleSection'
 import { neutralColors } from '../config/themes'
 import { platforms } from '../config/platforms'
@@ -403,6 +403,82 @@ function TextElementEditor({
   )
 }
 
+// Requirement: Formatting toolbar so non-technical users can insert markdown without knowing syntax
+// Approach: Toolbar buttons that wrap selected text or insert syntax at cursor position
+// Alternatives:
+//   - Rich text editor (Quill/TipTap): Rejected — heavy dependency, markdown is already parsed
+//   - Dropdown menu: Rejected — toolbar is more discoverable and faster for common actions
+const markdownFormats = [
+  { label: 'B', title: 'Bold', before: '**', after: '**', placeholder: 'bold text' },
+  { label: 'I', title: 'Italic', before: '_', after: '_', placeholder: 'italic text', style: 'italic' },
+  { label: 'S', title: 'Strikethrough', before: '~~', after: '~~', placeholder: 'text', style: 'line-through' },
+  { label: 'H1', title: 'Heading', before: '# ', after: '', placeholder: 'Heading', newLine: true },
+  { label: 'H2', title: 'Subheading', before: '## ', after: '', placeholder: 'Subheading', newLine: true },
+  { label: '"', title: 'Quote', before: '> ', after: '', placeholder: 'quote', newLine: true },
+  { label: '•', title: 'Bullet list', before: '- ', after: '', placeholder: 'list item', newLine: true },
+  { label: '1.', title: 'Numbered list', before: '1. ', after: '', placeholder: 'list item', newLine: true },
+  { label: '—', title: 'Divider', before: '\n---\n', after: '', placeholder: '' },
+  { label: '🔗', title: 'Link', before: '[', after: '](url)', placeholder: 'link text' },
+]
+
+function MarkdownToolbar({ textareaRef, content, onContentChange }) {
+  const applyFormat = useCallback(
+    (fmt) => {
+      const textarea = textareaRef.current
+      if (!textarea) return
+
+      const { selectionStart, selectionEnd } = textarea
+      const selected = content.slice(selectionStart, selectionEnd)
+      const text = selected || fmt.placeholder
+
+      // For line-level formats, ensure we start on a new line
+      let insertBefore = fmt.before
+      if (fmt.newLine && selectionStart > 0 && content[selectionStart - 1] !== '\n') {
+        insertBefore = '\n' + insertBefore
+      }
+
+      const replacement = insertBefore + text + fmt.after
+      const newContent =
+        content.slice(0, selectionStart) + replacement + content.slice(selectionEnd)
+
+      onContentChange(newContent)
+
+      // Place cursor after inserted text (or select placeholder if nothing was selected)
+      requestAnimationFrame(() => {
+        textarea.focus()
+        const cursorStart = selectionStart + insertBefore.length
+        if (selected) {
+          // Cursor after the whole insertion
+          textarea.selectionStart = textarea.selectionEnd =
+            cursorStart + text.length + fmt.after.length
+        } else {
+          // Select the placeholder so user can type over it
+          textarea.selectionStart = cursorStart
+          textarea.selectionEnd = cursorStart + text.length
+        }
+      })
+    },
+    [textareaRef, content, onContentChange],
+  )
+
+  return (
+    <div className="flex items-center gap-0.5 flex-wrap">
+      {markdownFormats.map((fmt) => (
+        <button
+          key={fmt.title}
+          type="button"
+          onClick={() => applyFormat(fmt)}
+          title={fmt.title}
+          className="px-1.5 py-0.5 text-[11px] font-medium rounded text-ui-text-muted hover:bg-ui-surface-hover hover:text-ui-text transition-colors"
+          style={fmt.style ? { textDecoration: fmt.style === 'line-through' ? 'line-through' : undefined, fontStyle: fmt.style === 'italic' ? 'italic' : undefined } : undefined}
+        >
+          {fmt.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
 function FreeformCellEditor({
   cellIndex,
   cellData,
@@ -410,6 +486,7 @@ function FreeformCellEditor({
   theme,
   layout,
 }) {
+  const textareaRef = useRef(null)
   const data = cellData || {
     content: '',
     color: 'secondary',
@@ -420,13 +497,26 @@ function FreeformCellEditor({
     textAlign: null,
   }
 
+  const handleContentChange = useCallback(
+    (newContent) => onFreeformTextChange(cellIndex, { content: newContent }),
+    [cellIndex, onFreeformTextChange],
+  )
+
   return (
     <div className="space-y-2">
+      {/* Formatting toolbar */}
+      <MarkdownToolbar
+        textareaRef={textareaRef}
+        content={data.content}
+        onContentChange={handleContentChange}
+      />
+
       {/* Text input - always supports markdown */}
       <textarea
+        ref={textareaRef}
         value={data.content}
         onChange={(e) => onFreeformTextChange(cellIndex, { content: e.target.value })}
-        placeholder="Write text here... use **bold** or *italic*"
+        placeholder="Type here or use the toolbar above to format"
         rows={3}
         className="w-full px-3 py-2 text-sm text-ui-text border border-ui-border rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary resize-none bg-white dark:bg-dark-subtle placeholder-zinc-400 dark:placeholder-zinc-500 font-mono"
       />
