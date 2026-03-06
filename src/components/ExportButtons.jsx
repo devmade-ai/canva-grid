@@ -24,6 +24,21 @@ const FILE_EXTENSIONS = { jpg: 'jpg', webp: 'webp', png: 'png' }
 // Consistent filename prefix for all export types
 const FILE_PREFIX = 'canvagrid'
 
+// Requirement: Timestamp in filenames for sort order and duplicate avoidance
+// Approach: MMdd-HHmm format - compact, sorts chronologically, avoids browser
+//   "already exists" prompts when re-downloading the same platform
+// Alternatives:
+//   - Full ISO timestamp: Rejected - too long, clutters filename
+//   - Unix epoch: Rejected - not human-readable
+function getTimestamp() {
+  const now = new Date()
+  const mm = String(now.getMonth() + 1).padStart(2, '0')
+  const dd = String(now.getDate()).padStart(2, '0')
+  const hh = String(now.getHours()).padStart(2, '0')
+  const min = String(now.getMinutes()).padStart(2, '0')
+  return `${mm}${dd}-${hh}${min}`
+}
+
 // Wait for React re-render + browser paint to settle before canvas capture
 function waitForPaint() {
   return new Promise((resolve) => {
@@ -149,7 +164,9 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
       restoreTransform()
 
-      saveAs(blob, `${FILE_PREFIX}-${platform.id}-${platform.width}x${platform.height}.${ext}`)
+      const ts = getTimestamp()
+      const pageSuffix = pageCount > 1 ? `-p${String(state.activePage + 1).padStart(2, '0')}` : ''
+      saveAs(blob, `${FILE_PREFIX}-${ts}-${platform.id}-${platform.width}x${platform.height}${pageSuffix}.${ext}`)
     } catch (error) {
       console.error('Export failed:', error)
       alert('Export failed. Please try again.')
@@ -157,7 +174,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       restoreOpacity()
       updateExporting(false)
     }
-  }, [canvasRef, state.platform, exportFormat, ext, updateExporting])
+  }, [canvasRef, state.platform, state.activePage, exportFormat, ext, pageCount, updateExporting])
 
   const handleExportAllPages = useCallback(async () => {
     if (!canvasRef.current || pageCount <= 1) return
@@ -184,12 +201,13 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
         restoreTransform()
 
-        const pageNum = String(i + 1).padStart(3, '0')
-        zip.file(`${FILE_PREFIX}-page-${pageNum}-${platform.width}x${platform.height}.${ext}`, blob)
+        const pageNum = String(i + 1).padStart(2, '0')
+        zip.file(`${FILE_PREFIX}-${platform.id}-${platform.width}x${platform.height}-p${pageNum}.${ext}`, blob)
       }
 
       const content = await zip.generateAsync({ type: 'blob' })
-      saveAs(content, `${FILE_PREFIX}-pages.zip`)
+      const ts = getTimestamp()
+      saveAs(content, `${FILE_PREFIX}-${ts}-pages.zip`)
 
       onSetActivePage(originalActivePage)
     } catch (error) {
@@ -271,7 +289,8 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         pdf.addImage(pageDataUrls[i], 'PNG', 0, 0, widthPt, heightPt)
       }
 
-      pdf.save(`${FILE_PREFIX}-${platform.id}-${platform.width}x${platform.height}.pdf`)
+      const ts = getTimestamp()
+      pdf.save(`${FILE_PREFIX}-${ts}-${platform.id}-${platform.width}x${platform.height}.pdf`)
     } catch (error) {
       console.error('PDF export failed:', error)
       alert('PDF export failed. Please try again.')
@@ -317,7 +336,8 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       }
 
       const content = await zip.generateAsync({ type: 'blob' })
-      saveAs(content, `${FILE_PREFIX}-multi.zip`)
+      const ts = getTimestamp()
+      saveAs(content, `${FILE_PREFIX}-${ts}-multi.zip`)
 
       onPlatformChange(originalPlatform)
       setShowMultiSelect(false)
