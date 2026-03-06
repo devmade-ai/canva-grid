@@ -172,23 +172,28 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   const cellInfo = useMemo(() => {
     const structure = layout.structure || [{ size: 100, subdivisions: 1, subSizes: [100] }]
     const cells = []
+    const bySection = new Map()
     let cellIndex = 0
 
     structure.forEach((section, sectionIndex) => {
       const subdivisions = section.subdivisions || 1
+      const sectionCells = []
       for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
-        cells.push({
+        const cell = {
           index: cellIndex,
           sectionIndex,
           subIndex,
           sectionSize: section.size,
           subSize: section.subSizes?.[subIndex] || (100 / subdivisions),
-        })
+        }
+        cells.push(cell)
+        sectionCells.push(cell)
         cellIndex++
       }
+      bySection.set(sectionIndex, sectionCells)
     })
 
-    return { cells, totalCells: cellIndex }
+    return { cells, bySection, totalCells: cellIndex }
   }, [layout.structure])
 
   const getCellImageData = (cellIndex) => {
@@ -726,12 +731,12 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     )
   }
 
+  // Requirement: Use pre-computed cellInfo instead of mutable cellIndex during render (#15)
+  // Approach: Use cellInfo.bySection Map for O(1) lookup instead of .filter() per section
   const renderGridLayout = () => {
     const { type, structure } = layout
     const isRows = type === 'rows'
     const sections = structure || [{ size: 100, subdivisions: 1, subSizes: [100] }]
-
-    let cellIndex = 0
 
     return (
       <div
@@ -745,27 +750,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       >
         {sections.map((section, sectionIndex) => {
           const sectionSize = section.size || 100
-          const subdivisions = section.subdivisions || 1
-          const subSizes = section.subSizes || [100]
-
-          const sectionCells = []
-          for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
-            const currentCellIndex = cellIndex
-            cellIndex++
-
-            sectionCells.push(
-              <div
-                key={`cell-${currentCellIndex}`}
-                style={{
-                  flex: `0 0 ${subSizes[subIndex] || (100 / subdivisions)}%`,
-                  position: 'relative',
-                  overflow: 'hidden',
-                }}
-              >
-                {renderCellContent(currentCellIndex)}
-              </div>
-            )
-          }
+          const sectionCellData = cellInfo.bySection.get(sectionIndex) || []
 
           return (
             <div
@@ -773,12 +758,23 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
               style={{
                 flex: `0 0 ${sectionSize}%`,
                 display: 'flex',
-                flexDirection: isRows ? 'row' : 'column', // Subdivisions go perpendicular
+                flexDirection: isRows ? 'row' : 'column',
                 position: 'relative',
                 overflow: 'hidden',
               }}
             >
-              {sectionCells}
+              {sectionCellData.map(({ index: currentCellIndex, subSize }) => (
+                <div
+                  key={`cell-${currentCellIndex}`}
+                  style={{
+                    flex: `0 0 ${subSize}%`,
+                    position: 'relative',
+                    overflow: 'hidden',
+                  }}
+                >
+                  {renderCellContent(currentCellIndex)}
+                </div>
+              ))}
             </div>
           )
         })}
