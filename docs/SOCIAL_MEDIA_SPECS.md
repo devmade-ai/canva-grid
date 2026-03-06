@@ -621,3 +621,145 @@ Primarily a live-streaming platform — VOD (video on demand) replays auto-delet
 
 - 112 × 112 px (uploaded), auto-scaled to 56 × 56, 28 × 28, and 112 × 112
 - Transparent PNG required
+
+---
+
+## Takealot
+
+Takealot's image non-compliance is the #1 reason for loadsheet rejections. Manual review takes 1–14 days. Prepare images well in advance.
+
+### Product listing images
+
+- Min: 600 × 600 px, max: 2048 × 2048 px. Recommended: as close to 2048 × 2048 (square) as possible
+- JPG/JPEG and PNG only. Max: 2 MB. Min 72 DPI, sRGB mandatory
+- **White background is mandatory** (pure white, RGB 255,255,255) — transparent backgrounds rejected
+- Product must fill 85–95% of the frame
+- No text, watermarks, logos, overlays, or props not included in purchase
+- Main image: front-facing, entire product visible
+- 5–10 image slots available (varies by category loadsheet)
+- Category-specific rules apply (e.g., fashion, wigs have additional requirements)
+
+---
+
+## Amazon
+
+Amazon's automated scanning enforces main image requirements strictly. Over 70% of traffic is mobile in 2026; images must be legible at 160–200 px thumbnail size.
+
+### Product listing main image
+
+- Recommended: 2000 × 2000 px (1:1). Min: 1000 × 1000 px (enables zoom). Max: 10,000 × 10,000 px
+- File types: JPEG (preferred), PNG, TIFF, GIF (non-animated). Max: 10 MB. sRGB
+- **Pure white background (RGB 255,255,255) strictly enforced**
+- Product fills ≥85% of frame
+- No text, watermarks, logos, badges, borders, or promotional overlays
+- Category-specific: apparel requires standing model (no mannequins for main image); shoes shown left-foot ¾ view
+- AI-edited images of real products allowed; fully AI-generated main images not permitted
+
+### Additional images (slots 2–9)
+
+- Same technical specs. White background not mandatory
+- Lifestyle shots, infographics, text overlays, and feature callouts allowed
+- Variant codes: PT01, PT02, etc.
+
+### A+ Content module dimensions (standard — 970 px total width)
+
+| Module | Dimensions |
+|--------|-----------|
+| Image header ("hero banner") | 970 × 600 px |
+| Image with text overlay | 970 × 300 px |
+| Single left/right image | 300 × 300 px |
+| Three images & text | 300 × 300 px each (×3) |
+| Four-image quadrant | 135 × 135 px each (×4) |
+| Comparison chart | 150 × 300 px per product (2–6 products) |
+| Company logo | 600 × 180 px |
+
+- File types: JPG (preferred), PNG, BMP. Max 2 MB/image (aim for under 500 KB for mobile)
+- RGB only. Min 72 DPI. No claims like "Best Seller," "cheapest," or "Money Back Guarantee"
+- Alt text required for all images
+
+### Amazon Storefront banner
+
+- Min: 3000 × 600 px, max: 3000 × 1200 px. Safe zone: center 50% of width
+- Brand logo: min 400 × 400 px (square)
+
+---
+
+## South African Marketplaces
+
+### Makro Marketplace
+
+- Recommended: 1000 × 1000 px, min: 300 × 300 px. Square (1:1). JPEG/PNG
+- White background required
+- Bulk import allows only 1 image per product (add more via dashboard)
+- All listings go through Makro's quality review
+
+### Bob Shop (formerly Bidorbuy)
+
+- Recommended: 1000 × 1000 px+, min: 600 × 600 px. Square (1:1). JPG, GIF, PNG
+- Images >50 KB auto-resized. Up to 15 images per listing
+- Watermarks, text overlays, logos, and borders strictly prohibited
+- White background recommended. Clean images required for Google Shopping eligibility
+- All image URLs must be HTTPS
+
+### Gumtree South Africa
+
+- No strict pixel requirements; 800 × 600 px recommended. GIF, JPEG, PNG, BMP
+- Max 10 MB. Up to 12 images (desktop) or 8 (mobile app)
+- No background color requirement. No watermark restriction
+- The most lenient of the South African platforms — primarily classifieds-style
+
+### SA marketplace comparison
+
+| Platform | Size Range | Recommended | Background | Max Images | Max File Size |
+|----------|-----------|-------------|------------|------------|--------------|
+| Takealot | 600–2048 px | ~2048 × 2048 | White mandatory | 5–10 | 2 MB |
+| Makro | 300–1000 px | 1000 × 1000 | White required | Multiple (1 via bulk) | Not published |
+| Bob Shop | 600+ px | 1000 × 1000+ | White recommended | 15 | Auto-resize >50 KB |
+| Gumtree SA | No minimum | 800 × 600 | No requirement | 12 (desktop) / 8 (app) | 10 MB |
+
+---
+
+## Shopify
+
+### Product images
+
+- Recommended: 2048 × 2048 px (1:1 square). Min for zoom: 800 × 800 px. Max: 5000 × 5000 px (25 megapixels)
+- Max file size: 20 MB
+- File types: PNG (preferred), JPEG, PSD, TIFF, BMP, GIF, SVG, HEIC, WebP
+- Shopify auto-serves WebP and auto-resizes responsively
+- Use one consistent aspect ratio across your entire catalog
+
+### Other Shopify assets
+
+| Asset | Dimensions | Notes |
+|-------|-----------|-------|
+| Collection images | 1024 × 1024 px (1:1) | — |
+| Banner/hero (standard) | 1200 × 400 px | Theme-dependent |
+| Banner/hero (hero) | 1800 × 1000 px | Theme-dependent |
+| Logo | 200–400 px wide | PNG transparent or SVG |
+| Favicon | 32 × 32 px (1:1) | PNG recommended |
+| Blog images | 1200 × 800 px (3:2) | Or 1200 × 628 px for social sharing |
+
+---
+
+## Etsy
+
+### Listing images
+
+- Recommended: 2000 × 2000 px (square) or 3000 × 2250 px (4:3)
+- Min: 2000 px shortest side. Up to 10 images per listing (minimum 5 recommended)
+- JPG, PNG, GIF (no animated GIFs, no transparent PNGs — transparency renders black). sRGB
+- Under 1 MB recommended
+- Etsy crops to different ratios across contexts (1:1 on desktop thumbnails, ~4:5 on mobile)
+
+### Listing video
+
+- 5–15 sec, 1080p, max 100 MB, MP4/MOV/others. No audio. 1 video per listing
+
+### Shop assets
+
+| Asset | Dimensions |
+|-------|-----------|
+| Mini shop banner | 1600 × 213 px |
+| Big banner | 1600 × 400 px |
+| Shop icon | 500 × 500 px (square) |
