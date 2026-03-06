@@ -1,5 +1,5 @@
 import { useState, useCallback, memo } from 'react'
-import { toPng, toJpeg, toCanvas } from 'html-to-image'
+import { toPng, toCanvas } from 'html-to-image'
 import { jsPDF } from 'jspdf'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
@@ -60,30 +60,21 @@ function setFullScale(element) {
   return () => { element.style.transform = originalTransform }
 }
 
-// Capture element as blob in the selected format
+// Capture element as blob in the selected format.
+// Uses toCanvas → canvas.toBlob for all formats to avoid the wasteful
+// fetch(dataUrl) round-trip that the toJpeg/toPng → fetch pattern requires.
+const MIME_TYPES = { jpg: 'image/jpeg', webp: 'image/webp', png: 'image/png' }
+
 async function captureAsBlob(element, width, height, format) {
-  const options = {
+  const canvas = await toCanvas(element, {
     width,
     height,
     pixelRatio: 1,
     style: { opacity: '1', transform: 'scale(1)' },
-  }
-
-  if (format === 'jpg') {
-    const dataUrl = await toJpeg(element, { ...options, quality: 0.92 })
-    const response = await fetch(dataUrl)
-    return response.blob()
-  }
-
-  if (format === 'webp') {
-    const canvas = await toCanvas(element, options)
-    return new Promise((resolve) => canvas.toBlob(resolve, 'image/webp', 0.92))
-  }
-
-  // Default: PNG
-  const dataUrl = await toPng(element, options)
-  const response = await fetch(dataUrl)
-  return response.blob()
+  })
+  const mime = MIME_TYPES[format] || 'image/png'
+  const quality = format === 'png' ? undefined : 0.92
+  return new Promise((resolve) => canvas.toBlob(resolve, mime, quality))
 }
 
 // Capture element as data URL (for PDF embedding, always PNG)
