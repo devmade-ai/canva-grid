@@ -108,7 +108,6 @@ function CellGrid({
   size = 'normal',
 }) {
   const { type, structure } = layout
-  const normalizedImageCells = imageCells
   const isFullbleed = type === 'fullbleed'
   const isRows = type === 'rows'
 
@@ -186,7 +185,29 @@ function CellGrid({
     return { bgClass, textClass, content }
   }
 
-  let cellIndex = 0
+  // Requirement: Pre-compute cell mapping to avoid mutable cellIndex during render.
+  // Approach: useMemo builds a Map like MiniCellGrid does.
+  // Alternatives:
+  //   - Mutable let cellIndex = 0 in render: Rejected — side effect during render,
+  //     breaks under React strict mode or concurrent features.
+  const sectionCellMap = useMemo(() => {
+    const grouped = new Map()
+    let idx = 0
+    const src = isFullbleed || !structure || structure.length === 0
+      ? [{ size: 100, subdivisions: 1, subSizes: [100] }]
+      : structure
+    src.forEach((section, sectionIndex) => {
+      const subdivisions = section.subdivisions || 1
+      const subSizes = section.subSizes || Array(subdivisions).fill(100 / subdivisions)
+      const cells = []
+      for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
+        cells.push({ cellIndex: idx, subIndex, subSize: subSizes[subIndex] })
+        idx++
+      }
+      grouped.set(sectionIndex, cells)
+    })
+    return grouped
+  }, [type, structure])
 
   const renderCells = () => (
     <div
@@ -197,51 +218,9 @@ function CellGrid({
       {normalizedStructure.map((section, sectionIndex) => {
         const sectionSize = section.size || 100 / normalizedStructure.length
         const subdivisions = section.subdivisions || 1
-        const subSizes = section.subSizes || Array(subdivisions).fill(100 / subdivisions)
         const isSectionSelected =
           mode === 'structure' && structureSelection?.type === 'section' && structureSelection.index === sectionIndex
-
-        const sectionCells = []
-        for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
-          const currentCellIndex = cellIndex
-          const isImage = normalizedImageCells.includes(currentCellIndex)
-          const isCellSelected =
-            mode === 'structure'
-              ? structureSelection?.type === 'cell' && structureSelection.cellIndex === currentCellIndex
-              : selectedCell === currentCellIndex
-          cellIndex++
-
-          const { bgClass, textClass, content } = getCellContent(
-            currentCellIndex,
-            isImage,
-            isCellSelected,
-            isSectionSelected,
-            subdivisions,
-            subSizes[subIndex]
-          )
-
-          sectionCells.push(
-            <div
-              key={`cell-${currentCellIndex}`}
-              className={`relative cursor-pointer transition-colors min-h-[20px] ${bgClass} ${
-                mode === 'structure' && subdivisions > 1 ? 'border border-ui-border' : ''
-              }`}
-              style={{ flex: `1 1 ${subSizes[subIndex]}%` }}
-              onClick={(e) => {
-                e.stopPropagation()
-                if (mode === 'structure') {
-                  onSelectCell?.(currentCellIndex, sectionIndex, subIndex)
-                } else {
-                  onSelectCell?.(currentCellIndex)
-                }
-              }}
-            >
-              <div className={`absolute inset-0 flex items-center justify-center text-[11px] font-medium ${textClass}`}>
-                {content}
-              </div>
-            </div>
-          )
-        }
+        const cells = sectionCellMap.get(sectionIndex) || []
 
         return (
           <div
@@ -249,7 +228,44 @@ function CellGrid({
             className={`flex ${isRows || isFullbleed ? 'flex-row' : 'flex-col'}`}
             style={{ flex: `1 1 ${sectionSize}%` }}
           >
-            {sectionCells}
+            {cells.map(({ cellIndex: currentCellIndex, subIndex, subSize }) => {
+              const isImage = imageCells.includes(currentCellIndex)
+              const isCellSelected =
+                mode === 'structure'
+                  ? structureSelection?.type === 'cell' && structureSelection.cellIndex === currentCellIndex
+                  : selectedCell === currentCellIndex
+
+              const { bgClass, textClass, content } = getCellContent(
+                currentCellIndex,
+                isImage,
+                isCellSelected,
+                isSectionSelected,
+                subdivisions,
+                subSize
+              )
+
+              return (
+                <div
+                  key={`cell-${currentCellIndex}`}
+                  className={`relative cursor-pointer transition-colors min-h-[20px] ${bgClass} ${
+                    mode === 'structure' && subdivisions > 1 ? 'border border-ui-border' : ''
+                  }`}
+                  style={{ flex: `1 1 ${subSize}%` }}
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (mode === 'structure') {
+                      onSelectCell?.(currentCellIndex, sectionIndex, subIndex)
+                    } else {
+                      onSelectCell?.(currentCellIndex)
+                    }
+                  }}
+                >
+                  <div className={`absolute inset-0 flex items-center justify-center text-[11px] font-medium ${textClass}`}>
+                    {content}
+                  </div>
+                </div>
+              )
+            })}
           </div>
         )
       })}
