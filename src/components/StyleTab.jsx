@@ -8,119 +8,11 @@
 //   - Separate frame tab: Rejected - frames are visual spacing; grouping with padding is intuitive.
 import { useMemo, memo } from 'react'
 import CollapsibleSection from './CollapsibleSection'
-import { neutralColors } from '../config/themes'
+import ThemeColorPicker from './ThemeColorPicker'
+import MiniCellGrid from './MiniCellGrid'
+import { countCells } from '../utils/cellUtils'
 import { fonts } from '../config/fonts'
-import { overlayTypes } from '../config/layouts'
-import { platforms } from '../config/platforms'
-
-// Theme color options for overlay
-const themeColorOptions = [
-  { id: 'primary', name: 'Primary' },
-  { id: 'secondary', name: 'Secondary' },
-  { id: 'accent', name: 'Accent' },
-]
-
-// Helper to get cell info for display
-function getCellInfo(layout) {
-  const { structure } = layout
-  if (!structure || structure.length === 0) {
-    return [{ index: 0, label: '1', sectionIndex: 0, subIndex: 0 }]
-  }
-
-  const cells = []
-  let cellIndex = 0
-
-  structure.forEach((section, sectionIndex) => {
-    const subdivisions = section.subdivisions || 1
-    for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
-      cells.push({
-        index: cellIndex,
-        label: `${cellIndex + 1}`,
-        sectionIndex,
-        subIndex,
-      })
-      cellIndex++
-    }
-  })
-
-  return cells
-}
-
-// Mini cell grid for overlay/spacing selection
-function MiniCellGrid({ layout, cellImages = {}, selectedCell, onSelectCell, platform }) {
-  const { type, structure } = layout
-  const isFullbleed = type === 'fullbleed'
-  const isRows = type === 'rows'
-
-  const normalizedStructure =
-    isFullbleed || !structure || structure.length === 0
-      ? [{ size: 100, subdivisions: 1, subSizes: [100] }]
-      : structure
-
-  // Calculate aspect ratio
-  const platformData = platforms.find((p) => p.id === platform) || platforms[0]
-  const aspectRatio = platformData.width / platformData.height
-
-  let cellIndex = 0
-
-  return (
-    <div
-      className="flex overflow-hidden border border-ui-border-strong rounded"
-      style={{
-        width: '120px',
-        height: `${120 / aspectRatio}px`,
-        flexDirection: isRows || isFullbleed ? 'column' : 'row',
-      }}
-    >
-      {normalizedStructure.map((section, sectionIndex) => {
-        const sectionSize = section.size || 100 / normalizedStructure.length
-        const subdivisions = section.subdivisions || 1
-        const subSizes = section.subSizes || Array(subdivisions).fill(100 / subdivisions)
-
-        const sectionCells = []
-        for (let subIndex = 0; subIndex < subdivisions; subIndex++) {
-          const currentCellIndex = cellIndex
-          const hasImage = !!cellImages[currentCellIndex]
-          const isSelected = selectedCell === currentCellIndex
-          cellIndex++
-
-          let bgClass, content
-          if (isSelected) {
-            bgClass = 'bg-primary hover:bg-primary-hover'
-            content = <span className="text-white text-[10px]">✓</span>
-          } else if (hasImage) {
-            bgClass = 'bg-violet-200 dark:bg-violet-800 hover:bg-violet-300 dark:hover:bg-violet-700'
-            content = <span className="text-violet-700 dark:text-violet-200 text-[10px]">📷</span>
-          } else {
-            bgClass = 'bg-ui-surface-inset hover:bg-ui-surface-hover'
-            content = <span className="text-ui-text-subtle text-[10px]">{currentCellIndex + 1}</span>
-          }
-
-          sectionCells.push(
-            <div
-              key={`cell-${currentCellIndex}`}
-              className={`relative cursor-pointer transition-colors min-h-[16px] ${bgClass} flex items-center justify-center`}
-              style={{ flex: `1 1 ${subSizes[subIndex]}%` }}
-              onClick={() => onSelectCell(currentCellIndex)}
-            >
-              {content}
-            </div>
-          )
-        }
-
-        return (
-          <div
-            key={`section-${sectionIndex}`}
-            className={`flex ${isRows || isFullbleed ? 'flex-row' : 'flex-col'}`}
-            style={{ flex: `1 1 ${sectionSize}%` }}
-          >
-            {sectionCells}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
+import { overlayTypesByCategory } from '../config/layouts'
 
 export default memo(function StyleTab({
   theme,
@@ -138,16 +30,19 @@ export default memo(function StyleTab({
   onSelectCell,
 }) {
   const { cellOverlays = {} } = layout
+
+  // Clamp selectedCell to valid range when layout shrinks
+  const totalCells = useMemo(() => countCells(layout.structure), [layout.structure])
+  const clampedCell = selectedCellProp >= totalCells ? 0 : selectedCellProp
+
   // Use global selectedCell for both overlay and spacing
-  const selectedOverlayCell = selectedCellProp
+  const selectedOverlayCell = clampedCell
   const setSelectedOverlayCell = onSelectCell || (() => {})
-  const selectedSpacingCell = selectedCellProp
+  const selectedSpacingCell = clampedCell
   const setSelectedSpacingCell = onSelectCell || (() => {})
 
   // Determine which cells have images
   const cellHasImage = (cellIndex) => !!cellImages[cellIndex]
-
-  const cellInfoList = useMemo(() => getCellInfo(layout), [layout])
 
   // Overlay helpers
   const getCellOverlayConfig = (cellIndex) => {
@@ -318,7 +213,7 @@ export default memo(function StyleTab({
                         <div className="space-y-1">
                           <span className="text-[9px] text-ui-text-faint uppercase tracking-wide">Basic & Gradients</span>
                           <div className="grid grid-cols-3 gap-1">
-                            {overlayTypes.filter(t => t.category === 'basic' || t.category === 'linear').map((t) => (
+                            {overlayTypesByCategory.basicAndLinear.map((t) => (
                               <button
                                 key={t.id}
                                 onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
@@ -338,7 +233,7 @@ export default memo(function StyleTab({
                         <div className="space-y-1">
                           <span className="text-[9px] text-ui-text-faint uppercase tracking-wide">Circular</span>
                           <div className="grid grid-cols-3 gap-1">
-                            {overlayTypes.filter(t => t.category === 'radial').map((t) => (
+                            {overlayTypesByCategory.radial.map((t) => (
                               <button
                                 key={t.id}
                                 onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
@@ -358,7 +253,7 @@ export default memo(function StyleTab({
                         <div className="space-y-1">
                           <span className="text-[9px] text-ui-text-faint uppercase tracking-wide">Effects</span>
                           <div className="grid grid-cols-3 gap-1">
-                            {overlayTypes.filter(t => t.category === 'effect' || t.category === 'texture').map((t) => (
+                            {overlayTypesByCategory.effectAndTexture.map((t) => (
                               <button
                                 key={t.id}
                                 onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
@@ -378,7 +273,7 @@ export default memo(function StyleTab({
                         <div className="space-y-1">
                           <span className="text-[9px] text-ui-text-faint uppercase tracking-wide">Blending</span>
                           <div className="grid grid-cols-3 gap-1">
-                            {overlayTypes.filter(t => t.category === 'blend').map((t) => (
+                            {overlayTypesByCategory.blend.map((t) => (
                               <button
                                 key={t.id}
                                 onClick={() => updateCellOverlay(selectedOverlayCell, { type: t.id })}
@@ -399,41 +294,11 @@ export default memo(function StyleTab({
                       {/* Color */}
                       <div className="space-y-1.5">
                         <label className="block text-xs font-medium text-ui-text-muted">Color</label>
-                        <div className="flex gap-1">
-                          {themeColorOptions.map((c) => (
-                            <button
-                              key={c.id}
-                              onClick={() => updateCellOverlay(selectedOverlayCell, { color: c.id })}
-                              className={`flex-1 px-2 py-1.5 text-[10px] rounded ${
-                                getCellOverlayConfig(selectedOverlayCell)?.color === c.id
-                                  ? 'ring-2 ring-primary ring-offset-1'
-                                  : ''
-                              }`}
-                              style={{ backgroundColor: theme?.[c.id] || '#000' }}
-                            >
-                              <span style={{ color: c.id === 'primary' ? theme?.secondary : theme?.primary }}>
-                                {c.name}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
-                        {/* Neutral colors */}
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-[10px] text-ui-text-subtle">Neutrals:</span>
-                          {neutralColors.map((c) => (
-                            <button
-                              key={c.id}
-                              onClick={() => updateCellOverlay(selectedOverlayCell, { color: c.id })}
-                              title={c.name}
-                              className={`w-5 h-5 rounded-full border transition-transform hover:scale-110 ${
-                                getCellOverlayConfig(selectedOverlayCell)?.color === c.id
-                                  ? 'ring-2 ring-primary ring-offset-1 border-transparent'
-                                  : 'border-ui-border-strong'
-                              }`}
-                              style={{ backgroundColor: c.hex }}
-                            />
-                          ))}
-                        </div>
+                        <ThemeColorPicker
+                          value={getCellOverlayConfig(selectedOverlayCell)?.color}
+                          onChange={(id) => updateCellOverlay(selectedOverlayCell, { color: id })}
+                          theme={theme}
+                        />
                       </div>
 
                       {/* Opacity */}
@@ -522,40 +387,11 @@ export default memo(function StyleTab({
             {(frame.outer?.percent || 0) > 0 && (
               <div className="space-y-1.5">
                 <label className="text-xs text-ui-text-subtle">Color</label>
-                <div className="flex gap-1">
-                  {themeColorOptions.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => onFrameChange?.({ outer: { ...frame.outer, color: c.id } })}
-                      className={`flex-1 px-2 py-1.5 text-[10px] rounded ${
-                        frame.outer?.color === c.id
-                          ? 'ring-2 ring-primary ring-offset-1'
-                          : ''
-                      }`}
-                      style={{ backgroundColor: theme?.[c.id] || '#000' }}
-                    >
-                      <span style={{ color: c.id === 'primary' ? theme?.secondary : theme?.primary }}>
-                        {c.name}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] text-ui-text-subtle">Neutrals:</span>
-                  {neutralColors.map((c) => (
-                    <button
-                      key={c.id}
-                      onClick={() => onFrameChange?.({ outer: { ...frame.outer, color: c.id } })}
-                      title={c.name}
-                      className={`w-5 h-5 rounded-full border transition-transform hover:scale-110 ${
-                        frame.outer?.color === c.id
-                          ? 'ring-2 ring-primary ring-offset-1 border-transparent'
-                          : 'border-ui-border-strong'
-                      }`}
-                      style={{ backgroundColor: c.hex }}
-                    />
-                  ))}
-                </div>
+                <ThemeColorPicker
+                  value={frame.outer?.color}
+                  onChange={(id) => onFrameChange?.({ outer: { ...frame.outer, color: id } })}
+                  theme={theme}
+                />
               </div>
             )}
           </div>
@@ -673,33 +509,20 @@ export default memo(function StyleTab({
 
                       <div className="space-y-1.5">
                         <label className="text-xs text-ui-text-subtle">Color</label>
-                        <div className="flex gap-1">
-                          {themeColorOptions.map((c) => (
-                            <button
-                              key={c.id}
-                              onClick={() => {
-                                const newCellFrames = {
-                                  ...frame.cellFrames,
-                                  [selectedSpacingCell]: {
-                                    ...frame.cellFrames[selectedSpacingCell],
-                                    color: c.id,
-                                  },
-                                }
-                                onFrameChange?.({ cellFrames: newCellFrames })
-                              }}
-                              className={`flex-1 px-2 py-1.5 text-[10px] rounded ${
-                                frame.cellFrames[selectedSpacingCell]?.color === c.id
-                                  ? 'ring-2 ring-primary ring-offset-1'
-                                  : ''
-                              }`}
-                              style={{ backgroundColor: theme?.[c.id] || '#000' }}
-                            >
-                              <span style={{ color: c.id === 'primary' ? theme?.secondary : theme?.primary }}>
-                                {c.name}
-                              </span>
-                            </button>
-                          ))}
-                        </div>
+                        <ThemeColorPicker
+                          value={frame.cellFrames[selectedSpacingCell]?.color}
+                          onChange={(id) => {
+                            const newCellFrames = {
+                              ...frame.cellFrames,
+                              [selectedSpacingCell]: {
+                                ...frame.cellFrames[selectedSpacingCell],
+                                color: id,
+                              },
+                            }
+                            onFrameChange?.({ cellFrames: newCellFrames })
+                          }}
+                          theme={theme}
+                        />
                       </div>
                     </div>
                   )}
