@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-03-08
+
+### Export quality selector
+
+Added user-selectable export quality for all export types (image, ZIP, PDF).
+
+**ExportButtons.jsx**
+- Three-level quality toggle: Standard (1x), High (2x), Maximum (3x)
+- Applied to all export paths: single image, all-pages ZIP, PDF, multi-platform ZIP
+- PDF enforces minimum 2x pixelRatio to prevent blurry overlay resampling
+- `captureAsBlob` and `captureAsDataUrl` now accept pixelRatio parameter (were hardcoded)
+
+**useAdState.js**
+- New `exportQuality` shared field (defaults to 'standard')
+- `setExportQuality` setter
+
+**App.jsx**
+- Passes `onExportQualityChange` prop to ExportButtons
+
+---
+
 ## 2026-03-06
 
 ### Platform specs system and export format selection

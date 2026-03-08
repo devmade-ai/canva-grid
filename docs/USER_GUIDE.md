@@ -362,6 +362,14 @@ A two-level selector organized by category → platform → format. Click catego
 ### File Format
 Choose PNG, JPG, or WebP before exporting. Each platform shows a recommended format — click "Use recommended" to switch. PNG for graphics/text, JPG for photos, WebP for smallest files.
 
+### Quality
+Choose export quality to control sharpness and file size:
+- **Standard** — Good for social media and web (1x resolution, smallest files)
+- **High** — Sharper output for presentations and carousels (2x resolution)
+- **Maximum** — Best for print formats like A3/A4/A5 (3x resolution, largest files)
+
+Higher quality produces larger files and takes longer to export. For PDF exports, quality is always at least High to prevent blurry overlays.
+
 ### Download Options
 
 - **Download Current** - Export the current platform in selected format

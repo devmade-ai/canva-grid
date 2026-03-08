@@ -137,6 +137,7 @@ function App() {
     setCellFrame,
     setPlatform,
     setExportFormat,
+    setExportQuality,
     applyStylePreset,
     applyLayoutPreset,
     undo,
@@ -685,6 +686,7 @@ function App() {
                   state={state}
                   onPlatformChange={setPlatform}
                   onExportFormatChange={setExportFormat}
+                  onExportQualityChange={setExportQuality}
                   onExportingChange={setIsExporting}
                   pageCount={pageCount}
                   onSetActivePage={setActivePage}

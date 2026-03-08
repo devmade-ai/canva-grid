@@ -166,6 +166,14 @@ export const defaultState = {
 
   platform: 'instagram-square',
   exportFormat: 'png',
+  // Requirement: User-selectable export quality for image and PDF exports.
+  // Approach: exportQuality maps to pixelRatio in html-to-image capture.
+  // Values: 'standard' (1x), 'high' (2x), 'max' (3x).
+  // Why: Print users need higher DPI; social media users want smaller files.
+  // Alternatives:
+  //   - Raw pixelRatio number: Rejected — non-technical users need plain labels.
+  //   - Auto-detect from platform category: Rejected — user should have final say.
+  exportQuality: 'standard',
 
   // pages[activePage] = null because active page data lives at top-level state
   // (so existing components read state.layout, state.text etc. without knowing about pages)
@@ -426,6 +434,10 @@ export function useAdState() {
 
   const setExportFormat = useCallback((exportFormat) => {
     setState((prev) => ({ ...prev, exportFormat }))
+  }, [setState])
+
+  const setExportQuality = useCallback((exportQuality) => {
+    setState((prev) => ({ ...prev, exportQuality }))
   }, [setState])
 
   const resetState = useCallback(() => {
@@ -774,6 +786,7 @@ export function useAdState() {
     setCellFrame,
     setPlatform,
     setExportFormat,
+    setExportQuality,
     resetState,
     applyStylePreset,
     clearStylePreset,

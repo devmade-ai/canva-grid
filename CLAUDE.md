@@ -359,6 +359,7 @@ Core features working:
   - Print: A3, A4, A5 (Portrait & Landscape at 150 DPI)
   - Other: Email Header, Zoom Background
 - **Export format selection**: PNG, JPG, or WebP with per-platform recommendations
+- **Export quality selection**: Standard (1x), High (2x), Maximum (3x) — applies to all export types
 - Single download, ZIP batch download, multi-page ZIP export, and PDF export
 - **PDF export**: Save as PDF via jsPDF (for LinkedIn carousels, works on mobile)
 - **Platform specs**: Two-level selector (platform → format), tips, file size limits, recommended formats
@@ -459,7 +460,7 @@ activePage: 0  // Index of active page
 
 // Per-page fields: activeStylePreset, activeLayoutPreset, images, cellImages,
 //   defaultImageSettings, text, textCells, layout, padding, frame, textMode, freeformText
-// Shared fields: theme, fonts, platform, exportFormat, logo, logoPosition, logoSize
+// Shared fields: theme, fonts, platform, exportFormat, exportQuality, logo, logoPosition, logoSize
 
 // Text mode: 'structured' (text groups) or 'freeform' (per-cell text)
 textMode: 'structured'
