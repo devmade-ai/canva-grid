@@ -50,8 +50,13 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
   const handleDelete = async (designId, e) => {
     e.stopPropagation()
     if (confirm('Delete this design?')) {
-      await onDelete(designId)
-      await refreshDesigns()
+      setError(null)
+      const result = await onDelete(designId)
+      if (result.success) {
+        await refreshDesigns()
+      } else {
+        setError(result.error || 'Failed to delete design')
+      }
     }
   }
 

@@ -24,24 +24,6 @@ function openDB() {
   })
 }
 
-function txn(mode, callback) {
-  return openDB().then((db) => {
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(STORE_NAME, mode)
-      const store = tx.objectStore(STORE_NAME)
-      const result = callback(store)
-      tx.oncomplete = () => resolve(result._value)
-      tx.onerror = () => reject(tx.error)
-      // For get/getAll, attach to the IDBRequest
-      if (result instanceof IDBRequest) {
-        result.onsuccess = () => {
-          result._value = result.result
-        }
-      }
-    })
-  })
-}
-
 /** Save a design to IndexedDB */
 export async function saveDesign(design) {
   const db = await openDB()
