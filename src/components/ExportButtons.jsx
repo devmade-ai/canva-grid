@@ -85,15 +85,15 @@ async function captureAsBlob(element, width, height, format) {
 }
 
 // Requirement: PDF image capture with good quality and small file size
-// Approach: Use toCanvas with pixelRatio:2 for sharp rendering, then convert to JPEG
+// Approach: Use toCanvas with pixelRatio:3 for sharp rendering, then convert to JPEG
 // Why: Previous approach used toPng at pixelRatio:1 — PNG is lossless so the PDF was
 //   ~6x larger than image exports, while pixelRatio:1 made the image look blurry/pixelated.
 // Alternatives:
 //   - PNG at pixelRatio:1: Rejected — huge file size AND poor quality (the worst of both)
 //   - PNG at pixelRatio:2: Rejected — sharp but still massive file size
 //   - JPEG at pixelRatio:1: Rejected — small but still blurry
-const PDF_PIXEL_RATIO = 2
-const PDF_JPEG_QUALITY = 0.92
+const PDF_PIXEL_RATIO = 3
+const PDF_JPEG_QUALITY = 0.95
 
 async function captureAsDataUrl(element, width, height) {
   const canvas = await toCanvas(element, {
@@ -254,7 +254,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   // Alternatives:
   //   - window.open + window.print: Rejected - broken on mobile (about:blank, wrong sizes)
   //   - Direct window.print() on app: Rejected - prints entire UI, not just canvas
-  // Note: PDF uses JPEG internally at 2x resolution for sharp quality and small file size
+  // Note: PDF uses JPEG internally at 3x resolution for sharp quality and small file size
   const handleExportPDF = useCallback(async () => {
     if (!canvasRef.current) return
 
@@ -294,7 +294,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
       // Build PDF with exact platform dimensions using jsPDF.
       // jsPDF uses points (72 per inch). Page size is based on platform pixel dimensions
-      // (not the 2x capture size), so the high-res image is downscaled into the page —
+      // (not the 3x capture size), so the high-res image is downscaled into the page —
       // resulting in sharp rendering. This prevents letterboxing on non-standard aspect ratios.
       const pxToPt = 72 / 96
       const widthPt = platform.width * pxToPt
