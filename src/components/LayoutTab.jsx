@@ -281,15 +281,24 @@ export default memo(function LayoutTab({
   }
 
   // Requirement: Insert a section at a specific position (before/after a given index)
-  // Approach: splice() to insert at position, redistribute sizes equally
+  // Approach: splice() to insert at position, redistribute sizes equally, shift cell indices
   // Alternatives:
   //   - Always append at end: Rejected — user can't control placement without manual resizing
+  //   - No index shift: Rejected — silently reassigns content to wrong cells
   const insertSection = (position) => {
     if (type === 'fullbleed' || structure.length >= 4) return
     const newSize = 100 / (structure.length + 1)
     const newStructure = structure.map((s) => ({ ...s, size: newSize }))
     newStructure.splice(position, 0, { size: newSize, subdivisions: 1, subSizes: [100] })
-    onLayoutChange({ structure: newStructure })
+    // Calculate which cell index the new section occupies so we can shift data
+    let firstCellAtPosition = 0
+    for (let i = 0; i < position; i++) {
+      firstCellAtPosition += structure[i].subdivisions || 1
+    }
+    onLayoutChange({
+      structure: newStructure,
+      _cellShift: { fromIndex: firstCellAtPosition, shiftBy: 1 },
+    })
     // Update selection to track the section that moved
     if (structureSelection?.type === 'section' && structureSelection.index >= position) {
       setStructureSelection({ type: 'section', index: structureSelection.index + 1 })
@@ -301,19 +310,26 @@ export default memo(function LayoutTab({
     insertSection(structure.length)
   }
 
-  // Remove a section
+  // Requirement: Remove a section, shifting cell indices after the removed section.
+  // Approach: Remove section, shift cells after it down by the section's subdivision count.
+  // Alternatives:
+  //   - No shift: Rejected — content in later cells moves to wrong visual position.
   const removeSection = (index) => {
     if (structure.length <= 1) return
+    const removedSubs = structure[index].subdivisions || 1
     const newSize = 100 / (structure.length - 1)
     const newStructure = structure
       .filter((_, i) => i !== index)
       .map((s) => ({ ...s, size: newSize }))
-    const newTotalCells = countCells(newStructure)
-    // Filter out image cells that no longer exist
-    const newImageCells = imageCells.filter(cell => cell < newTotalCells)
-    // Ensure at least one image cell remains
-    const finalImageCells = newImageCells.length > 0 ? newImageCells : [0]
-    onLayoutChange({ structure: newStructure, imageCells: finalImageCells })
+    // Calculate first cell index of the removed section
+    let firstCellOfRemoved = 0
+    for (let i = 0; i < index; i++) {
+      firstCellOfRemoved += structure[i].subdivisions || 1
+    }
+    onLayoutChange({
+      structure: newStructure,
+      _cellShift: { fromIndex: firstCellOfRemoved + removedSubs, shiftBy: -removedSubs },
+    })
   }
 
   // Update section size with dynamic constraints
@@ -357,7 +373,10 @@ export default memo(function LayoutTab({
     onLayoutChange({ structure: newStructure })
   }
 
-  // Add subdivision
+  // Requirement: Add subdivision to a section, shifting cell indices after this section.
+  // Approach: New sub is appended at end of section. Cells after this section shift by 1.
+  // Alternatives:
+  //   - No shift: Rejected — content in later cells moves to wrong visual position.
   const addSubdivision = (sectionIndex) => {
     const newStructure = [...structure]
     const section = newStructure[sectionIndex]
@@ -370,10 +389,21 @@ export default memo(function LayoutTab({
     const newSubSizes = Array(newSubs).fill(evenSize)
 
     newStructure[sectionIndex] = { ...section, subdivisions: newSubs, subSizes: newSubSizes }
-    onLayoutChange({ structure: newStructure })
+    // The new sub is added at the end of this section, so cells after it shift
+    let firstCellAfterSection = 0
+    for (let i = 0; i <= sectionIndex; i++) {
+      firstCellAfterSection += structure[i].subdivisions || 1
+    }
+    onLayoutChange({
+      structure: newStructure,
+      _cellShift: { fromIndex: firstCellAfterSection, shiftBy: 1 },
+    })
   }
 
-  // Remove subdivision
+  // Requirement: Remove subdivision from a section, shifting cell indices after it.
+  // Approach: Last sub is removed. Cells after this section shift down by 1.
+  // Alternatives:
+  //   - No shift: Rejected — content in later cells moves to wrong visual position.
   const removeSubdivision = (sectionIndex) => {
     const newStructure = [...structure]
     const section = newStructure[sectionIndex]
@@ -387,12 +417,16 @@ export default memo(function LayoutTab({
 
     newStructure[sectionIndex] = { ...section, subdivisions: newSubs, subSizes: newSubSizes }
 
-    const newTotalCells = countCells(newStructure)
-    // Filter out image cells that no longer exist
-    const newImageCells = imageCells.filter(cell => cell < newTotalCells)
-    // Ensure at least one image cell remains
-    const finalImageCells = newImageCells.length > 0 ? newImageCells : [0]
-    onLayoutChange({ structure: newStructure, imageCells: finalImageCells })
+    // The last sub of this section is removed, so cells after it shift down
+    let firstCellAfterSection = 0
+    for (let i = 0; i <= sectionIndex; i++) {
+      firstCellAfterSection += structure[i].subdivisions || 1
+    }
+    // Shift from firstCellAfterSection (the cell that was after the removed sub)
+    onLayoutChange({
+      structure: newStructure,
+      _cellShift: { fromIndex: firstCellAfterSection, shiftBy: -1 },
+    })
   }
 
   // Update subdivision sizes with dynamic constraints

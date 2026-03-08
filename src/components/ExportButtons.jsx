@@ -92,14 +92,29 @@ async function captureAsBlob(element, width, height, format) {
 //   - PNG at pixelRatio:1: Rejected — huge file size AND poor quality (the worst of both)
 //   - PNG at pixelRatio:2: Rejected — sharp but still massive file size
 //   - JPEG at pixelRatio:1: Rejected — small but still blurry
-const PDF_PIXEL_RATIO = 3
+// Requirement: Sharp PDF rendering without crashing on large formats.
+// Approach: Target max ~16M pixels (4096x4096 equivalent). For larger platforms
+//   (e.g. YouTube Banner 2560x1440), reduce pixelRatio to stay within budget.
+// Alternatives:
+//   - Fixed pixelRatio:3 for all sizes: Rejected — 7680x4320 canvas (~133M pixels)
+//     consumes ~500MB and crashes mobile browsers.
+//   - Fixed pixelRatio:1: Rejected — looks blurry on standard formats.
+const MAX_PDF_PIXELS = 16_000_000 // ~16 megapixels budget
 const PDF_JPEG_QUALITY = 0.95
 
+function getPdfPixelRatio(width, height) {
+  for (let ratio = 3; ratio >= 1; ratio--) {
+    if (width * ratio * height * ratio <= MAX_PDF_PIXELS) return ratio
+  }
+  return 1
+}
+
 async function captureAsDataUrl(element, width, height) {
+  const pixelRatio = getPdfPixelRatio(width, height)
   const canvas = await toCanvas(element, {
     width,
     height,
-    pixelRatio: PDF_PIXEL_RATIO,
+    pixelRatio,
     style: { opacity: '1', transform: 'scale(1)' },
   })
   return canvas.toDataURL('image/jpeg', PDF_JPEG_QUALITY)

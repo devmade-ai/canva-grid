@@ -4,6 +4,7 @@ import { overlayTypes, hexToRgb, getOverlayType } from '../config/layouts'
 import { platforms } from '../config/platforms'
 import { fonts } from '../config/fonts'
 import { getNeutralColor } from '../config/themes'
+import { defaultTextLayer } from '../config/textDefaults'
 
 marked.setOptions({
   breaks: true,
@@ -37,7 +38,7 @@ const SvgFilters = () => (
   </svg>
 )
 
-const defaultTextLayer = { content: '', visible: false, color: 'secondary', size: 1, textAlign: null }
+
 
 const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   const platform = platforms.find((p) => p.id === state.platform) || platforms[0]
@@ -372,12 +373,16 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   }
 
   // Requirement: Per-cell structured text — each cell has its own text elements
-  // Approach: Simply return visible elements that exist in text[cellIndex]
+  // Approach: Filter for elements that are both visible and have content, so the
+  //   wrapping container div is only rendered when there's actual content to show.
+  // Alternatives:
+  //   - Filter only by existence (cellText[id]): Rejected — renders empty z-index:2
+  //     wrapper div that could intercept clicks when all elements are hidden.
   const getElementsForCell = (cellIndex) => {
     const elementIds = ['title', 'tagline', 'bodyHeading', 'bodyText', 'cta', 'footnote']
     const cellText = text[cellIndex]
     if (!cellText) return []
-    return elementIds.filter((id) => cellText[id])
+    return elementIds.filter((id) => cellText[id]?.visible && cellText[id]?.content)
   }
 
   const renderTextElement = (elementId, withShadow = false, cellIndex = 0) => {

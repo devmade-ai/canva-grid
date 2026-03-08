@@ -12,61 +12,10 @@ import ColorPicker from './ColorPicker'
 import AlignmentPicker from './AlignmentPicker'
 import MiniCellGrid from './MiniCellGrid'
 import { getCellInfo, getCellPositionLabel } from '../utils/cellUtils'
+import { defaultTextLayer } from '../config/textDefaults'
+import { textAlignOptions, verticalAlignOptions } from '../config/alignment'
 
 const noop = () => {}
-
-// Alignment icon components (moved from LayoutTab — alignment belongs with content)
-const AlignLeftIcon = () => (
-  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
-    <rect x="0" y="0" width="10" height="2" />
-    <rect x="0" y="4" width="14" height="2" />
-    <rect x="0" y="8" width="8" height="2" />
-  </svg>
-)
-const AlignCenterIcon = () => (
-  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
-    <rect x="2" y="0" width="10" height="2" />
-    <rect x="0" y="4" width="14" height="2" />
-    <rect x="3" y="8" width="8" height="2" />
-  </svg>
-)
-const AlignRightIcon = () => (
-  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
-    <rect x="4" y="0" width="10" height="2" />
-    <rect x="0" y="4" width="14" height="2" />
-    <rect x="6" y="8" width="8" height="2" />
-  </svg>
-)
-const AlignTopIcon = () => (
-  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-    <rect x="0" y="0" width="10" height="2" />
-    <rect x="3" y="4" width="4" height="10" opacity="0.4" />
-  </svg>
-)
-const AlignMiddleIcon = () => (
-  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-    <rect x="0" y="6" width="10" height="2" />
-    <rect x="3" y="2" width="4" height="10" opacity="0.4" />
-  </svg>
-)
-const AlignBottomIcon = () => (
-  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-    <rect x="0" y="12" width="10" height="2" />
-    <rect x="3" y="0" width="4" height="10" opacity="0.4" />
-  </svg>
-)
-
-const textAlignOptions = [
-  { id: 'left', name: 'Left', Icon: AlignLeftIcon },
-  { id: 'center', name: 'Center', Icon: AlignCenterIcon },
-  { id: 'right', name: 'Right', Icon: AlignRightIcon },
-]
-
-const verticalAlignOptions = [
-  { id: 'start', name: 'Top', Icon: AlignTopIcon },
-  { id: 'center', name: 'Middle', Icon: AlignMiddleIcon },
-  { id: 'end', name: 'Bottom', Icon: AlignBottomIcon },
-]
 
 const sizeOptions = [
   { id: 0.6, name: 'XS' },
@@ -125,16 +74,7 @@ function TextElementEditor({
   theme,
 }) {
   const [showStyle, setShowStyle] = useState(false)
-  const layerState = cellText?.[element.id] || {
-    content: '',
-    visible: false,
-    color: 'secondary',
-    size: 1,
-    bold: false,
-    italic: false,
-    letterSpacing: 0,
-    textAlign: null,
-  }
+  const layerState = cellText?.[element.id] || defaultTextLayer
   const isVisible = layerState.visible !== false
 
   // Auto-grow textarea rows based on content (#9)
@@ -564,7 +504,7 @@ export default memo(function ContentTab({
     // Check structured text
     for (const [idx, cellData] of Object.entries(text || {})) {
       if (typeof cellData === 'object' && cellData !== null) {
-        const hasContent = Object.values(cellData).some((el) => el?.content)
+        const hasContent = Object.values(cellData).some((el) => el?.visible !== false && el?.content)
         if (hasContent) set.add(Number(idx))
       }
     }

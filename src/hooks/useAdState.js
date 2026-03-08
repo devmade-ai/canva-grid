@@ -10,7 +10,7 @@ import { useCallback } from 'react'
 import { presetThemes } from '../config/themes'
 import { getLookSettingsForLayout } from '../config/stylePresets'
 import { useHistory } from './useHistory'
-import { countCells, cleanupOrphanedCells } from '../utils/cellUtils'
+import { countCells, cleanupOrphanedCells, shiftCellIndices } from '../utils/cellUtils'
 
 const defaultTheme = presetThemes[0] // Dark theme
 const STORAGE_KEY = 'canvagrid-designs'
@@ -19,9 +19,12 @@ const STORAGE_KEY = 'canvagrid-designs'
 const TEXT_ELEMENT_IDS = ['title', 'tagline', 'bodyHeading', 'bodyText', 'cta', 'footnote']
 
 // Requirement: Migrate old global text format (text.title + textCells) to per-cell format (text[cellIndex].title)
-// Approach: Detect old format by checking if text has element keys directly, then redistribute using textCells assignments
+// Approach: Detect old format by checking if text has element keys directly, then redistribute
+//   using textCells assignments. For null (auto-assign) entries, replicate old auto-placement:
+//   title/tagline/cta → first image cell, bodyHeading/bodyText/footnote → first non-image cell.
 // Alternatives:
 //   - Breaking change with no migration: Rejected — users lose saved designs
+//   - Map all null to cell 0: Rejected — stacks everything in one cell for multi-cell layouts
 function migrateTextToPerCell(stateObj) {
   if (!stateObj.text) return
   // Detect old format: text has element keys like 'title', 'tagline' directly
@@ -32,11 +35,28 @@ function migrateTextToPerCell(stateObj) {
   const textCells = stateObj.textCells || {}
   const newText = {}
 
+  // Replicate old auto-assignment for null entries
+  const imageCells = stateObj.layout?.imageCells || [0]
+  const totalCells = countCells(stateObj.layout?.structure)
+  const firstImageCell = imageCells.length > 0 ? imageCells[0] : 0
+  const firstNonImageCell = totalCells > 1
+    ? Array.from({ length: totalCells }, (_, i) => i).find((i) => !imageCells.includes(i)) ?? 0
+    : 0
+  // Old auto-assignment: title/tagline/cta on image cell, body/footnote on non-image cell
+  const autoAssign = {
+    title: firstImageCell,
+    tagline: firstImageCell,
+    cta: firstImageCell,
+    bodyHeading: firstNonImageCell,
+    bodyText: firstNonImageCell,
+    footnote: firstNonImageCell,
+  }
+
   for (const elementId of TEXT_ELEMENT_IDS) {
     const elementData = oldText[elementId]
     if (!elementData) continue
-    // Use assigned cell, or fall back to cell 0
-    const cellIndex = textCells[elementId] ?? 0
+    // Use explicit assignment, or auto-assign based on old placement logic
+    const cellIndex = textCells[elementId] ?? autoAssign[elementId] ?? 0
     if (!newText[cellIndex]) newText[cellIndex] = {}
     newText[cellIndex][elementId] = { ...elementData }
   }
@@ -353,17 +373,76 @@ export function useAdState() {
   }, [setState])
 
   // Requirement: Changing layout structure must not leave orphaned cell references.
-  // Approach: On every layout update, clean up per-cell text, cellImages, cellAlignments,
-  //   cellOverlays, padding overrides, cell frames, and freeformText that reference
-  //   cells beyond the new cell count. Uses shared cleanupOrphanedCells utility.
+  // Approach: On every layout update, shift cell-indexed data if cells were inserted/removed
+  //   (via _cellShift metadata), then clean up orphaned references beyond the new cell count.
   // Alternatives:
   //   - Lazy cleanup on render: Rejected - would cause subtle bugs when rendering stale refs.
   //   - Separate cleanup action: Rejected - user could forget; automatic is safer.
   const setLayout = useCallback((updates) => {
     setState((prev) => {
-      const newLayout = { ...prev.layout, ...updates }
+      // Extract _cellShift metadata (not stored in layout)
+      const { _cellShift, ...layoutUpdates } = updates
+      const newLayout = { ...prev.layout, ...layoutUpdates }
       const newCellCount = countCells(newLayout.structure)
-      const cleaned = cleanupOrphanedCells(prev, newCellCount)
+
+      // If cells were inserted/removed, remap indices first so content stays
+      // with the correct visual cell. Then clean up any orphans beyond bounds.
+      let stateForCleanup = prev
+      if (_cellShift) {
+        const { fromIndex, shiftBy } = _cellShift
+        const shifted = shiftCellIndices(prev, fromIndex, shiftBy)
+
+        // Shift cellAlignments (array) and cellOverlays (object) from the layout too
+        const oldAlignments = newLayout.cellAlignments || []
+        const shiftedAlignments = []
+        for (let i = 0; i < oldAlignments.length; i++) {
+          if (i >= fromIndex) {
+            const newIdx = i + shiftBy
+            if (newIdx >= 0) shiftedAlignments[newIdx] = oldAlignments[i]
+          } else {
+            shiftedAlignments[i] = oldAlignments[i]
+          }
+        }
+        // Fill gaps with null alignment
+        for (let i = 0; i < shiftedAlignments.length; i++) {
+          if (!shiftedAlignments[i]) shiftedAlignments[i] = { textAlign: null, textVerticalAlign: null }
+        }
+
+        const oldOverlays = newLayout.cellOverlays || {}
+        const shiftedOverlays = {}
+        for (const [key, value] of Object.entries(oldOverlays)) {
+          const idx = parseInt(key, 10)
+          if (idx >= fromIndex) {
+            const newIdx = idx + shiftBy
+            if (newIdx >= 0) shiftedOverlays[newIdx] = value
+          } else {
+            shiftedOverlays[key] = value
+          }
+        }
+
+        // Shift imageCells array values
+        const oldImageCells = newLayout.imageCells || [0]
+        const shiftedImageCells = oldImageCells.map((cellIdx) =>
+          cellIdx >= fromIndex ? cellIdx + shiftBy : cellIdx,
+        ).filter((cellIdx) => cellIdx >= 0 && cellIdx < newCellCount)
+        const finalImageCells = shiftedImageCells.length > 0 ? shiftedImageCells : [0]
+
+        newLayout.cellAlignments = shiftedAlignments
+        newLayout.cellOverlays = shiftedOverlays
+        newLayout.imageCells = finalImageCells
+
+        // Build intermediate state with shifted data for cleanupOrphanedCells
+        stateForCleanup = {
+          ...prev,
+          text: shifted.text,
+          cellImages: shifted.cellImages,
+          padding: { ...prev.padding, cellOverrides: shifted.paddingOverrides },
+          frame: { ...prev.frame, cellFrames: shifted.cellFrames },
+          freeformText: shifted.freeformText,
+        }
+      }
+
+      const cleaned = cleanupOrphanedCells(stateForCleanup, newCellCount)
 
       // For layout-internal fields, cleanup from newLayout (which includes user's updates)
       // rather than prev.layout (which cleanupOrphanedCells uses)
