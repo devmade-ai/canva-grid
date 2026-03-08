@@ -579,6 +579,7 @@ function App() {
                     text={state.text}
                     onTextChange={setText}
                     layout={state.layout}
+                    onLayoutChange={setLayout}
                     theme={state.theme}
                     platform={state.platform}
                     textMode={state.textMode || 'structured'}

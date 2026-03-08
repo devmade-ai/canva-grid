@@ -7,7 +7,7 @@
 //   - Numeric input only: Rejected - sliders give visual feedback for proportional sizing.
 import { useState, useMemo, memo } from 'react'
 import CollapsibleSection from './CollapsibleSection'
-import { getCellInfo, countCells } from '../utils/cellUtils'
+import { countCells } from '../utils/cellUtils'
 import { platforms } from '../config/platforms'
 import { defaultState } from '../hooks/useAdState'
 
@@ -26,59 +26,6 @@ const getMaxSize = (totalItems) => {
   if (totalItems <= 1) return 100
   return Math.min(MAX_SIZE, 100 - (totalItems - 1) * MIN_SIZE)
 }
-
-// Alignment icon components
-const AlignLeftIcon = () => (
-  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
-    <rect x="0" y="0" width="10" height="2" />
-    <rect x="0" y="4" width="14" height="2" />
-    <rect x="0" y="8" width="8" height="2" />
-  </svg>
-)
-const AlignCenterIcon = () => (
-  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
-    <rect x="2" y="0" width="10" height="2" />
-    <rect x="0" y="4" width="14" height="2" />
-    <rect x="3" y="8" width="8" height="2" />
-  </svg>
-)
-const AlignRightIcon = () => (
-  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
-    <rect x="4" y="0" width="10" height="2" />
-    <rect x="0" y="4" width="14" height="2" />
-    <rect x="6" y="8" width="8" height="2" />
-  </svg>
-)
-const AlignTopIcon = () => (
-  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-    <rect x="0" y="0" width="10" height="2" />
-    <rect x="3" y="4" width="4" height="10" opacity="0.4" />
-  </svg>
-)
-const AlignMiddleIcon = () => (
-  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-    <rect x="0" y="6" width="10" height="2" />
-    <rect x="3" y="2" width="4" height="10" opacity="0.4" />
-  </svg>
-)
-const AlignBottomIcon = () => (
-  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
-    <rect x="0" y="12" width="10" height="2" />
-    <rect x="3" y="0" width="4" height="10" opacity="0.4" />
-  </svg>
-)
-
-const textAlignOptions = [
-  { id: 'left', name: 'Left', Icon: AlignLeftIcon },
-  { id: 'center', name: 'Center', Icon: AlignCenterIcon },
-  { id: 'right', name: 'Right', Icon: AlignRightIcon },
-]
-
-const verticalAlignOptions = [
-  { id: 'start', name: 'Top', Icon: AlignTopIcon },
-  { id: 'center', name: 'Middle', Icon: AlignMiddleIcon },
-  { id: 'end', name: 'Bottom', Icon: AlignBottomIcon },
-]
 
 // Unified grid component for cell selection
 function CellGrid({
@@ -303,11 +250,9 @@ export default memo(function LayoutTab({
   selectedCell = 0,
   onSelectCell,
 }) {
-  const { type = 'fullbleed', structure = [], textAlign, textVerticalAlign, cellAlignments = [] } = layout
+  const { type = 'fullbleed', structure = [] } = layout
   const imageCells = layout.imageCells || [0]
   const [structureSelection, setStructureSelection] = useState(null)
-
-  const cellInfoList = useMemo(() => getCellInfo(layout), [layout])
 
   const platformAspectRatio = useMemo(() => {
     const p = platforms.find((pl) => pl.id === platform) || platforms[0]
@@ -498,30 +443,6 @@ export default memo(function LayoutTab({
   const handleReset = () => {
     onLayoutChange(defaultState.layout)
     setStructureSelection(null)
-  }
-
-  // Get alignment for selected cell or global
-  const getAlignmentForCell = (cellIndex, prop) => {
-    if (cellIndex === null) {
-      return prop === 'textAlign' ? textAlign : textVerticalAlign
-    }
-    const cellAlign = cellAlignments?.[cellIndex]?.[prop]
-    if (cellAlign !== null && cellAlign !== undefined) return cellAlign
-    return prop === 'textAlign' ? textAlign : textVerticalAlign
-  }
-
-  // Update alignment for selected cell or global
-  const setAlignmentForCell = (cellIndex, prop, value) => {
-    if (cellIndex === null) {
-      onLayoutChange({ [prop]: value })
-    } else {
-      const newAlignments = [...(cellAlignments || [])]
-      while (newAlignments.length <= cellIndex) {
-        newAlignments.push({ textAlign: null, textVerticalAlign: null })
-      }
-      newAlignments[cellIndex] = { ...newAlignments[cellIndex], [prop]: value }
-      onLayoutChange({ cellAlignments: newAlignments })
-    }
   }
 
   // Get info about current selection
@@ -799,91 +720,6 @@ export default memo(function LayoutTab({
           >
             Reset to Default
           </button>
-        </div>
-      </CollapsibleSection>
-
-      {/* Requirement: Text Alignment uses global selectedCell from ContextBar, not Structure grid.
-          Approach: Read/write cellAlignments[selectedCell] directly. Fullbleed sets global alignment.
-          Alternatives:
-            - Keep tied to structureSelection: Rejected — forces re-selection, disconnected from ContextBar. */}
-      <CollapsibleSection title="Text Alignment" defaultExpanded={false}>
-        <div className="space-y-3">
-          {/* Context-aware label */}
-          <div className="text-xs text-ui-text-subtle">
-            {type === 'fullbleed' ? (
-              'Global alignment for all text'
-            ) : (
-              <>Alignment for <span className="font-medium text-primary dark:text-violet-400">Cell {selectedCell + 1}</span> — use the cell bar above to switch</>
-            )}
-          </div>
-
-          {/* Cell selector for quick switching (multi-cell only) */}
-          {type !== 'fullbleed' && cellInfoList.length > 1 && (
-            <div className="flex gap-1.5 flex-wrap">
-              {cellInfoList.map((cell) => (
-                <button
-                  key={cell.index}
-                  onClick={() => onSelectCell?.(cell.index)}
-                  className={`min-w-[32px] px-2 py-1 text-xs rounded-lg font-medium transition-colors ${
-                    selectedCell === cell.index
-                      ? 'bg-primary text-white shadow-sm'
-                      : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
-                  }`}
-                >
-                  {cell.label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <span className="text-xs text-ui-text-subtle block mb-1.5">Horizontal</span>
-              <div className="flex gap-1.5">
-                {textAlignOptions.map((align) => {
-                  const targetCell = type === 'fullbleed' ? null : selectedCell
-                  const isActive = getAlignmentForCell(targetCell, 'textAlign') === align.id
-                  return (
-                    <button
-                      key={align.id}
-                      onClick={() => setAlignmentForCell(targetCell, 'textAlign', align.id)}
-                      title={align.name}
-                      className={`flex-1 px-2 py-2 rounded-lg flex items-center justify-center ${
-                        isActive
-                          ? 'bg-primary text-white shadow-sm'
-                          : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
-                      }`}
-                    >
-                      <align.Icon />
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-            <div className="flex-1">
-              <span className="text-xs text-ui-text-subtle block mb-1.5">Vertical</span>
-              <div className="flex gap-1.5">
-                {verticalAlignOptions.map((align) => {
-                  const targetCell = type === 'fullbleed' ? null : selectedCell
-                  const isActive = getAlignmentForCell(targetCell, 'textVerticalAlign') === align.id
-                  return (
-                    <button
-                      key={align.id}
-                      onClick={() => setAlignmentForCell(targetCell, 'textVerticalAlign', align.id)}
-                      title={align.name}
-                      className={`flex-1 px-2 py-2 rounded-lg flex items-center justify-center ${
-                        isActive
-                          ? 'bg-primary text-white shadow-sm'
-                          : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
-                      }`}
-                    >
-                      <align.Icon />
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          </div>
         </div>
       </CollapsibleSection>
     </div>

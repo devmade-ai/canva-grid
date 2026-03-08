@@ -15,6 +15,59 @@ import { getCellInfo, getCellPositionLabel } from '../utils/cellUtils'
 
 const noop = () => {}
 
+// Alignment icon components (moved from LayoutTab — alignment belongs with content)
+const AlignLeftIcon = () => (
+  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+    <rect x="0" y="0" width="10" height="2" />
+    <rect x="0" y="4" width="14" height="2" />
+    <rect x="0" y="8" width="8" height="2" />
+  </svg>
+)
+const AlignCenterIcon = () => (
+  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+    <rect x="2" y="0" width="10" height="2" />
+    <rect x="0" y="4" width="14" height="2" />
+    <rect x="3" y="8" width="8" height="2" />
+  </svg>
+)
+const AlignRightIcon = () => (
+  <svg width="14" height="10" viewBox="0 0 14 10" fill="currentColor">
+    <rect x="4" y="0" width="10" height="2" />
+    <rect x="0" y="4" width="14" height="2" />
+    <rect x="6" y="8" width="8" height="2" />
+  </svg>
+)
+const AlignTopIcon = () => (
+  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+    <rect x="0" y="0" width="10" height="2" />
+    <rect x="3" y="4" width="4" height="10" opacity="0.4" />
+  </svg>
+)
+const AlignMiddleIcon = () => (
+  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+    <rect x="0" y="6" width="10" height="2" />
+    <rect x="3" y="2" width="4" height="10" opacity="0.4" />
+  </svg>
+)
+const AlignBottomIcon = () => (
+  <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor">
+    <rect x="0" y="12" width="10" height="2" />
+    <rect x="3" y="0" width="4" height="10" opacity="0.4" />
+  </svg>
+)
+
+const textAlignOptions = [
+  { id: 'left', name: 'Left', Icon: AlignLeftIcon },
+  { id: 'center', name: 'Center', Icon: AlignCenterIcon },
+  { id: 'right', name: 'Right', Icon: AlignRightIcon },
+]
+
+const verticalAlignOptions = [
+  { id: 'start', name: 'Top', Icon: AlignTopIcon },
+  { id: 'center', name: 'Middle', Icon: AlignMiddleIcon },
+  { id: 'end', name: 'Bottom', Icon: AlignBottomIcon },
+]
+
 const sizeOptions = [
   { id: 0.6, name: 'XS' },
   { id: 0.8, name: 'S' },
@@ -457,6 +510,7 @@ export default memo(function ContentTab({
   text,
   onTextChange,
   layout,
+  onLayoutChange,
   theme,
   platform,
   textMode = 'structured',
@@ -471,6 +525,34 @@ export default memo(function ContentTab({
 
   const maxCell = cellInfoList.length - 1
   const activeCell = selectedCellProp < 0 || selectedCellProp > maxCell ? 0 : selectedCellProp
+
+  const { type: layoutType, textAlign: globalTextAlign, textVerticalAlign: globalVerticalAlign, cellAlignments = [] } = layout
+
+  // Get alignment for active cell (with global fallback)
+  const getCellAlignment = (prop) => {
+    const targetCell = layoutType === 'fullbleed' ? null : activeCell
+    if (targetCell === null) {
+      return prop === 'textAlign' ? globalTextAlign : globalVerticalAlign
+    }
+    const cellAlign = cellAlignments?.[targetCell]?.[prop]
+    if (cellAlign !== null && cellAlign !== undefined) return cellAlign
+    return prop === 'textAlign' ? globalTextAlign : globalVerticalAlign
+  }
+
+  // Set alignment for active cell (or global for fullbleed)
+  const setCellAlignment = (prop, value) => {
+    const targetCell = layoutType === 'fullbleed' ? null : activeCell
+    if (targetCell === null) {
+      onLayoutChange({ [prop]: value })
+    } else {
+      const newAlignments = [...(cellAlignments || [])]
+      while (newAlignments.length <= targetCell) {
+        newAlignments.push({ textAlign: null, textVerticalAlign: null })
+      }
+      newAlignments[targetCell] = { ...newAlignments[targetCell], [prop]: value }
+      onLayoutChange({ cellAlignments: newAlignments })
+    }
+  }
 
   // Cells with content — works for both modes
   const cellsWithContent = useMemo(() => {
@@ -602,6 +684,53 @@ export default memo(function ContentTab({
           theme={theme}
         />
       )}
+
+      {/* Requirement: Cell alignment controls moved from Structure tab — alignment belongs with content
+          Approach: Collapsible section after text editors, reads/writes cellAlignments via onLayoutChange
+          Alternatives:
+            - Keep in Structure tab: Rejected — alignment is a content concern, not a structure concern */}
+      <CollapsibleSection title="Cell Alignment" defaultExpanded={false}>
+        <div className="flex gap-4">
+          <div className="flex-1">
+            <span className="text-xs text-ui-text-subtle block mb-1.5">Horizontal</span>
+            <div className="flex gap-1.5">
+              {textAlignOptions.map((align) => (
+                <button
+                  key={align.id}
+                  onClick={() => setCellAlignment('textAlign', align.id)}
+                  title={align.name}
+                  className={`flex-1 px-2 py-2 rounded-lg flex items-center justify-center ${
+                    getCellAlignment('textAlign') === align.id
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
+                  }`}
+                >
+                  <align.Icon />
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex-1">
+            <span className="text-xs text-ui-text-subtle block mb-1.5">Vertical</span>
+            <div className="flex gap-1.5">
+              {verticalAlignOptions.map((align) => (
+                <button
+                  key={align.id}
+                  onClick={() => setCellAlignment('textVerticalAlign', align.id)}
+                  title={align.name}
+                  className={`flex-1 px-2 py-2 rounded-lg flex items-center justify-center ${
+                    getCellAlignment('textVerticalAlign') === align.id
+                      ? 'bg-primary text-white shadow-sm'
+                      : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
+                  }`}
+                >
+                  <align.Icon />
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </CollapsibleSection>
     </div>
   )
 })
