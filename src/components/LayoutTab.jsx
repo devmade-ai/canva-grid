@@ -363,13 +363,25 @@ export default memo(function LayoutTab({
     setStructureSelection(null)
   }
 
-  // Add a section
-  const addSection = () => {
-    if (type === 'fullbleed') return
+  // Requirement: Insert a section at a specific position (before/after a given index)
+  // Approach: splice() to insert at position, redistribute sizes equally
+  // Alternatives:
+  //   - Always append at end: Rejected — user can't control placement without manual resizing
+  const insertSection = (position) => {
+    if (type === 'fullbleed' || structure.length >= 4) return
     const newSize = 100 / (structure.length + 1)
     const newStructure = structure.map((s) => ({ ...s, size: newSize }))
-    newStructure.push({ size: newSize, subdivisions: 1, subSizes: [100] })
+    newStructure.splice(position, 0, { size: newSize, subdivisions: 1, subSizes: [100] })
     onLayoutChange({ structure: newStructure })
+    // Update selection to track the section that moved
+    if (structureSelection?.type === 'section' && structureSelection.index >= position) {
+      setStructureSelection({ type: 'section', index: structureSelection.index + 1 })
+    }
+  }
+
+  // Add a section at the end (used when no section is selected)
+  const addSection = () => {
+    insertSection(structure.length)
   }
 
   // Remove a section
@@ -739,6 +751,23 @@ export default memo(function LayoutTab({
                   </button>
                 </div>
               </div>
+
+              {structure.length < 4 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => insertSection(selectedSectionIndex)}
+                    className="flex-1 px-3 py-2 text-sm bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40 rounded-lg font-medium"
+                  >
+                    + {type === 'rows' ? 'Above' : 'Before'}
+                  </button>
+                  <button
+                    onClick={() => insertSection(selectedSectionIndex + 1)}
+                    className="flex-1 px-3 py-2 text-sm bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40 rounded-lg font-medium"
+                  >
+                    + {type === 'rows' ? 'Below' : 'After'}
+                  </button>
+                </div>
+              )}
 
               {structure.length > 1 && (
                 <button
