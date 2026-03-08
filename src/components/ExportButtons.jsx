@@ -84,26 +84,23 @@ async function captureAsBlob(element, width, height, format) {
   )
 }
 
-// Requirement: PDF image capture with good quality and small file size
-// Approach: Use toCanvas with pixelRatio:3 for sharp rendering, then convert to JPEG
-// Why: Previous approach used toPng at pixelRatio:1 — PNG is lossless so the PDF was
-//   ~6x larger than image exports, while pixelRatio:1 made the image look blurry/pixelated.
+// Requirement: PDF image capture with good quality, small file size, AND transparency.
+// Approach: Use PNG at pixelRatio:2 for sharp rendering with transparency, then let
+//   jsPDF compress the PNG data with deflate (compression: 'FAST'). This gives:
+//   - Sharp rendering (2x is plenty for downscaling into PDF page dimensions)
+//   - Transparency preserved (PNG supports alpha channel, JPEG does not)
+//   - Reasonable file size (jsPDF deflate compresses the raw pixel data)
 // Alternatives:
-//   - PNG at pixelRatio:1: Rejected — huge file size AND poor quality (the worst of both)
-//   - PNG at pixelRatio:2: Rejected — sharp but still massive file size
-//   - JPEG at pixelRatio:1: Rejected — small but still blurry
-// Requirement: Sharp PDF rendering without crashing on large formats.
-// Approach: Target max ~16M pixels (4096x4096 equivalent). For larger platforms
-//   (e.g. YouTube Banner 2560x1440), reduce pixelRatio to stay within budget.
-// Alternatives:
-//   - Fixed pixelRatio:3 for all sizes: Rejected — 7680x4320 canvas (~133M pixels)
-//     consumes ~500MB and crashes mobile browsers.
-//   - Fixed pixelRatio:1: Rejected — looks blurry on standard formats.
+//   - JPEG at pixelRatio:3: Rejected — loses transparency, no alpha channel support
+//   - PNG at pixelRatio:1: Rejected — blurry on retina/high-DPI screens
+//   - PNG at pixelRatio:3: Rejected — 3x creates very large canvases on big formats
+// Requirement: Cap canvas size to prevent memory crashes on large formats.
+// Approach: Target max ~16M pixels. For larger platforms (e.g. YouTube Banner 2560x1440),
+//   reduce pixelRatio to stay within budget.
 const MAX_PDF_PIXELS = 16_000_000 // ~16 megapixels budget
-const PDF_JPEG_QUALITY = 0.95
 
 function getPdfPixelRatio(width, height) {
-  for (let ratio = 3; ratio >= 1; ratio--) {
+  for (let ratio = 2; ratio >= 1; ratio--) {
     if (width * ratio * height * ratio <= MAX_PDF_PIXELS) return ratio
   }
   return 1
@@ -117,7 +114,7 @@ async function captureAsDataUrl(element, width, height) {
     pixelRatio,
     style: { opacity: '1', transform: 'scale(1)' },
   })
-  return canvas.toDataURL('image/jpeg', PDF_JPEG_QUALITY)
+  return canvas.toDataURL('image/png')
 }
 
 export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, pageCount = 1, onSetActivePage }) {
@@ -269,7 +266,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   // Alternatives:
   //   - window.open + window.print: Rejected - broken on mobile (about:blank, wrong sizes)
   //   - Direct window.print() on app: Rejected - prints entire UI, not just canvas
-  // Note: PDF uses JPEG internally at 3x resolution for sharp quality and small file size
+  // Note: PDF uses PNG at 2x with deflate compression — sharp, preserves transparency
   const handleExportPDF = useCallback(async () => {
     if (!canvasRef.current) return
 
@@ -309,7 +306,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
       // Build PDF with exact platform dimensions using jsPDF.
       // jsPDF uses points (72 per inch). Page size is based on platform pixel dimensions
-      // (not the 3x capture size), so the high-res image is downscaled into the page —
+      // (not the 2x capture size), so the high-res image is downscaled into the page —
       // resulting in sharp rendering. This prevents letterboxing on non-standard aspect ratios.
       const pxToPt = 72 / 96
       const widthPt = platform.width * pxToPt
@@ -326,7 +323,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         if (i > 0) {
           pdf.addPage([widthPt, heightPt], orientation)
         }
-        pdf.addImage(pageDataUrls[i], 'JPEG', 0, 0, widthPt, heightPt)
+        pdf.addImage(pageDataUrls[i], 'PNG', 0, 0, widthPt, heightPt, undefined, 'FAST')
       }
 
       const ts = getTimestamp()
