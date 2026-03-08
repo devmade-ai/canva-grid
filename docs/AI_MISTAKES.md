@@ -104,4 +104,21 @@ Each wrong assumption led to a commit that didn't solve the actual problem. Thre
 
 ---
 
+## 2026-03 | Contradictory Implementation + Acted On Assumptions Instead of Answering Questions
+
+**What went wrong:** Three mistakes in sequence:
+1. Added quality selector with Standard (1x) option but hardcoded `Math.max(pixelRatio, 2)` for PDF — the UI lied to the user
+2. User asked two questions ("images were perfect, didn't need it?" and "why is PDF 6x bigger?") — AI treated these as post-deployment feedback rather than pre-implementation questions about the approach
+3. Started implementing changes (scoping quality to PDF-only) without answering the user's questions first and getting direction
+
+**Why it happened:** AI was in "build" mode and interpreted questions as approval signals rather than actual questions requiring answers. Violated the core principle: "ASK before assuming" and "Proceed with assumptions when a single clarifying question would prevent a wrong commit."
+
+**How to prevent:**
+- When user asks questions, ANSWER THEM FIRST. Don't implement.
+- Questions are not the same as feedback on a deployed feature
+- Review your own code for contradictions before committing (a UI option that gets overridden is a bug)
+- If unsure whether user wants changes, ask: "Want me to change this, or were you just asking?"
+
+---
+
 *Add new entries above this line*
