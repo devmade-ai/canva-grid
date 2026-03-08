@@ -87,13 +87,6 @@ export function countCells(structure) {
  * Used when layout changes reduce the number of cells.
  */
 export function cleanupOrphanedCells(prevState, newCellCount) {
-  const cleanTextCells = { ...prevState.textCells }
-  Object.keys(cleanTextCells).forEach((key) => {
-    if (cleanTextCells[key] !== null && cleanTextCells[key] >= newCellCount) {
-      cleanTextCells[key] = null
-    }
-  })
-
   const cleanCellImages = { ...prevState.cellImages }
   Object.keys(cleanCellImages).forEach((cellIndex) => {
     if (parseInt(cellIndex, 10) >= newCellCount) {
@@ -122,11 +115,19 @@ export function cleanupOrphanedCells(prevState, newCellCount) {
     }
   })
 
+  // Clean per-cell structured text
+  const cleanText = { ...(prevState.text || {}) }
+  Object.keys(cleanText).forEach((cellIndex) => {
+    if (parseInt(cellIndex, 10) >= newCellCount) {
+      delete cleanText[cellIndex]
+    }
+  })
+
   // Note: cellAlignments and cellOverlays live inside layout and are cleaned
   // by setLayout/applyLayoutPreset separately (they need to clean from the
   // NEW layout, not prev.layout). Don't duplicate that cleanup here.
   return {
-    textCells: cleanTextCells,
+    text: cleanText,
     cellImages: cleanCellImages,
     paddingOverrides: cleanPaddingOverrides,
     cellFrames: cleanCellFrames,

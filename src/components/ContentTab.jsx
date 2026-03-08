@@ -1,19 +1,17 @@
 // Requirement: Two text editing modes — structured (text groups) and freeform (per-cell editors).
-// Approach: Top-level toggle switches between modes. Structured mode has paired collapsible
-//   sections (Title+Tagline, Body+Heading, CTA, Footnote) with cell assignment. Freeform mode
-//   renders one text editor per cell with independent content and optional markdown.
+// Approach: Both modes use the same cell selector. Structured mode shows guided fields
+//   (title, tagline, body, CTA, footnote) for the selected cell. Freeform mode shows a
+//   single markdown editor per cell.
 // Alternatives:
-//   - Single mode only: Rejected - structured is great for standard layouts, but freeform
-//     gives power users full control for custom text-heavy designs (stories, presentations).
-//   - Rich text editor (Quill, TipTap): Rejected - adds large dependency for features most
-//     users don't need; markdown toggle covers formatting needs.
+//   - Global text with cell assignment: Rejected — indirect, confusing for non-technical users.
+//   - Single mode only: Rejected — structured is great for standard layouts, but freeform
+//     gives power users full control for custom text-heavy designs.
 import { memo, useMemo, useRef, useCallback, useState } from 'react'
 import CollapsibleSection from './CollapsibleSection'
 import ColorPicker from './ColorPicker'
 import AlignmentPicker from './AlignmentPicker'
 import MiniCellGrid from './MiniCellGrid'
 import { getCellInfo, getCellPositionLabel } from '../utils/cellUtils'
-import { platforms } from '../config/platforms'
 
 const noop = () => {}
 
@@ -68,17 +66,13 @@ const textGroups = [
 //   - Separate modal: Rejected - too much friction for quick adjustments
 function TextElementEditor({
   element,
-  text,
+  cellIndex,
+  cellText,
   onTextChange,
-  textCells,
-  onTextCellsChange,
-  layout,
   theme,
-  platform,
 }) {
   const [showStyle, setShowStyle] = useState(false)
-  const imageCells = layout.imageCells || [0]
-  const layerState = text?.[element.id] || {
+  const layerState = cellText?.[element.id] || {
     content: '',
     visible: false,
     color: 'secondary',
@@ -88,7 +82,6 @@ function TextElementEditor({
     letterSpacing: 0,
     textAlign: null,
   }
-  const currentCell = textCells?.[element.id]
   const isVisible = layerState.visible !== false
 
   // Auto-grow textarea rows based on content (#9)
@@ -104,11 +97,11 @@ function TextElementEditor({
 
   return (
     <div className="space-y-2 pb-3 border-b border-ui-border-subtle last:border-0 last:pb-0">
-      {/* Row 1: Visibility + Label + Clear + Style toggle + Cell Assignment */}
+      {/* Row 1: Visibility + Label + Clear + Style toggle */}
       <div className="flex items-center gap-2">
         {/* Visibility Toggle */}
         <button
-          onClick={() => onTextChange(element.id, { visible: !isVisible })}
+          onClick={() => onTextChange(cellIndex, element.id, { visible: !isVisible })}
           className={`w-7 h-7 sm:w-6 sm:h-6 rounded-md flex items-center justify-center text-xs shrink-0 ${
             isVisible ? 'bg-green-100 dark:bg-green-900/50 text-green-600 dark:text-green-400' : 'bg-ui-surface-inset text-ui-text-faint'
           }`}
@@ -125,7 +118,7 @@ function TextElementEditor({
         {/* Clear text button (#4) */}
         {layerState.content && (
           <button
-            onClick={() => onTextChange(element.id, { content: '' })}
+            onClick={() => onTextChange(cellIndex, element.id, { content: '' })}
             className="w-6 h-6 rounded flex items-center justify-center text-ui-text-faint hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
             title="Clear text"
           >
@@ -148,39 +141,13 @@ function TextElementEditor({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
         </button>
-
-        {/* Cell Selector */}
-        <MiniCellGrid
-          layout={layout}
-          imageCells={imageCells}
-          selectedCell={currentCell}
-          onSelectCell={(idx) => onTextCellsChange?.({ [element.id]: idx })}
-          platform={platform}
-          mode="content"
-        />
-
-        {/* Cell Label */}
-        <span className="text-[10px] text-ui-text-subtle w-10 shrink-0 text-right">
-          {currentCell !== null && currentCell !== undefined ? `Cell ${currentCell + 1}` : 'Default'}
-        </span>
-
-        {/* Reset Cell */}
-        {currentCell !== null && currentCell !== undefined && (
-          <button
-            onClick={() => onTextCellsChange?.({ [element.id]: null })}
-            className="text-xs text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 shrink-0"
-            title="Reset to default"
-          >
-            ×
-          </button>
-        )}
       </div>
 
       {/* Row 2: Text Input — auto-grows with content (#9) */}
       <div className="relative">
         <textarea
           value={layerState.content}
-          onChange={(e) => onTextChange(element.id, { content: e.target.value })}
+          onChange={(e) => onTextChange(cellIndex, element.id, { content: e.target.value })}
           onFocus={handleFocus}
           placeholder={element.placeholder}
           rows={textareaRows}
@@ -197,7 +164,7 @@ function TextElementEditor({
             <span className="text-[10px] text-ui-text-subtle w-10 shrink-0">Align</span>
             <AlignmentPicker
               value={layerState.textAlign}
-              onChange={(id) => onTextChange(element.id, { textAlign: id })}
+              onChange={(id) => onTextChange(cellIndex, element.id, { textAlign: id })}
             />
           </div>
 
@@ -206,7 +173,7 @@ function TextElementEditor({
             <span className="text-[10px] text-ui-text-subtle w-10 shrink-0">Color</span>
             <ColorPicker
               value={layerState.color}
-              onChange={(id) => onTextChange(element.id, { color: id })}
+              onChange={(id) => onTextChange(cellIndex, element.id, { color: id })}
               theme={theme}
             />
           </div>
@@ -218,7 +185,7 @@ function TextElementEditor({
               {sizeOptions.map((size) => (
                 <button
                   key={size.id}
-                  onClick={() => onTextChange(element.id, { size: size.id })}
+                  onClick={() => onTextChange(cellIndex, element.id, { size: size.id })}
                   title={`Size ${size.name}`}
                   className={`w-7 h-6 sm:w-5 sm:h-5 text-[11px] sm:text-[10px] font-medium rounded ${
                     layerState.size === size.id
@@ -233,7 +200,7 @@ function TextElementEditor({
 
             <div className="flex items-center gap-1 ml-auto">
               <button
-                onClick={() => onTextChange(element.id, { bold: !layerState.bold })}
+                onClick={() => onTextChange(cellIndex, element.id, { bold: !layerState.bold })}
                 title="Bold"
                 className={`w-8 h-6 sm:w-6 sm:h-5 text-[11px] sm:text-[10px] font-bold rounded ${
                   layerState.bold
@@ -244,7 +211,7 @@ function TextElementEditor({
                 B
               </button>
               <button
-                onClick={() => onTextChange(element.id, { italic: !layerState.italic })}
+                onClick={() => onTextChange(cellIndex, element.id, { italic: !layerState.italic })}
                 title="Italic"
                 className={`w-8 h-6 sm:w-6 sm:h-5 text-[11px] sm:text-[10px] italic rounded ${
                   layerState.italic
@@ -264,7 +231,7 @@ function TextElementEditor({
               {letterSpacingOptions.map((opt) => (
                 <button
                   key={opt.id}
-                  onClick={() => onTextChange(element.id, { letterSpacing: opt.id })}
+                  onClick={() => onTextChange(cellIndex, element.id, { letterSpacing: opt.id })}
                   title={opt.name}
                   className={`px-2 h-6 sm:px-1.5 sm:h-5 text-[11px] sm:text-[10px] rounded ${
                     layerState.letterSpacing === opt.id
@@ -475,9 +442,10 @@ function FreeformCellEditor({
 }
 
 // Requirement: Content preview in collapsed section headers (#6)
-function getGroupPreview(group, text) {
+// Approach: Check per-cell text for the active cell to show preview
+function getGroupPreview(group, cellText) {
   for (const el of group.elements) {
-    const content = text?.[el.id]?.content
+    const content = cellText?.[el.id]?.content
     if (content) {
       return content.length > 30 ? content.slice(0, 30) + '…' : content
     }
@@ -488,8 +456,6 @@ function getGroupPreview(group, text) {
 export default memo(function ContentTab({
   text,
   onTextChange,
-  textCells,
-  onTextCellsChange,
   layout,
   theme,
   platform,
@@ -501,19 +467,27 @@ export default memo(function ContentTab({
   onSelectCell,
 }) {
   const cellInfoList = useMemo(() => getCellInfo(layout), [layout])
-  const selectedFreeformCell = selectedCellProp
-  const setSelectedFreeformCell = onSelectCell || noop
+  const setSelectedCell = onSelectCell || noop
 
   const maxCell = cellInfoList.length - 1
-  const activeCell = selectedFreeformCell < 0 || selectedFreeformCell > maxCell ? 0 : selectedFreeformCell
+  const activeCell = selectedCellProp < 0 || selectedCellProp > maxCell ? 0 : selectedCellProp
 
+  // Cells with content — works for both modes
   const cellsWithContent = useMemo(() => {
     const set = new Set()
+    // Check freeform text
     for (const [idx, data] of Object.entries(freeformText)) {
       if (data?.content) set.add(Number(idx))
     }
+    // Check structured text
+    for (const [idx, cellData] of Object.entries(text || {})) {
+      if (typeof cellData === 'object' && cellData !== null) {
+        const hasContent = Object.values(cellData).some((el) => el?.content)
+        if (hasContent) set.add(Number(idx))
+      }
+    }
     return set
-  }, [freeformText])
+  }, [freeformText, text])
 
   const imageCells = layout.imageCells || [0]
 
@@ -522,6 +496,9 @@ export default memo(function ContentTab({
     () => getCellPositionLabel(layout, activeCell, cellInfoList.length),
     [layout, activeCell, cellInfoList.length],
   )
+
+  // Per-cell text data for the active cell
+  const activeCellText = text?.[activeCell] || {}
 
   return (
     <div className="space-y-3">
@@ -556,14 +533,43 @@ export default memo(function ContentTab({
       {/* Subtitle for mode explanation (#13) */}
       <p className="text-[10px] text-ui-text-faint -mt-1">
         {textMode === 'structured'
-          ? 'Fill in title, tagline, body, and more'
+          ? 'Select a cell, then fill in title, tagline, body, and more'
           : 'Write anything in each cell, your way'}
       </p>
+
+      {/* Cell selector — shared between both modes */}
+      <div className="flex items-center gap-3">
+        <div className="shrink-0">
+          <MiniCellGrid
+            layout={layout}
+            imageCells={imageCells}
+            selectedCell={activeCell}
+            onSelectCell={setSelectedCell}
+            platform={platform}
+            cellsWithContent={cellsWithContent}
+            size="large"
+            mode="content"
+          />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-ui-text">
+            Cell {activeCell + 1}
+            {cellPositionLabel && (
+              <span className="text-ui-text-subtle font-normal"> ({cellPositionLabel})</span>
+            )}
+          </p>
+          <p className="text-[10px] text-ui-text-subtle mt-0.5">
+            {textMode === 'structured'
+              ? 'Add title, body, CTA and more to this cell'
+              : 'Use the toolbar above to format text'}
+          </p>
+        </div>
+      </div>
 
       {textMode === 'structured' ? (
         <>
           {textGroups.map((group, i) => {
-            const preview = getGroupPreview(group, text)
+            const preview = getGroupPreview(group, activeCellText)
             return (
               <CollapsibleSection
                 key={group.id}
@@ -576,13 +582,10 @@ export default memo(function ContentTab({
                     <TextElementEditor
                       key={element.id}
                       element={element}
-                      text={text}
+                      cellIndex={activeCell}
+                      cellText={activeCellText}
                       onTextChange={onTextChange}
-                      textCells={textCells}
-                      onTextCellsChange={onTextCellsChange}
-                      layout={layout}
                       theme={theme}
-                      platform={platform}
                     />
                   ))}
                 </div>
@@ -591,46 +594,13 @@ export default memo(function ContentTab({
           })}
         </>
       ) : (
-        <div className="space-y-3">
-          {/* Cell selector + label — with position hint (#5), responsive grid (#14) */}
-          {/* Requirement: Help text was squashed on mobile because MiniCellGrid used w-full */}
-          {/* Approach: Constrain grid width so text always has room */}
-          <div className="flex items-center gap-3">
-            <div className="shrink-0">
-              <MiniCellGrid
-                layout={layout}
-                imageCells={imageCells}
-                selectedCell={activeCell}
-                onSelectCell={setSelectedFreeformCell}
-                platform={platform}
-                cellsWithContent={cellsWithContent}
-                size="large"
-                mode="content"
-              />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-ui-text">
-                Cell {activeCell + 1}
-                {cellPositionLabel && (
-                  <span className="text-ui-text-subtle font-normal"> ({cellPositionLabel})</span>
-                )}
-              </p>
-              {/* Updated hint — no raw markdown (#1) */}
-              <p className="text-[10px] text-ui-text-subtle mt-0.5">
-                Use the toolbar above to format text
-              </p>
-            </div>
-          </div>
-
-          {/* Editor for selected cell */}
-          <FreeformCellEditor
-            key={activeCell}
-            cellIndex={activeCell}
-            cellData={freeformText[activeCell]}
-            onFreeformTextChange={onFreeformTextChange}
-            theme={theme}
-          />
-        </div>
+        <FreeformCellEditor
+          key={activeCell}
+          cellIndex={activeCell}
+          cellData={freeformText[activeCell]}
+          onFreeformTextChange={onFreeformTextChange}
+          theme={theme}
+        />
       )}
     </div>
   )

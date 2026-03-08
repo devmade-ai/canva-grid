@@ -15,12 +15,42 @@ import { countCells, cleanupOrphanedCells } from '../utils/cellUtils'
 const defaultTheme = presetThemes[0] // Dark theme
 const STORAGE_KEY = 'canvagrid-designs'
 
+// Element IDs for structured text
+const TEXT_ELEMENT_IDS = ['title', 'tagline', 'bodyHeading', 'bodyText', 'cta', 'footnote']
+
+// Requirement: Migrate old global text format (text.title + textCells) to per-cell format (text[cellIndex].title)
+// Approach: Detect old format by checking if text has element keys directly, then redistribute using textCells assignments
+// Alternatives:
+//   - Breaking change with no migration: Rejected — users lose saved designs
+function migrateTextToPerCell(stateObj) {
+  if (!stateObj.text) return
+  // Detect old format: text has element keys like 'title', 'tagline' directly
+  const hasOldFormat = TEXT_ELEMENT_IDS.some((id) => stateObj.text[id] && typeof stateObj.text[id] === 'object' && 'content' in stateObj.text[id])
+  if (!hasOldFormat) return
+
+  const oldText = stateObj.text
+  const textCells = stateObj.textCells || {}
+  const newText = {}
+
+  for (const elementId of TEXT_ELEMENT_IDS) {
+    const elementData = oldText[elementId]
+    if (!elementData) continue
+    // Use assigned cell, or fall back to cell 0
+    const cellIndex = textCells[elementId] ?? 0
+    if (!newText[cellIndex]) newText[cellIndex] = {}
+    newText[cellIndex][elementId] = { ...elementData }
+  }
+
+  stateObj.text = newText
+  delete stateObj.textCells
+}
+
 // Fields that are unique per page (swapped in/out when switching pages).
 // Everything NOT listed here is shared across all pages (theme, fonts, platform, logo).
 const PAGE_FIELDS = [
   'activeStylePreset', 'activeLayoutPreset',
   'images', 'cellImages', 'defaultImageSettings',
-  'text', 'textCells',
+  'text',
   'layout',
   'padding', 'frame',
   'textMode', 'freeformText',
@@ -45,15 +75,11 @@ const defaultPageData = {
     filters: { grayscale: 0, sepia: 0, blur: 0, contrast: 100, brightness: 100 },
     overlay: { type: 'solid', color: 'primary', opacity: 0 },
   },
-  text: {
-    title: { content: '', visible: true, color: 'secondary', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    tagline: { content: '', visible: false, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    bodyHeading: { content: '', visible: false, color: 'secondary', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    bodyText: { content: '', visible: false, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    cta: { content: '', visible: false, color: 'accent', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    footnote: { content: '', visible: false, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-  },
-  textCells: { title: 1, tagline: 1, bodyHeading: 2, bodyText: 2, cta: 2, footnote: 2 },
+  // Requirement: Per-cell structured text — each cell gets its own set of text fields
+  // Approach: text is keyed by cell index, each cell has all 6 fields
+  // Alternatives:
+  //   - Global text with cell assignment (textCells): Rejected — indirect, confusing UX
+  text: {},
   layout: {
     type: 'rows',
     structure: [
@@ -102,22 +128,19 @@ export const defaultState = {
     },
   },
 
+  // Requirement: Per-cell structured text — each cell gets its own title, tagline, body, etc.
+  // Approach: text[cellIndex] = { title: {...}, tagline: {...}, ... }
   text: {
-    title: { content: 'Your Title Here', visible: true, color: 'secondary', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    tagline: { content: 'Elevate your brand today', visible: true, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    bodyHeading: { content: 'Why Choose Us', visible: true, color: 'secondary', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    bodyText: { content: 'Transform your business with innovative solutions designed for success.', visible: true, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    cta: { content: 'Learn More', visible: true, color: 'accent', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-    footnote: { content: '*Terms and conditions apply', visible: true, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
-  },
-
-  textCells: {
-    title: 1,
-    tagline: 1,
-    bodyHeading: 2,
-    bodyText: 2,
-    cta: 2,
-    footnote: 2,
+    1: {
+      title: { content: 'Your Title Here', visible: true, color: 'secondary', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
+      tagline: { content: 'Elevate your brand today', visible: true, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
+    },
+    2: {
+      bodyHeading: { content: 'Why Choose Us', visible: true, color: 'secondary', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
+      bodyText: { content: 'Transform your business with innovative solutions designed for success.', visible: true, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
+      cta: { content: 'Learn More', visible: true, color: 'accent', size: 1, bold: true, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
+      footnote: { content: '*Terms and conditions apply', visible: true, color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, textVerticalAlign: null },
+    },
   },
 
   logo: null,
@@ -314,25 +337,23 @@ export function useAdState() {
     setState((prev) => ({ ...prev, logoSize }))
   }, [setState])
 
-  const setText = useCallback((layer, updates) => {
+  // Requirement: Per-cell structured text — setText now takes cellIndex
+  // Approach: text[cellIndex][layer] = { ...updates }
+  const setText = useCallback((cellIndex, layer, updates) => {
     setState((prev) => ({
       ...prev,
       text: {
         ...prev.text,
-        [layer]: { ...prev.text[layer], ...updates },
+        [cellIndex]: {
+          ...(prev.text?.[cellIndex] || {}),
+          [layer]: { ...(prev.text?.[cellIndex]?.[layer] || {}), ...updates },
+        },
       },
     }))
   }, [setState])
 
-  const setTextCells = useCallback((updates) => {
-    setState((prev) => ({
-      ...prev,
-      textCells: { ...prev.textCells, ...updates },
-    }))
-  }, [setState])
-
   // Requirement: Changing layout structure must not leave orphaned cell references.
-  // Approach: On every layout update, clean up textCells, cellImages, cellAlignments,
+  // Approach: On every layout update, clean up per-cell text, cellImages, cellAlignments,
   //   cellOverlays, padding overrides, cell frames, and freeformText that reference
   //   cells beyond the new cell count. Uses shared cleanupOrphanedCells utility.
   // Alternatives:
@@ -357,7 +378,7 @@ export function useAdState() {
       return {
         ...prev,
         layout: { ...newLayout, cellAlignments: cleanCellAlignments, cellOverlays: cleanCellOverlays },
-        textCells: cleaned.textCells,
+        text: cleaned.text,
         cellImages: cleaned.cellImages,
         padding: { ...prev.padding, cellOverrides: cleaned.paddingOverrides },
         frame: { ...prev.frame, cellFrames: cleaned.cellFrames },
@@ -486,14 +507,7 @@ export function useAdState() {
         layout: {
           ...preset.layout,
         },
-        textCells: preset.textCells ? {
-          title: preset.textCells.title ?? null,
-          tagline: preset.textCells.tagline ?? null,
-          bodyHeading: preset.textCells.bodyHeading ?? null,
-          bodyText: preset.textCells.bodyText ?? null,
-          cta: preset.textCells.cta ?? null,
-          footnote: preset.textCells.footnote ?? null,
-        } : cleaned.textCells,
+        text: cleaned.text,
         cellImages: cleaned.cellImages,
         padding: { ...prev.padding, cellOverrides: cleaned.paddingOverrides },
         frame: { ...prev.frame, cellFrames: cleaned.cellFrames },
@@ -695,8 +709,8 @@ export function useAdState() {
   }, [state])
 
   // Requirement: Load saved designs with backward compatibility for older saves.
-  // Approach: Merge with defaultState to fill missing fields from older saves that
-  //   predate multi-page support (pages, textMode, freeformText).
+  // Approach: Merge with defaultState to fill missing fields. Migrate old global text
+  //   format (text.title, textCells) to per-cell format (text[cellIndex].title).
   // Alternatives:
   //   - Version field + explicit migrations: Rejected — overkill for a single-user tool.
   //   - No migration: Rejected — older saves crash on missing pages/textMode fields.
@@ -717,6 +731,16 @@ export function useAdState() {
           Object.assign(loadedState, pageData)
           loadedState.pages[activePage] = null
         }
+        // Migrate old global text format to per-cell format
+        migrateTextToPerCell(loadedState)
+        // Migrate inactive pages too
+        if (loadedState.pages) {
+          loadedState.pages.forEach((page) => {
+            if (page && page.text) migrateTextToPerCell(page)
+          })
+        }
+        // Clean up legacy field
+        delete loadedState.textCells
         resetHistory(loadedState)
         return { success: true }
       }
@@ -763,7 +787,6 @@ export function useAdState() {
     setLogoPosition,
     setLogoSize,
     setText,
-    setTextCells,
     setLayout,
     setTheme,
     setThemePreset,

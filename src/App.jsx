@@ -126,7 +126,6 @@ function App() {
     setLogoPosition,
     setLogoSize,
     setText,
-    setTextCells,
     setLayout,
     setTheme,
     setThemePreset,
@@ -579,8 +578,6 @@ function App() {
                   <ContentTab
                     text={state.text}
                     onTextChange={setText}
-                    textCells={state.textCells}
-                    onTextCellsChange={setTextCells}
                     layout={state.layout}
                     theme={state.theme}
                     platform={state.platform}
@@ -599,8 +596,6 @@ function App() {
                   <LayoutTab
                     layout={state.layout}
                     onLayoutChange={setLayout}
-                    textCells={state.textCells}
-                    onTextCellsChange={setTextCells}
                     platform={state.platform}
                     selectedCell={selectedCell}
                     onSelectCell={setSelectedCell}

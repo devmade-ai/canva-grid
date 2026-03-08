@@ -80,20 +80,6 @@ const verticalAlignOptions = [
   { id: 'end', name: 'Bottom', Icon: AlignBottomIcon },
 ]
 
-// Helper to validate textCells against total cell count
-function validateTextCells(textCells, totalCells) {
-  if (!textCells) return textCells
-  const validated = { ...textCells }
-  let hasChanges = false
-  Object.keys(validated).forEach((key) => {
-    if (validated[key] !== null && validated[key] >= totalCells) {
-      validated[key] = null
-      hasChanges = true
-    }
-  })
-  return hasChanges ? validated : null
-}
-
 // Unified grid component for cell selection
 function CellGrid({
   layout,
@@ -313,8 +299,6 @@ function CellGrid({
 export default memo(function LayoutTab({
   layout,
   onLayoutChange,
-  textCells = {},
-  onTextCellsChange,
   platform,
   selectedCell = 0,
   onSelectCell,
@@ -338,12 +322,6 @@ export default memo(function LayoutTab({
         structure: [{ size: 100, subdivisions: 1, subSizes: [100] }],
         imageCells: [0],
       })
-      if (onTextCellsChange) {
-        const validatedTextCells = validateTextCells(textCells, 1)
-        if (validatedTextCells) {
-          onTextCellsChange(validatedTextCells)
-        }
-      }
     } else {
       onLayoutChange({
         type: newType,
@@ -353,12 +331,6 @@ export default memo(function LayoutTab({
         ],
         imageCells: [0],
       })
-      if (onTextCellsChange) {
-        const validatedTextCells = validateTextCells(textCells, 2)
-        if (validatedTextCells) {
-          onTextCellsChange(validatedTextCells)
-        }
-      }
     }
     setStructureSelection(null)
   }
@@ -397,10 +369,6 @@ export default memo(function LayoutTab({
     // Ensure at least one image cell remains
     const finalImageCells = newImageCells.length > 0 ? newImageCells : [0]
     onLayoutChange({ structure: newStructure, imageCells: finalImageCells })
-    const validatedTextCells = validateTextCells(textCells, newTotalCells)
-    if (validatedTextCells && onTextCellsChange) {
-      onTextCellsChange(validatedTextCells)
-    }
   }
 
   // Update section size with dynamic constraints
@@ -480,10 +448,6 @@ export default memo(function LayoutTab({
     // Ensure at least one image cell remains
     const finalImageCells = newImageCells.length > 0 ? newImageCells : [0]
     onLayoutChange({ structure: newStructure, imageCells: finalImageCells })
-    const validatedTextCells = validateTextCells(textCells, newTotalCells)
-    if (validatedTextCells && onTextCellsChange) {
-      onTextCellsChange(validatedTextCells)
-    }
   }
 
   // Update subdivision sizes with dynamic constraints
@@ -533,9 +497,6 @@ export default memo(function LayoutTab({
   // Reset to default
   const handleReset = () => {
     onLayoutChange(defaultState.layout)
-    if (onTextCellsChange) {
-      onTextCellsChange(defaultState.textCells)
-    }
     setStructureSelection(null)
   }
 

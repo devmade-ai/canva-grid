@@ -42,7 +42,7 @@ const defaultTextLayer = { content: '', visible: false, color: 'secondary', size
 const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   const platform = platforms.find((p) => p.id === state.platform) || platforms[0]
   const layout = state.layout
-  const textCells = state.textCells || {}
+  const text = state.text || {}
   const titleFont = fonts.find((f) => f.id === state.fonts.title) || fonts[0]
   const bodyFont = fonts.find((f) => f.id === state.fonts.body) || fonts[0]
   const paddingConfig = state.padding || { global: 20, cellOverrides: {} }
@@ -153,7 +153,8 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   }
 
   const getTextColor = (colorKey) => resolveColor(colorKey, themeColors.secondary)
-  const getTextLayer = (layerId) => state.text?.[layerId] || defaultTextLayer
+  // Requirement: Per-cell structured text — read from text[cellIndex][layerId]
+  const getTextLayer = (cellIndex, layerId) => text[cellIndex]?.[layerId] || defaultTextLayer
 
   const outerFrame = frameConfig.outer || { percent: 0, color: 'primary' }
   const outerFrameColor = resolveColor(outerFrame.color, themeColors.primary)
@@ -363,66 +364,24 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
 
   // Alignment fallback chain: element → cell → global
   const getElementTextAlign = (elementId, cellIndex) => {
-    const layer = getTextLayer(elementId)
+    const layer = getTextLayer(cellIndex, elementId)
     if (layer.textAlign !== null && layer.textAlign !== undefined) {
       return layer.textAlign
     }
     return getCellTextAlign(cellIndex)
   }
 
-  const getFirstNonImageCellIndex = () => {
-    for (let i = 0; i < cellInfo.totalCells; i++) {
-      if (!cellHasImage(i)) return i
-    }
-    return -1 // All cells have images
-  }
-
-  const getFirstImageCellIndex = () => {
-    for (let i = 0; i < cellInfo.totalCells; i++) {
-      if (cellHasImage(i)) return i
-    }
-    return -1 // No cells have images
-  }
-
-  const getElementsForCell = (cellIndex, onImageLayer) => {
-    const elements = []
+  // Requirement: Per-cell structured text — each cell has its own text elements
+  // Approach: Simply return visible elements that exist in text[cellIndex]
+  const getElementsForCell = (cellIndex) => {
     const elementIds = ['title', 'tagline', 'bodyHeading', 'bodyText', 'cta', 'footnote']
-    const hasImage = cellHasImage(cellIndex)
-
-    for (const elementId of elementIds) {
-      const assignedCell = textCells[elementId]
-
-      if (assignedCell !== null && assignedCell !== undefined) {
-        if (assignedCell === cellIndex) {
-          elements.push(elementId)
-        }
-      } else {
-        if (layout.type === 'fullbleed') {
-          elements.push(elementId)
-        } else {
-          const firstNonImageCell = getFirstNonImageCellIndex()
-          const firstImageCell = getFirstImageCellIndex()
-          const onlyOneCell = cellInfo.totalCells === 1
-
-          if (onlyOneCell) {
-            if (onImageLayer) elements.push(elementId)
-          } else if (hasImage && onImageLayer && cellIndex === firstImageCell) {
-            if (['title', 'tagline', 'cta'].includes(elementId)) {
-              elements.push(elementId)
-            }
-          } else if (!hasImage && !onImageLayer && cellIndex === firstNonImageCell) {
-            if (['bodyHeading', 'bodyText', 'footnote'].includes(elementId)) {
-              elements.push(elementId)
-            }
-          }
-        }
-      }
-    }
-    return elements
+    const cellText = text[cellIndex]
+    if (!cellText) return []
+    return elementIds.filter((id) => cellText[id])
   }
 
   const renderTextElement = (elementId, withShadow = false, cellIndex = 0) => {
-    const layer = getTextLayer(elementId)
+    const layer = getTextLayer(cellIndex, elementId)
     if (!layer.visible || !layer.content) return null
 
     const shadowStyle = withShadow ? { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}
@@ -576,7 +535,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   }
 
   const renderTextElementsForCell = (cellIndex, isOnImage) => {
-    const elements = getElementsForCell(cellIndex, isOnImage)
+    const elements = getElementsForCell(cellIndex)
     const withShadow = isOnImage
     const padding = getCellPadding(cellIndex)
     const verticalAlign = getCellVerticalAlign(cellIndex)
@@ -604,10 +563,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   const isFreeformMode = state.textMode === 'freeform'
 
   const renderFullbleed = () => {
-    const padding = getCellPadding(0)
-    const verticalAlign = getCellVerticalAlign(0)
     const hasImage = cellHasImage(0)
-    const allElements = ['title', 'tagline', 'bodyHeading', 'bodyText', 'cta', 'footnote']
 
     const cellFrame = getCellFrame(0)
     const cellPadding = getCellPaddingValue(0)
@@ -637,22 +593,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
         {isFreeformMode ? (
           renderFreeformTextForCell(0, hasImage)
         ) : (
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: getJustifyContent(verticalAlign),
-              alignItems: 'stretch',
-              padding,
-              width: '100%',
-              height: '100%',
-              position: 'absolute',
-              inset: 0,
-              overflow: 'hidden',
-            }}
-          >
-            {allElements.map(elementId => renderTextElement(elementId, hasImage, 0))}
-          </div>
+          renderTextElementsForCell(0, hasImage)
         )}
       </>
     )
@@ -681,23 +622,16 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
         return null
       }
 
-      const textElementsOnImage = hasImage ? getElementsForCell(cellIndex, true) : []
-      const textElementsOnBackground = getElementsForCell(cellIndex, false)
-
-      return (
-        <>
-          {hasImage && textElementsOnImage.length > 0 && (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
-              {renderTextElementsForCell(cellIndex, true)}
-            </div>
-          )}
-          {!hasImage && textElementsOnBackground.length > 0 && (
-            <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
-              {renderTextElementsForCell(cellIndex, false)}
-            </div>
-          )}
-        </>
-      )
+      // Per-cell structured text — render all elements assigned to this cell
+      const cellElements = getElementsForCell(cellIndex)
+      if (cellElements.length > 0) {
+        return (
+          <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
+            {renderTextElementsForCell(cellIndex, hasImage)}
+          </div>
+        )
+      }
+      return null
     }
 
     return (
