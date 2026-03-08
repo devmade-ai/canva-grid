@@ -589,21 +589,52 @@ export function useAdState() {
       const allCells = Array.from({ length: newCellCount }, (_, i) => i)
       const nonImageCells = allCells.filter((i) => !imageCells.includes(i))
 
-      // Move text from image cells to first non-image cell (merge, don't overwrite)
+      // Requirement: Distribute text across non-image cells when switching presets
+      // Approach: Collect all text from image cells, split into header/body groups,
+      //   distribute across available non-image cells so presets look complete
+      // Alternatives:
+      //   - Dump all text into first non-image cell: Rejected — looks cramped, bad UX
+      //   - Per-preset text mapping: Rejected — too much config to maintain
       const redistributedText = { ...cleaned.text }
       if (nonImageCells.length > 0) {
-        const targetCell = nonImageCells[0]
+        // Collect text elements displaced from image cells
+        const displaced = {}
         Object.keys(redistributedText).forEach((cellIndex) => {
           const ci = parseInt(cellIndex, 10)
-          if (imageCells.includes(ci) && ci !== targetCell) {
-            // Merge text fields into the target non-image cell
-            const existing = redistributedText[targetCell] || {}
-            const moving = redistributedText[ci]
-            // Only copy fields that don't already exist in target
-            redistributedText[targetCell] = { ...moving, ...existing }
+          if (imageCells.includes(ci)) {
+            Object.assign(displaced, redistributedText[ci])
             delete redistributedText[ci]
           }
         })
+
+        // If we have displaced text, distribute it across non-image cells
+        if (Object.keys(displaced).length > 0) {
+          const headerKeys = ['title', 'tagline']
+          const bodyKeys = ['bodyHeading', 'bodyText', 'cta', 'footnote']
+
+          const headerGroup = {}
+          const bodyGroup = {}
+          Object.entries(displaced).forEach(([key, val]) => {
+            if (headerKeys.includes(key)) headerGroup[key] = val
+            else if (bodyKeys.includes(key)) bodyGroup[key] = val
+          })
+
+          // Find non-image cells that don't already have text
+          const emptyNonImageCells = nonImageCells.filter(
+            (ci) => !redistributedText[ci] || Object.keys(redistributedText[ci]).length === 0
+          )
+          const targetCells = emptyNonImageCells.length > 0 ? emptyNonImageCells : nonImageCells
+
+          if (Object.keys(headerGroup).length > 0) {
+            const target = targetCells[0]
+            redistributedText[target] = { ...headerGroup, ...(redistributedText[target] || {}) }
+          }
+          if (Object.keys(bodyGroup).length > 0) {
+            // Use second cell if available, otherwise same as header
+            const target = targetCells.length > 1 ? targetCells[1] : targetCells[0]
+            redistributedText[target] = { ...bodyGroup, ...(redistributedText[target] || {}) }
+          }
+        }
       }
 
       return {
