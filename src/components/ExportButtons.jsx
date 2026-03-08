@@ -270,7 +270,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   }, [canvasRef, state.platform, state.activePage, exportFormat, ext, pageCount, onSetActivePage, updateExporting])
 
   // Requirement: PDF export for LinkedIn carousel documents and general print-to-PDF
-  // Approach: Capture pages as PNGs, build PDF with jsPDF using exact platform dimensions
+  // Approach: Capture pages as JPEGs, build PDF with jsPDF using exact platform dimensions
   // Why: Previous window.open + window.print approach failed on mobile:
   //   - Opened about:blank tab (popup handling differs on mobile)
   //   - Mobile browsers ignore @page size CSS, defaulting to A4/Letter (wrong dimensions)
