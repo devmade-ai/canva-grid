@@ -139,6 +139,8 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   const [exportOp, setExportOp] = useState(null)
   const [showMultiSelect, setShowMultiSelect] = useState(false)
   const [selectedPlatforms, setSelectedPlatforms] = useState(() => new Set())
+  // PDF quality maps to pixelRatio for capture. Print formats always use 1x regardless.
+  const [pdfQuality, setPdfQuality] = useState('standard')
 
   const exportFormat = state.exportFormat || 'png'
   const ext = FILE_EXTENSIONS[exportFormat] || 'png'
@@ -294,9 +296,10 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     const pageImages = []
     const originalActivePage = state.activePage
     const totalPages = pageCount > 1 ? pageCount : 1
-    // Digital formats capture at 2× for sharp phone display; print stays at 1×
+    // Print always 1× (2× would create 4.17:1 non-integer ratio). Digital uses user selection.
     const isPrint = platform.category === 'print'
-    const pdfPixelRatio = isPrint ? 1 : 2
+    const qualityToRatio = { low: 1, standard: 2, high: 3 }
+    const pdfPixelRatio = isPrint ? 1 : (qualityToRatio[pdfQuality] || 2)
 
     try {
       for (let i = 0; i < totalPages; i++) {
@@ -375,7 +378,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       setExportProgress(null)
       setExportOp(null)
     }
-  }, [canvasRef, state.platform, state.activePage, pageCount, onSetActivePage, updateExporting])
+  }, [canvasRef, state.platform, state.activePage, pageCount, onSetActivePage, updateExporting, pdfQuality])
 
   const handleExportMultiple = useCallback(async () => {
     if (!canvasRef.current) return
@@ -480,7 +483,28 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         </button>
       )}
 
-      {/* Download as PDF - for LinkedIn carousels and print */}
+      {/* PDF quality selector + download button */}
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-ui-text-muted whitespace-nowrap">PDF quality:</span>
+        {[
+          { id: 'low', label: 'Low', desc: '1x' },
+          { id: 'standard', label: 'Standard', desc: '2x' },
+          { id: 'high', label: 'High', desc: '3x' },
+        ].map((q) => (
+          <button
+            key={q.id}
+            onClick={() => setPdfQuality(q.id)}
+            className={`px-2 py-1 text-xs rounded-md transition-colors ${
+              pdfQuality === q.id
+                ? 'bg-orange-200 dark:bg-orange-800 text-orange-800 dark:text-orange-200 font-semibold'
+                : 'bg-ui-surface text-ui-text-muted hover:bg-ui-surface-elevated'
+            }`}
+            title={`${q.desc} pixel ratio`}
+          >
+            {q.label}
+          </button>
+        ))}
+      </div>
       <button
         onClick={handleExportPDF}
         disabled={isExporting}
