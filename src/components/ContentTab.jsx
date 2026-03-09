@@ -511,8 +511,6 @@ export default memo(function ContentTab({
     return set
   }, [freeformText, text])
 
-  const imageCells = layout.imageCells || [0]
-
   // Cell position label (#5)
   const cellPositionLabel = useMemo(
     () => getCellPositionLabel(layout, activeCell, cellInfoList.length),
@@ -564,7 +562,6 @@ export default memo(function ContentTab({
         <div className="shrink-0">
           <MiniCellGrid
             layout={layout}
-            imageCells={imageCells}
             selectedCell={activeCell}
             onSelectCell={setSelectedCell}
             platform={platform}

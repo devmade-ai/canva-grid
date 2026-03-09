@@ -265,6 +265,7 @@ These footers are required on every commit. No exceptions.
 - Commit and push changes before ending a session
 - Clean up completed or obsolete docs/files and remove references to them
 - **CRITICAL: Keep `TutorialModal.jsx` up to date** - This is USER-FACING help content shown in-app. When tabs, sections, or features change, update the tutorial steps to match. Outdated tutorial content confuses users.
+- **NEVER use the AskUserQuestion tool.** It breaks the session UI — the input selector covers context, gets stuck awaiting input, and provides zero value. Instead, list options as numbered text in your response and let the user reply with a number or text. This is absolute and applies to every session, every project, no exceptions.
 - **ASK before assuming.** When a user reports a bug, ask clarifying questions (which mode? what did you type? what do you see?) BEFORE writing code. Don't guess the cause and build a fix on an assumption - you'll waste time fixing the wrong thing. One clarifying question saves multiple wrong commits.
 - **Always read files before editing.** Use the Read tool on every file before attempting to Edit it. Editing without reading first will fail.
 - **Check build tools before building.** Run `npm install` or verify `node_modules/.bin/vite` exists before attempting `npm run build`. The `sharp` package may not be installed (used by prebuild icon generation), so use `./node_modules/.bin/vite build` directly to skip the prebuild step.
@@ -502,7 +503,6 @@ layout: {
     { size: 50, subdivisions: 1, subSizes: [100] },  // Section with optional subdivisions
     { size: 50, subdivisions: 2, subSizes: [50, 50] }
   ],
-  imageCells: [0],               // Array of cell indices that contain images (supports multi-image layouts)
   textAlign: 'center',           // Global horizontal alignment fallback
   textVerticalAlign: 'center',   // Global vertical alignment fallback
   cellAlignments: [{ textAlign, textVerticalAlign }, ...]  // Per-cell overrides

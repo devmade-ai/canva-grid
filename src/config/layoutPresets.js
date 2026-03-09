@@ -19,7 +19,7 @@ export const aspectRatioCategories = [
 ]
 
 // SVG icon definitions for each preset (rendered as small preview diagrams)
-// Blue (#3b82f6) = image area, Gray (#e5e7eb) = text area, Darker gray (#d1d5db) = secondary text
+// Colors are visual hints only — cells are content-agnostic (any cell can have image + text)
 export const presetIcons = {
   // ===== BASIC =====
   'hero': {
@@ -253,13 +253,12 @@ export const layoutPresets = [
   {
     id: 'hero',
     name: 'Full Bleed',
-    description: 'Full image with centered text overlay',
+    description: 'Single cell - full bleed',
     category: 'basic',
     aspectRatios: ['square', 'portrait', 'landscape'],
     layout: {
       type: 'fullbleed',
       structure: [{ size: 100, subdivisions: 1, subSizes: [100] }],
-      imageCells: [0],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [],
@@ -268,7 +267,7 @@ export const layoutPresets = [
   {
     id: 'split-horizontal',
     name: 'Top / Bottom',
-    description: 'Image top, text bottom - clean separation',
+    description: 'Two rows - clean horizontal separation',
     category: 'basic',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -277,7 +276,6 @@ export const layoutPresets = [
         { size: 50, subdivisions: 1, subSizes: [100] },
         { size: 50, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [0],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -289,7 +287,7 @@ export const layoutPresets = [
   {
     id: 'split-vertical',
     name: 'Left / Right',
-    description: 'Image left, text right - classic layout',
+    description: 'Two columns - classic side by side',
     category: 'basic',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -298,7 +296,6 @@ export const layoutPresets = [
         { size: 50, subdivisions: 1, subSizes: [100] },
         { size: 50, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [0],
       textAlign: 'left',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -312,7 +309,7 @@ export const layoutPresets = [
   {
     id: 'golden-left',
     name: 'Golden Left',
-    description: 'Large image left (62%), text panel right',
+    description: 'Large left (62%), narrow right',
     category: 'split',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -321,7 +318,6 @@ export const layoutPresets = [
         { size: 62, subdivisions: 1, subSizes: [100] },
         { size: 38, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [0],
       textAlign: 'left',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -333,7 +329,7 @@ export const layoutPresets = [
   {
     id: 'golden-right',
     name: 'Golden Right',
-    description: 'Text panel left, large image right (62%)',
+    description: 'Narrow left, large right (62%)',
     category: 'split',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -342,7 +338,6 @@ export const layoutPresets = [
         { size: 38, subdivisions: 1, subSizes: [100] },
         { size: 62, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1],
       textAlign: 'left',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -354,7 +349,7 @@ export const layoutPresets = [
   {
     id: 'golden-top',
     name: 'Golden Top',
-    description: 'Large image top (62%), text bar below',
+    description: 'Large top (62%), narrow bottom',
     category: 'split',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -363,7 +358,6 @@ export const layoutPresets = [
         { size: 62, subdivisions: 1, subSizes: [100] },
         { size: 38, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [0],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -375,7 +369,7 @@ export const layoutPresets = [
   {
     id: 'golden-bottom',
     name: 'Golden Bottom',
-    description: 'Text bar top, large image below (62%)',
+    description: 'Narrow top, large bottom (62%)',
     category: 'split',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -384,7 +378,6 @@ export const layoutPresets = [
         { size: 38, subdivisions: 1, subSizes: [100] },
         { size: 62, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -396,7 +389,7 @@ export const layoutPresets = [
   {
     id: 'thirds-horizontal',
     name: 'Three Rows',
-    description: 'Header, image center, footer - sandwich layout',
+    description: 'Three equal rows - sandwich layout',
     category: 'split',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -406,7 +399,6 @@ export const layoutPresets = [
         { size: 34, subdivisions: 1, subSizes: [100] },
         { size: 33, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -419,7 +411,7 @@ export const layoutPresets = [
   {
     id: 'thirds-vertical',
     name: 'Three Columns',
-    description: 'Sidebar, center image, sidebar - flanked layout',
+    description: 'Three equal columns - flanked layout',
     category: 'split',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -429,7 +421,6 @@ export const layoutPresets = [
         { size: 34, subdivisions: 1, subSizes: [100] },
         { size: 33, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -453,7 +444,6 @@ export const layoutPresets = [
         { size: 50, subdivisions: 2, subSizes: [50, 50] },
         { size: 50, subdivisions: 2, subSizes: [50, 50] },
       ],
-      imageCells: [0, 3],  // Diagonal: top-left and bottom-right
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -467,7 +457,7 @@ export const layoutPresets = [
   {
     id: 'l-shape-right',
     name: 'L-Shape Right',
-    description: 'Large image left, two text cells stacked right',
+    description: 'Large left, two cells stacked right',
     category: 'grid',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -476,7 +466,6 @@ export const layoutPresets = [
         { size: 60, subdivisions: 1, subSizes: [100] },
         { size: 40, subdivisions: 2, subSizes: [50, 50] },
       ],
-      imageCells: [0],
       textAlign: 'left',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -489,7 +478,7 @@ export const layoutPresets = [
   {
     id: 'l-shape-left',
     name: 'L-Shape Left',
-    description: 'Two text cells stacked left, large image right',
+    description: 'Two cells stacked left, large right',
     category: 'grid',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -498,7 +487,6 @@ export const layoutPresets = [
         { size: 40, subdivisions: 2, subSizes: [50, 50] },
         { size: 60, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [2],
       textAlign: 'left',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -511,7 +499,7 @@ export const layoutPresets = [
   {
     id: 'l-shape-bottom',
     name: 'L-Shape Bottom',
-    description: 'Large image top, two text cells below',
+    description: 'Large top, two cells below',
     category: 'grid',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -520,7 +508,6 @@ export const layoutPresets = [
         { size: 60, subdivisions: 1, subSizes: [100] },
         { size: 40, subdivisions: 2, subSizes: [50, 50] },
       ],
-      imageCells: [0],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -533,7 +520,7 @@ export const layoutPresets = [
   {
     id: 'l-shape-top',
     name: 'L-Shape Top',
-    description: 'Two text cells top, large image below',
+    description: 'Two cells top, large below',
     category: 'grid',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -542,7 +529,6 @@ export const layoutPresets = [
         { size: 40, subdivisions: 2, subSizes: [50, 50] },
         { size: 60, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [2],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -555,7 +541,7 @@ export const layoutPresets = [
   {
     id: 't-layout',
     name: 'T-Layout',
-    description: 'Header bar, then image and text side by side',
+    description: 'Header bar, then two cells side by side',
     category: 'grid',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -564,7 +550,6 @@ export const layoutPresets = [
         { size: 30, subdivisions: 1, subSizes: [100] },
         { size: 70, subdivisions: 2, subSizes: [50, 50] },
       ],
-      imageCells: [1],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -577,7 +562,7 @@ export const layoutPresets = [
   {
     id: 'inverted-t',
     name: 'Inverted T',
-    description: 'Image and text side by side, then footer bar',
+    description: 'Two cells side by side, then footer bar',
     category: 'grid',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -586,7 +571,6 @@ export const layoutPresets = [
         { size: 70, subdivisions: 2, subSizes: [50, 50] },
         { size: 30, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [0],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -599,7 +583,7 @@ export const layoutPresets = [
   {
     id: 'feature-center',
     name: 'Center Feature',
-    description: 'Narrow sidebars with wide center image',
+    description: 'Narrow sidebars with wide center',
     category: 'grid',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -609,7 +593,6 @@ export const layoutPresets = [
         { size: 50, subdivisions: 1, subSizes: [100] },
         { size: 25, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -622,7 +605,7 @@ export const layoutPresets = [
   {
     id: 'feature-middle',
     name: 'Middle Feature',
-    description: 'Thin bars top/bottom, wide image center',
+    description: 'Thin bars top/bottom, wide center',
     category: 'grid',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -632,7 +615,6 @@ export const layoutPresets = [
         { size: 60, subdivisions: 1, subSizes: [100] },
         { size: 20, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -647,7 +629,7 @@ export const layoutPresets = [
   {
     id: 'mosaic-left',
     name: 'Mosaic Left',
-    description: 'Large image with small cells wrapped around',
+    description: 'Large cell with small cells wrapped around',
     category: 'asymmetric',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -656,7 +638,6 @@ export const layoutPresets = [
         { size: 65, subdivisions: 2, subSizes: [60, 40] },
         { size: 35, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [0],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -669,7 +650,7 @@ export const layoutPresets = [
   {
     id: 'mosaic-right',
     name: 'Mosaic Right',
-    description: 'Small cells left, large image right with footer',
+    description: 'Small cell left, large right with footer',
     category: 'asymmetric',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -678,7 +659,6 @@ export const layoutPresets = [
         { size: 65, subdivisions: 2, subSizes: [40, 60] },
         { size: 35, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1],
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -691,7 +671,7 @@ export const layoutPresets = [
   {
     id: 'stacked-quad',
     name: 'Four Rows',
-    description: 'Four stacked rows - dual image story layout',
+    description: 'Four stacked rows - story layout',
     category: 'asymmetric',
     aspectRatios: ['portrait'],
     layout: {
@@ -702,7 +682,6 @@ export const layoutPresets = [
         { size: 30, subdivisions: 1, subSizes: [100] },
         { size: 15, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1, 2],  // Two images stacked
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -716,7 +695,7 @@ export const layoutPresets = [
   {
     id: 'sidebar-stack',
     name: 'Sidebar + Stack',
-    description: 'Image sidebar with three stacked text rows',
+    description: 'Sidebar with three stacked rows',
     category: 'asymmetric',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -725,7 +704,6 @@ export const layoutPresets = [
         { size: 35, subdivisions: 1, subSizes: [100] },
         { size: 65, subdivisions: 3, subSizes: [33, 34, 33] },
       ],
-      imageCells: [0],
       textAlign: 'left',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -739,7 +717,7 @@ export const layoutPresets = [
   {
     id: 'header-quad',
     name: 'Header + 2×2',
-    description: 'Header row with two images in grid below',
+    description: 'Header row with 2×2 grid below',
     category: 'asymmetric',
     aspectRatios: ['square', 'portrait'],
     layout: {
@@ -749,7 +727,6 @@ export const layoutPresets = [
         { size: 35, subdivisions: 2, subSizes: [50, 50] },
         { size: 35, subdivisions: 2, subSizes: [50, 50] },
       ],
-      imageCells: [1, 4],  // Top-left and bottom-right of grid
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -764,7 +741,7 @@ export const layoutPresets = [
   {
     id: 'wide-feature',
     name: 'Wide Feature',
-    description: 'Four columns with two images',
+    description: 'Four columns - wide center feature',
     category: 'asymmetric',
     aspectRatios: ['landscape'],
     layout: {
@@ -775,7 +752,6 @@ export const layoutPresets = [
         { size: 40, subdivisions: 1, subSizes: [100] },
         { size: 20, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [0, 2],  // First column and wide feature
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -789,7 +765,7 @@ export const layoutPresets = [
   {
     id: 'tall-feature',
     name: 'Tall Feature',
-    description: 'Four rows with two images',
+    description: 'Four rows - tall center feature',
     category: 'asymmetric',
     aspectRatios: ['portrait'],
     layout: {
@@ -800,7 +776,6 @@ export const layoutPresets = [
         { size: 45, subdivisions: 1, subSizes: [100] },
         { size: 20, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [1, 2],  // Second row and tall feature
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -814,7 +789,7 @@ export const layoutPresets = [
   {
     id: 'columns-four',
     name: 'Four Columns',
-    description: 'Four columns with alternating images',
+    description: 'Four equal columns',
     category: 'asymmetric',
     aspectRatios: ['landscape'],
     layout: {
@@ -825,7 +800,6 @@ export const layoutPresets = [
         { size: 25, subdivisions: 1, subSizes: [100] },
         { size: 25, subdivisions: 1, subSizes: [100] },
       ],
-      imageCells: [0, 2],  // Alternating: image, text, image, text
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [
@@ -839,7 +813,7 @@ export const layoutPresets = [
   {
     id: 'asymmetric-grid',
     name: 'Asymmetric Grid',
-    description: 'Uneven 2×2 grid with diagonal images',
+    description: 'Uneven 2×2 grid',
     category: 'asymmetric',
     aspectRatios: ['square', 'landscape'],
     layout: {
@@ -848,7 +822,6 @@ export const layoutPresets = [
         { size: 60, subdivisions: 2, subSizes: [62, 38] },
         { size: 40, subdivisions: 2, subSizes: [38, 62] },
       ],
-      imageCells: [0, 3],  // Diagonal: large top-left and large bottom-right
       textAlign: 'center',
       textVerticalAlign: 'center',
       cellAlignments: [

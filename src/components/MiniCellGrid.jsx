@@ -11,9 +11,8 @@ const FULLBLEED_STRUCTURE = [{ size: 100, subdivisions: 1, subSizes: [100] }]
 
 export default memo(function MiniCellGrid({
   layout,
-  // Cell data — pass whichever is relevant
-  imageCells = [],       // Array of image cell indices (ContentTab)
-  cellImages = {},       // Object of cellIndex → imageId (StyleTab)
+  // Cell data
+  cellImages = {},       // Object of cellIndex → imageId
   // Selection
   selectedCell = null,   // Highlighted cell index
   onSelectCell,
@@ -60,9 +59,7 @@ export default memo(function MiniCellGrid({
   // Determine cell appearance based on mode
   const getCellAppearance = (currentCellIndex) => {
     const isSelected = selectedCell === currentCellIndex
-    const hasImage = mode === 'content'
-      ? imageCells.includes(currentCellIndex)
-      : !!cellImages[currentCellIndex]
+    const hasImage = !!cellImages[currentCellIndex]
     const hasContent = cellsWithContent?.has(currentCellIndex)
 
     if (mode === 'content') {

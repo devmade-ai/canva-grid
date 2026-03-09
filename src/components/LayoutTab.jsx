@@ -30,7 +30,6 @@ const getMaxSize = (totalItems) => {
 // Unified grid component for cell selection
 function CellGrid({
   layout,
-  imageCells = [],  // Array of image cell indices
   selectedCell = null,
   globalSelectedCell = null, // Global cell from ContextBar (shown as indicator in structure mode)
   mode = 'cell', // 'cell' | 'image' | 'structure'
@@ -70,44 +69,32 @@ function CellGrid({
   // Alternatives:
   //   - Auto-sync global→structure selection: Rejected — splitting rows hides split controls
   //   - Colored background: Rejected — conflicts with section/cell selection highlighting
-  const getCellContent = (cellIndex, isImage, isSelected, isSectionSelected, subdivisions, subSize) => {
+  // Requirement: Cell content styling without image/text distinction
+  // Approach: All cells are equal — styling based on selection state only
+  const getCellContent = (cellIndex, isSelected, isSectionSelected, subdivisions, subSize) => {
     let bgClass, textClass, content
     const isGlobalSelected = mode === 'structure' && globalSelectedCell === cellIndex
 
-    if (mode === 'image') {
-      bgClass = isImage ? 'bg-primary hover:bg-primary-hover' : 'bg-ui-surface-inset hover:bg-ui-surface-hover'
-      textClass = isImage ? 'text-white' : 'text-ui-text-subtle'
-      content = isImage ? '📷' : cellIndex + 1
-    } else if (mode === 'structure') {
+    if (mode === 'structure') {
       if (isSelected) {
-        // Darker shade for selected image cells so they're distinguishable from unselected ones
-        bgClass = isImage ? 'bg-violet-800 hover:bg-violet-900 dark:bg-violet-700 dark:hover:bg-violet-600' : 'bg-primary hover:bg-primary-hover'
+        bgClass = 'bg-primary hover:bg-primary-hover'
         textClass = 'text-white'
       } else if (isSectionSelected) {
         bgClass = 'bg-violet-100 dark:bg-violet-900/30 hover:bg-violet-200 dark:hover:bg-violet-900/40'
         textClass = 'text-violet-700 dark:text-violet-300'
-      } else if (isImage) {
-        bgClass = 'bg-primary hover:bg-primary-hover'
-        textClass = 'text-white'
       } else {
         bgClass = 'bg-ui-surface-inset hover:bg-ui-surface-hover'
         textClass = 'text-ui-text-subtle'
       }
-      // Show global selection ring unless this cell is already the structure selection
       if (isGlobalSelected && !isSelected) {
         bgClass += ' ring-2 ring-inset ring-violet-400 dark:ring-violet-500'
       }
-      // Show checkmark on selected image cells so selection is visible
-      content = isImage ? (isSelected ? '📷 ✓' : '📷') : subdivisions > 1 ? `${Math.round(subSize)}%` : ''
+      content = subdivisions > 1 ? `${Math.round(subSize)}%` : cellIndex + 1
     } else {
       if (isSelected) {
         bgClass = 'bg-primary hover:bg-primary-hover'
         textClass = 'text-white'
         content = '✓'
-      } else if (isImage) {
-        bgClass = 'bg-primary hover:bg-primary-hover'
-        textClass = 'text-white'
-        content = '📷'
       } else {
         bgClass = 'bg-ui-surface-inset hover:bg-ui-surface-hover'
         textClass = 'text-ui-text-subtle'
@@ -162,7 +149,6 @@ function CellGrid({
             style={{ flex: `1 1 ${sectionSize}%` }}
           >
             {cells.map(({ cellIndex: currentCellIndex, subIndex, subSize }) => {
-              const isImage = imageCells.includes(currentCellIndex)
               const isCellSelected =
                 mode === 'structure'
                   ? structureSelection?.type === 'cell' && structureSelection.cellIndex === currentCellIndex
@@ -170,7 +156,6 @@ function CellGrid({
 
               const { bgClass, textClass, content } = getCellContent(
                 currentCellIndex,
-                isImage,
                 isCellSelected,
                 isSectionSelected,
                 subdivisions,
@@ -251,7 +236,6 @@ export default memo(function LayoutTab({
   onSelectCell,
 }) {
   const { type = 'fullbleed', structure = [] } = layout
-  const imageCells = layout.imageCells || [0]
   const [structureSelection, setStructureSelection] = useState(null)
 
   const platformAspectRatio = useMemo(() => {
@@ -265,7 +249,6 @@ export default memo(function LayoutTab({
       onLayoutChange({
         type: 'fullbleed',
         structure: [{ size: 100, subdivisions: 1, subSizes: [100] }],
-        imageCells: [0],
       })
     } else {
       onLayoutChange({
@@ -274,10 +257,15 @@ export default memo(function LayoutTab({
           { size: 50, subdivisions: 1, subSizes: [100] },
           { size: 50, subdivisions: 1, subSizes: [100] },
         ],
-        imageCells: [0],
       })
     }
     setStructureSelection(null)
+    // Clamp global cell selection to valid range for the new layout
+    // Requirement: Prevent stale selectedCell causing wrong highlight after type change
+    const newCellCount = newType === 'fullbleed' ? 1 : 2
+    if (selectedCell >= newCellCount) {
+      onSelectCell?.(0)
+    }
   }
 
   // Requirement: Insert a section at a specific position (before/after a given index)
@@ -626,7 +614,6 @@ export default memo(function LayoutTab({
             <div className="flex justify-center">
               <CellGrid
                 layout={layout}
-                imageCells={imageCells}
                 mode="structure"
                 globalSelectedCell={selectedCell}
                 structureSelection={structureSelection}
