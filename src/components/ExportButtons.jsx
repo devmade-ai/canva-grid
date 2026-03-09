@@ -89,25 +89,17 @@ async function captureAsBlob(element, width, height, format) {
   )
 }
 
-// Requirement: PDF export with sharp rendering on phone screens (2-3x pixel density).
-// Approach: Capture at higher pixelRatio (2x/3x) with page at half the platform pixel
-//   dimensions (pxToPt=0.5, effectively 144 DPI). This gives integer pixel-per-point
-//   ratios (2/4/6 for low/standard/high) AND reasonable page sizes (~7.5" for 1080px).
-// Why: Previous pxToPt=1 created 15×18.75" pages for 1080×1350 platforms. Mobile PDF
-//   viewers had to scale these massive pages 5:1 onto 3" screens, causing quality
-//   degradation in the viewer's rendering pipeline. Halving page dimensions means
-//   only 2.5:1 scaling, with higher effective DPI.
+// Requirement: PDF export preserving full platform resolution for sharing/uploading.
+// Approach: Capture at user-selected pixelRatio (1x/2x/3x), embed in PDF page at
+//   platform pixel dimensions (1:1 px-to-pt). Image pixels exceed page points,
+//   giving integer px/pt ratios (1:1 low, 2:1 standard, 3:1 high).
 // Print exception: pixelRatio always 1 with 72/150 DPI-to-point conversion for
 //   correct physical page size. Higher ratios would create non-integer scaling.
 // History: (1) 72/96 conversion → 2.667:1 non-integer ratio, gradient banding.
 //   (2) 1:1 mapping + page scaled with pixelRatio → all qualities identical on mobile.
-//   (3) pxToPt=1 fixed page + variable pixelRatio → quality levels differed but page
-//   too large (15" wide) for mobile viewers. (4) pxToPt=0.5 → reasonable page size
-//   + integer px/pt ratios + real quality differences.
+//   (3) pxToPt=1 fixed page + variable pixelRatio → current approach.
 // Alternatives:
-//   - pxToPt=1 (previous): Rejected — 15"+ pages render poorly on mobile viewers.
-//   - pxToPt=1/3: Rejected — pages too small (5" wide), uncomfortably small for PDFs.
-//   - pixelRatio:1 for everything: Rejected — 72 DPI looks blurry on phones.
+//   - pixelRatio:1 for everything: Rejected — 72 DPI looks blurry on 2-3x screens.
 //   - JPEG capture: Rejected — DCT 8x8 blocks cause banding on smooth gradients.
 //     PNG is lossless and pdf-lib embeds via FlateDecode (no re-encoding).
 
@@ -348,11 +340,9 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         downloadDiagnosticImage(pageImages[0], platform.id)
       }
 
-      // Requirement: PDF page dimensions must be reasonable for mobile viewers.
-      // Digital: pxToPt=0.5 (144 DPI) — 1080px → 540pt (7.5"). Integer px/pt at all levels:
-      //   Low(1x)=2, Standard(2x)=4, High(3x)=6. Mobile viewers scale ~2.5:1 not 5:1.
-      // Print: pxToPt=72/150 — correct physical page size (A4=595×842pt) at 1x pixelRatio.
-      const pxToPt = isPrint ? 72 / 150 : 0.5
+      // Digital: 1:1 px-to-pt preserves full platform resolution in the PDF.
+      // Print: 72/150 DPI conversion for correct physical page size (A4=595×842pt).
+      const pxToPt = isPrint ? 72 / 150 : 1
       const widthPt = platform.width * pxToPt
       const heightPt = platform.height * pxToPt
 
