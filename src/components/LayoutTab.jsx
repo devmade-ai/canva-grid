@@ -640,6 +640,7 @@ export default memo(function LayoutTab({
       // Fallback: load image to read dimensions (for images uploaded before this feature)
       const img = new Image()
       img.onload = () => doSnap(img.naturalWidth, img.naturalHeight)
+      img.onerror = () => {} // Silently ignore — corrupted src can't be snapped
       img.src = image.src
     }
   }
