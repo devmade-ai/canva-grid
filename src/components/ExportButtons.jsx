@@ -105,7 +105,7 @@ async function captureAsBlob(element, width, height, format) {
 //   - JPEG capture: Rejected — DCT 8x8 blocks cause banding on smooth gradients.
 //     PNG is lossless and pdf-lib embeds via FlateDecode (no re-encoding).
 
-async function captureForPdf(element, width, height, pixelRatio = 1) {
+async function captureForPdf(element, width, height, pixelRatio = 2) {
   const canvas = await toCanvas(element, {
     width,
     height,
