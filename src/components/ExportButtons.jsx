@@ -89,19 +89,22 @@ async function captureAsBlob(element, width, height, format) {
 }
 
 // Requirement: PDF export with sharp rendering on phone screens (2-3x pixel density).
-// Approach: Digital formats capture at pixelRatio:2 with 1:1 pixel-to-point mapping
-//   (page dims = 2× platform pixels). Print formats stay at pixelRatio:1 with
-//   72/150 DPI-to-point conversion for correct physical page size.
-// Why: pixelRatio:1 produced 72 DPI — visibly soft on high-density phone screens.
-//   pixelRatio:2 with 1:1 mapping gives 4× more pixel data without viewer resampling.
-//   Page is physically larger in points (irrelevant for digital), viewers scale to fit.
-// History: Original pixelRatio:2 + 72/96 conversion caused 2.667:1 non-integer ratio
-//   that destroyed smooth gradients. The fix was 1:1 mapping, not reducing pixels.
-// Print exception: pixelRatio:2 for print would create a 4.17:1 ratio (same bug class).
+// Approach: Capture at higher pixelRatio (2x/3x) but keep PDF page at platform pixel
+//   dimensions. This embeds more pixels into a fixed page size, giving clean integer
+//   pixel-per-point ratios (2:1 standard, 3:1 high) for sharp mobile rendering.
+// Why: Previous 1:1 pixel-to-point mapping scaled page size WITH pixelRatio (e.g.,
+//   2160×3840 points for a 1080×1920 platform at 2x = 30×53 inch page). Mobile PDF
+//   viewers crushed this onto a 3-inch screen — all quality levels looked identical
+//   and blurry. Fixed page size lets higher pixelRatio actually improve quality.
+// Print exception: pixelRatio always 1 with 72/150 DPI-to-point conversion for
+//   correct physical page size. Higher ratios would create non-integer scaling.
+// History: Original 72/96 conversion caused 2.667:1 non-integer ratio destroying
+//   gradients. First fix used 1:1 mapping but scaled page size (quality was identical
+//   across levels). Current fix: fixed page size + higher pixelRatio = real quality gain.
 // Alternatives:
+//   - 1:1 pixel-to-point mapping: Rejected — page grows with pixelRatio, all qualities
+//     look identical on mobile because viewer scales oversized page back down.
 //   - pixelRatio:1 for everything: Rejected — 72 DPI looks blurry on phones.
-//   - pixelRatio:2 for print with DPI conversion: Rejected — creates 4.17:1 non-integer
-//     ratio that destroys gradients (same class of bug as the original).
 //   - JPEG capture: Rejected — DCT 8x8 blocks cause banding on smooth gradients.
 //     PNG is lossless and pdf-lib embeds via FlateDecode (no re-encoding).
 
@@ -331,18 +334,19 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         downloadDiagnosticImage(pageImages[0], platform.id)
       }
 
-      // Requirement: PDF page dimensions must match the intended use case.
-      // Approach: Print formats use 72/150 DPI-to-point conversion for correct physical
-      //   page size at pixelRatio:1. Digital formats capture at pixelRatio:2 with 1:1
-      //   pixel-to-point mapping (page dims = 2× platform pixels) for sharp phone display.
-      // Why: Digital at pixelRatio:1 was only 72 DPI — soft on 2-3x phone screens.
-      //   pixelRatio:2 with 1:1 mapping gives 4× more pixels without viewer resampling.
-      //   Print stays at pixelRatio:1 because 2× would create a 4.17:1 non-integer ratio.
+      // Requirement: PDF page dimensions must produce sharp rendering on mobile.
+      // Approach: Digital formats keep page at platform pixel dimensions (e.g., 1080×1920pt)
+      //   while embedding a higher-res image (2160×3840px at 2x). This gives a clean 2:1
+      //   or 3:1 pixel-per-point ratio — mobile viewers render the right-sized page with
+      //   extra pixel detail. Print formats use 72/150 DPI-to-point conversion at 1x.
+      // Why: Previous code scaled page WITH pixelRatio (2160×3840pt at 2x), making all
+      //   quality levels look identical on mobile — viewers just scaled the oversized page
+      //   back down. Fixed page size + more pixels = actual quality improvement.
       const pxToPt = isPrint ? 72 / 150 : 1
-      // Digital: page = platform.width * 2 * 1 = 2× capture pixels (1:1, no resampling)
+      // Digital: page = platform.width * 1 = platform size (image has pixelRatio× more pixels)
       // Print: page = platform.width * 1 * 72/150 = correct physical size
-      const widthPt = platform.width * pdfPixelRatio * pxToPt
-      const heightPt = platform.height * pdfPixelRatio * pxToPt
+      const widthPt = platform.width * pxToPt
+      const heightPt = platform.height * pxToPt
 
       const pdfDoc = await PDFDocument.create()
 

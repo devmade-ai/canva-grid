@@ -117,4 +117,17 @@ Each wrong assumption led to a commit that didn't solve the actual problem. Thre
 
 ---
 
+## 2026-03 | PDF Page Size Scaled With pixelRatio — All Qualities Identical on Mobile
+
+**What went wrong:** PDF quality selector (Low/Standard/High) produced different file sizes but looked identical on mobile. The page dimensions scaled proportionally with pixelRatio (`widthPt = platform.width * pdfPixelRatio`), so a 2x capture got a 2x page — always 1:1 pixels-to-points. Mobile PDF viewers scaled the oversized page (30+ inches) back down to the screen, making all quality levels look the same. PDFs also looked worse than PNG/JPG/WebP exports.
+
+**Why it happened:** The previous fix for gradient destruction (non-integer ratios) used 1:1 pixel-to-point mapping to avoid any viewer resampling. This eliminated the gradient bug but also eliminated any quality benefit from higher pixelRatio — the page just got physically larger without gaining effective resolution.
+
+**How to prevent:**
+- When embedding high-res images in PDF, the page size should stay fixed while pixel count increases
+- Test PDF quality levels on actual mobile devices — desktop viewers hide this bug because they have enough screen resolution
+- Clean integer pixel-per-point ratios (2:1, 3:1) don't cause gradient issues — the original bug was from 2.667:1
+
+---
+
 *Add new entries above this line*

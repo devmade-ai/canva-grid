@@ -1,5 +1,15 @@
 # Changelog
 
+## 2026-03-09
+
+### PDF mobile quality fix — page dimensions no longer scale with pixelRatio
+
+**Root cause:** PDF page dimensions were multiplied by pixelRatio (`widthPt = platform.width * pdfPixelRatio`), so higher quality just made a bigger page with the same pixel density. Mobile viewers scaled the oversized page down, making Low/Standard/High look identical.
+
+**Fix:** Page stays at `platform.width × platform.height` points for digital formats. Higher pixelRatio captures more pixels into the same page size, giving clean 2:1 (standard) or 3:1 (high) pixel-per-point ratios. Mobile viewers now render the right-sized page with genuinely higher pixel detail at higher quality levels.
+
+---
+
 ## 2026-03-08
 
 ### PDF export quality and file size fix
