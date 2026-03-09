@@ -130,4 +130,19 @@ Each wrong assumption led to a commit that didn't solve the actual problem. Thre
 
 ---
 
+## 2026-03 | PDF Page Still Too Large — pxToPt=1 Created 15" Pages
+
+**What went wrong:** After fixing the pixelRatio scaling bug, digital PDF pages used pxToPt=1 (1:1 pixel-to-point mapping). This created pages like 1080×1350pt = 15×18.75 inches for LinkedIn Portrait. Mobile PDF viewers had to scale these massive pages 5:1 onto 3-inch phone screens, degrading quality in the viewer's rendering pipeline. PDFs still "looked like shit" despite correct pixelRatio.
+
+**Why it happened:** The previous fix focused on making quality levels produce different pixel counts (which it did successfully) but didn't consider that the page dimensions themselves were unreasonably large. A 15-inch-wide PDF page is 2× letter size — most mobile viewers aren't optimized for this.
+
+**How to prevent:**
+- Consider the ENTIRE rendering pipeline: capture → PDF embedding → viewer → screen
+- Test with actual mobile PDF viewers (Google Drive, Chrome) at realistic page sizes
+- 1080 pixels ≠ 1080 points. Points are 1/72 inch. Use a DPI conversion for digital formats too.
+
+**Fix:** Changed digital pxToPt from 1 to 0.5 (effectively 144 DPI). Pages are now ~7.5" wide instead of 15". Integer pixel-per-point ratios preserved: 2/4/6 for low/standard/high quality.
+
+---
+
 *Add new entries above this line*
