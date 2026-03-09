@@ -104,4 +104,17 @@ Each wrong assumption led to a commit that didn't solve the actual problem. Thre
 
 ---
 
+## 2026-03 | PDF Fix Overcorrected — Reduced Pixels Instead of Fixing Ratio
+
+**What went wrong:** Original PDF export used pixelRatio:2 + 72/96 pt conversion, creating a 2.667:1 non-integer downsampling ratio that destroyed smooth gradients (vignettes at ~30% quality). The fix (d6ede26) correctly identified viewer resampling as the cause but overcorrected: dropped to pixelRatio:1 with 1:1 mapping. This preserved gradients but halved pixel count to 72 DPI — visibly soft/blurry on phone screens (2-3x pixel density).
+
+**Why it happened:** The root cause was the non-integer 2.667:1 ratio, not having more pixels. The fix treated "more pixels" as the problem instead of "bad ratio." Also, the fix was verified on desktop (where 72 DPI looks fine) but not tested on phone screens.
+
+**How to prevent:**
+- When fixing quality bugs, identify the **specific** cause (non-integer ratio) vs the general symptom (viewer downsampling)
+- Test PDF exports on actual phone screens, not just desktop viewers
+- When reducing resolution to fix a quality issue, question whether you're treating the symptom instead of the cause
+
+---
+
 *Add new entries above this line*
