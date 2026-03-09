@@ -5,20 +5,22 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Fixed PDF mobile quality — all quality levels looked identical on mobile.
+Per-cell background color feature + PDF export improvements.
 
 ## Accomplished
 
-1. **PDF mobile quality fix** — Page dimensions were scaling with pixelRatio (2x capture → 2x page size), so all quality levels had identical pixel density. Fixed to keep page at platform pixel dimensions while embedding higher-res image. Quality levels now produce genuinely different sharpness.
+1. **Per-cell background color** — Cells can now override the theme primary background with any theme color or neutral. Stored in `layout.cellBackgrounds` (object keyed by cell index). UI in Style > Spacing section with checkbox + ThemeColorPicker.
+2. **PDF font loading** — Added `document.fonts.ready` wait before PDF capture.
+3. **PDF metadata** — Added title and creator metadata to exported PDFs.
+4. **PDF page size investigation** — Tried pxToPt=0.5 to reduce page dimensions for mobile viewers, but reverted because it would reduce quality for the intended use case (sharing/uploading full-resolution designs). Still using pxToPt=1 for digital formats.
 
 ## Current state
 
-- **Working** — PDF export produces visible quality differences between Low/Standard/High on mobile
-- Page size: `platform.width × platform.height` points for digital, `width * 72/150` for print
-- Image capture: `width * pixelRatio` pixels (1x/2x/3x per quality selection)
+- **Working** — Per-cell background colors, PDF export with font loading and metadata
+- PDF quality issue still open — user reports it "looks like shit" but specific visual problems not yet identified
 
 ## Key context
 
-- Clean integer pixel-per-point ratios (2:1, 3:1) don't cause gradient destruction — only non-integer ratios (2.667:1) did
-- Print formats still always use pixelRatio:1 with 72/150 DPI conversion
-- Non-PDF exports (PNG/JPG/WebP) still use pixelRatio:1
+- `layout.cellBackgrounds` follows the same pattern as `cellOverlays` — object with cellIndex keys, shift/swap/cleanup in setLayout
+- ThemeColorPicker supports theme colors (primary/secondary/accent) + 6 neutral colors
+- PDF export: pxToPt=1 for digital (full resolution), 72/150 for print (correct physical size)
