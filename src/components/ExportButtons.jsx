@@ -321,14 +321,22 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         downloadDiagnosticImage(pageImages[0], platform.id)
       }
 
-      // Build PDF with pdf-lib using platform pixel dimensions directly as points.
-      // Requirement: 1:1 mapping between image pixels and PDF page units so the PDF
-      //   viewer doesn't need to resample. Viewer resampling (bilinear) destroys smooth
-      //   gradients like vignettes. Using pixels-as-points means the physical print size
-      //   won't be "correct" (1080px = 1080pt = 15in instead of 11.25in) but pixel
-      //   quality matches PNG/JPG exports exactly, which is what matters for digital use.
-      const widthPt = platform.width
-      const heightPt = platform.height
+      // Requirement: PDF page dimensions must match the intended use case.
+      // Approach: Print formats (A3/A4/A5) use proper DPI-to-point conversion so the
+      //   PDF prints at the correct physical size. Digital formats use 1:1 pixel-to-point
+      //   mapping so the PDF viewer doesn't resample (which destroys smooth gradients).
+      // Why: Print platforms are defined at 150 DPI (e.g. A4 = 1240×1754px). Converting
+      //   px → points via 72/150 gives the correct physical page size (8.27×11.69in).
+      //   Digital platforms (social, web) don't have a meaningful physical size — pixel
+      //   quality matters, so 1:1 mapping avoids viewer resampling artifacts.
+      // Alternatives:
+      //   - 72/96 for everything: Rejected — wrong physical size for print (assumes 96 DPI
+      //     but print formats are 150 DPI), and causes resampling artifacts on digital.
+      //   - 1:1 for everything: Rejected — print PDFs would be wrong physical size.
+      const isPrint = platform.category === 'print'
+      const pxToPt = isPrint ? 72 / 150 : 1
+      const widthPt = platform.width * pxToPt
+      const heightPt = platform.height * pxToPt
 
       const pdfDoc = await PDFDocument.create()
 
