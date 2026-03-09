@@ -4,6 +4,7 @@ import { PDFDocument } from 'pdf-lib'
 import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { platforms, categoryLabels, categoryOrder, platformsByCategory, findFormat } from '../config/platforms'
+import { debugLog } from '../utils/debugLog'
 
 // Requirement: Export in multiple image formats (PNG, JPG, WebP)
 // Approach: Format toggle above export buttons, shared captureElement helper
@@ -89,19 +90,22 @@ async function captureAsBlob(element, width, height, format) {
 }
 
 // Requirement: PDF export with sharp rendering on phone screens (2-3x pixel density).
-// Approach: Digital formats capture at pixelRatio:2 with 1:1 pixel-to-point mapping
-//   (page dims = 2× platform pixels). Print formats stay at pixelRatio:1 with
-//   72/150 DPI-to-point conversion for correct physical page size.
-// Why: pixelRatio:1 produced 72 DPI — visibly soft on high-density phone screens.
-//   pixelRatio:2 with 1:1 mapping gives 4× more pixel data without viewer resampling.
-//   Page is physically larger in points (irrelevant for digital), viewers scale to fit.
-// History: Original pixelRatio:2 + 72/96 conversion caused 2.667:1 non-integer ratio
-//   that destroyed smooth gradients. The fix was 1:1 mapping, not reducing pixels.
-// Print exception: pixelRatio:2 for print would create a 4.17:1 ratio (same bug class).
+// Approach: Capture at higher pixelRatio (2x/3x) but keep PDF page at platform pixel
+//   dimensions. This embeds more pixels into a fixed page size, giving clean integer
+//   pixel-per-point ratios (2:1 standard, 3:1 high) for sharp mobile rendering.
+// Why: Previous 1:1 pixel-to-point mapping scaled page size WITH pixelRatio (e.g.,
+//   2160×3840 points for a 1080×1920 platform at 2x = 30×53 inch page). Mobile PDF
+//   viewers crushed this onto a 3-inch screen — all quality levels looked identical
+//   and blurry. Fixed page size lets higher pixelRatio actually improve quality.
+// Print exception: pixelRatio always 1 with 72/150 DPI-to-point conversion for
+//   correct physical page size. Higher ratios would create non-integer scaling.
+// History: Original 72/96 conversion caused 2.667:1 non-integer ratio destroying
+//   gradients. First fix used 1:1 mapping but scaled page size (quality was identical
+//   across levels). Current fix: fixed page size + higher pixelRatio = real quality gain.
 // Alternatives:
+//   - 1:1 pixel-to-point mapping: Rejected — page grows with pixelRatio, all qualities
+//     look identical on mobile because viewer scales oversized page back down.
 //   - pixelRatio:1 for everything: Rejected — 72 DPI looks blurry on phones.
-//   - pixelRatio:2 for print with DPI conversion: Rejected — creates 4.17:1 non-integer
-//     ratio that destroys gradients (same class of bug as the original).
 //   - JPEG capture: Rejected — DCT 8x8 blocks cause banding on smooth gradients.
 //     PNG is lossless and pdf-lib embeds via FlateDecode (no re-encoding).
 
@@ -203,6 +207,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     updateExporting(true)
     setExportOp('single')
+    debugLog('export', 'single-start', { platform: platform.id, format: exportFormat, width: platform.width, height: platform.height })
     const restoreOpacity = hideCanvas(canvasRef.current)
 
     try {
@@ -217,7 +222,9 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       const ts = getTimestamp()
       const pageSuffix = pageCount > 1 ? `-p${String(state.activePage + 1).padStart(2, '0')}` : ''
       saveAs(blob, `${ts}-${platform.id}-${platform.width}x${platform.height}${pageSuffix}.${ext}`)
+      debugLog('export', 'single-success', { platform: platform.id, sizeKB: Math.round(blob.size / 1024) })
     } catch (error) {
+      debugLog('export', 'single-error', { platform: platform.id, error: error.message }, 'error')
       alert('Export failed. Please try again.')
     } finally {
       restoreOpacity()
@@ -237,10 +244,12 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     const originalActivePage = state.activePage
     const restoreOpacity = hideCanvas(canvasRef.current)
+    debugLog('export', 'all-pages-start', { platform: platform.id, format: exportFormat, pageCount })
 
     try {
       for (let i = 0; i < pageCount; i++) {
         setExportProgress({ current: i + 1, total: pageCount, name: `Page ${i + 1}` })
+        debugLog('export', 'all-pages-capture', { page: i + 1, total: pageCount }, 'debug')
 
         onSetActivePage(i)
         await new Promise((resolve) => setTimeout(resolve, 300))
@@ -259,9 +268,11 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       const content = await zip.generateAsync({ type: 'blob' })
       const ts = getTimestamp()
       saveAs(content, `${ts}-pages.zip`)
+      debugLog('export', 'all-pages-success', { pageCount, sizeKB: Math.round(content.size / 1024) })
 
       onSetActivePage(originalActivePage)
     } catch (error) {
+      debugLog('export', 'all-pages-error', { error: error.message }, 'error')
       alert('Export failed. Please try again.')
       onSetActivePage(originalActivePage)
     } finally {
@@ -301,6 +312,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     const isPrint = platform.category === 'print'
     const qualityToRatio = { low: 1, standard: 2, high: 3 }
     const pdfPixelRatio = isPrint ? 1 : (qualityToRatio[pdfQuality] || 2)
+    debugLog('export', 'pdf-start', { platform: platform.id, quality: pdfQuality, pixelRatio: pdfPixelRatio, totalPages, isPrint })
 
     try {
       for (let i = 0; i < totalPages; i++) {
@@ -331,18 +343,19 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         downloadDiagnosticImage(pageImages[0], platform.id)
       }
 
-      // Requirement: PDF page dimensions must match the intended use case.
-      // Approach: Print formats use 72/150 DPI-to-point conversion for correct physical
-      //   page size at pixelRatio:1. Digital formats capture at pixelRatio:2 with 1:1
-      //   pixel-to-point mapping (page dims = 2× platform pixels) for sharp phone display.
-      // Why: Digital at pixelRatio:1 was only 72 DPI — soft on 2-3x phone screens.
-      //   pixelRatio:2 with 1:1 mapping gives 4× more pixels without viewer resampling.
-      //   Print stays at pixelRatio:1 because 2× would create a 4.17:1 non-integer ratio.
+      // Requirement: PDF page dimensions must produce sharp rendering on mobile.
+      // Approach: Digital formats keep page at platform pixel dimensions (e.g., 1080×1920pt)
+      //   while embedding a higher-res image (2160×3840px at 2x). This gives a clean 2:1
+      //   or 3:1 pixel-per-point ratio — mobile viewers render the right-sized page with
+      //   extra pixel detail. Print formats use 72/150 DPI-to-point conversion at 1x.
+      // Why: Previous code scaled page WITH pixelRatio (2160×3840pt at 2x), making all
+      //   quality levels look identical on mobile — viewers just scaled the oversized page
+      //   back down. Fixed page size + more pixels = actual quality improvement.
       const pxToPt = isPrint ? 72 / 150 : 1
-      // Digital: page = platform.width * 2 * 1 = 2× capture pixels (1:1, no resampling)
+      // Digital: page = platform.width * 1 = platform size (image has pixelRatio× more pixels)
       // Print: page = platform.width * 1 * 72/150 = correct physical size
-      const widthPt = platform.width * pdfPixelRatio * pxToPt
-      const heightPt = platform.height * pdfPixelRatio * pxToPt
+      const widthPt = platform.width * pxToPt
+      const heightPt = platform.height * pxToPt
 
       const pdfDoc = await PDFDocument.create()
 
@@ -368,7 +381,9 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         new Blob([pdfBytes], { type: 'application/pdf' }),
         `${ts}-${platform.id}-${platform.width}x${platform.height}.pdf`
       )
+      debugLog('export', 'pdf-success', { platform: platform.id, pagePt: `${widthPt}x${heightPt}`, pixelRatio: pdfPixelRatio, sizeKB: Math.round(pdfBytes.length / 1024), totalPages })
     } catch (error) {
+      debugLog('export', 'pdf-error', { platform: platform.id, error: error.message }, 'error')
       alert('PDF export failed. Please try again.')
       if (totalPages > 1) {
         onSetActivePage(originalActivePage)
@@ -395,6 +410,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     const platformsToExport = platforms.filter((p) => selectedPlatforms.has(p.id))
     const restoreOpacity = hideCanvas(canvasRef.current)
+    debugLog('export', 'multi-start', { format: exportFormat, platformCount: platformsToExport.length })
 
     try {
       for (let i = 0; i < platformsToExport.length; i++) {
@@ -416,10 +432,12 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       const content = await zip.generateAsync({ type: 'blob' })
       const ts = getTimestamp()
       saveAs(content, `${ts}-multi.zip`)
+      debugLog('export', 'multi-success', { platformCount: platformsToExport.length, sizeKB: Math.round(content.size / 1024) })
 
       onPlatformChange(originalPlatform)
       setShowMultiSelect(false)
     } catch (error) {
+      debugLog('export', 'multi-error', { error: error.message }, 'error')
       alert('Export failed. Please try again.')
       onPlatformChange(originalPlatform)
     } finally {

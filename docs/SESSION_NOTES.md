@@ -5,24 +5,20 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Fixed cell highlighting, image indicators, text redistribution, and default layout issues.
+Fixed PDF mobile quality — all quality levels looked identical on mobile.
 
 ## Accomplished
 
-1. **Cell highlighting fix** — Clamped global `selectedCell` to valid range when switching layout types (rows/columns/fullbleed) in Structure tab. Prevents stale selection ring on wrong cell.
-2. **Image cell indicators unified** — MiniCellGrid now uses `cellImages` (actual assignments) instead of `imageCells` (preset designations) for image indicators. Consistent with ContextBar behavior.
-3. **Removed confusing cell borders** — Removed internal `border border-ui-border` from subdivided cells in Structure tab grid. These looked like canvas borders and confused users.
-4. **Text redistribution fix** — `applyLayoutPreset` now collects ALL text from old cells BEFORE cleanup, preventing text loss when switching from layouts with more cells (e.g., quad-grid) to fewer cells (e.g., split-horizontal).
-5. **Default layout simplified** — Changed from quad-grid (4 cells) to split-horizontal (2 rows: image top, text bottom). Simpler starting point for new users. Default text now in cell 1 only.
+1. **PDF mobile quality fix** — Page dimensions were scaling with pixelRatio (2x capture → 2x page size), so all quality levels had identical pixel density. Fixed to keep page at platform pixel dimensions while embedding higher-res image. Quality levels now produce genuinely different sharpness.
 
 ## Current state
 
-- **Working** — Build passes, all features functional
-- Default layout: `split-horizontal` (2 rows, image cell 0, text cell 1)
-- Text state shape: `text[cellIndex][elementId] = { content, visible, color, size, ... }`
+- **Working** — PDF export produces visible quality differences between Low/Standard/High on mobile
+- Page size: `platform.width × platform.height` points for digital, `width * 72/150` for print
+- Image capture: `width * pixelRatio` pixels (1x/2x/3x per quality selection)
 
 ## Key context
 
-- `defaultPageData` and `defaultState` both updated to split-horizontal
-- Text redistribution collects from ALL old cells before cleanup, not just image cells after cleanup
-- `imageCells` array in presets is for preset designation; `cellImages` object is for actual assignments
+- Clean integer pixel-per-point ratios (2:1, 3:1) don't cause gradient destruction — only non-integer ratios (2.667:1) did
+- Print formats still always use pixelRatio:1 with 72/150 DPI conversion
+- Non-PDF exports (PNG/JPG/WebP) still use pixelRatio:1
