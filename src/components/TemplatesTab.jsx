@@ -145,13 +145,10 @@ export default memo(function TemplatesTab({
 
   const activeLookPreset = lookPresets.find((p) => p.id === activeStylePreset)
 
-  // Check if a layout preset matches current layout
+  // Check if a layout preset matches current layout (structure only, no imageCells)
   const isLayoutPresetActive = (preset) => {
-    const currentImageCells = layout.imageCells || [0]
-    const presetImageCells = preset.layout.imageCells || [0]
     return (
       layout.type === preset.layout.type &&
-      JSON.stringify(currentImageCells) === JSON.stringify(presetImageCells) &&
       JSON.stringify(layout.structure) === JSON.stringify(preset.layout.structure)
     )
   }

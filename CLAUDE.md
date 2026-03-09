@@ -503,7 +503,6 @@ layout: {
     { size: 50, subdivisions: 1, subSizes: [100] },  // Section with optional subdivisions
     { size: 50, subdivisions: 2, subSizes: [50, 50] }
   ],
-  imageCells: [0],               // Array of cell indices that contain images (supports multi-image layouts)
   textAlign: 'center',           // Global horizontal alignment fallback
   textVerticalAlign: 'center',   // Global vertical alignment fallback
   cellAlignments: [{ textAlign, textVerticalAlign }, ...]  // Per-cell overrides
