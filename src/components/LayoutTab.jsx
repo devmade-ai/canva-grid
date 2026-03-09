@@ -180,7 +180,9 @@ function CellGrid({
               return (
                 <div
                   key={`cell-${currentCellIndex}`}
-                  className={`relative cursor-pointer transition-colors min-h-[20px] ${bgClass}`}
+                  className={`relative cursor-pointer transition-colors min-h-[20px] ${bgClass} ${
+                    mode === 'structure' && subdivisions > 1 ? 'border border-ui-border' : ''
+                  }`}
                   style={{ flex: `1 1 ${subSize}%` }}
                   onClick={(e) => {
                     e.stopPropagation()
