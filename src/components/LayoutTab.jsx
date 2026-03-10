@@ -293,10 +293,16 @@ export default memo(function LayoutTab({
       structure: newStructure,
       _cellShift: { fromIndex: removedCellIndex + 1, shiftBy: -1 },
     })
-    // Update selectedCell: move to neighbor if removed, shift if after it
+    // Update selectedCell: stay in same section if possible, shift if after removed cell
     const newCellCount = newStructure.reduce((total, s) => total + (s.subdivisions || 1), 0)
     if (selectedCell === removedCellIndex) {
-      onSelectCell?.(Math.min(removedCellIndex, newCellCount - 1))
+      // If deleted cell wasn't the last in its section, select the next cell (now at same index).
+      // If it was the last in the section, select the previous cell (stays in same section).
+      if (subIndex < newSubs) {
+        onSelectCell?.(Math.min(removedCellIndex, newCellCount - 1))
+      } else {
+        onSelectCell?.(Math.max(0, removedCellIndex - 1))
+      }
     } else if (selectedCell > removedCellIndex) {
       onSelectCell?.(selectedCell - 1)
     }
