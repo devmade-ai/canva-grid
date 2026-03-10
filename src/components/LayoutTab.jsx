@@ -1,7 +1,8 @@
-// Requirement: Interactive grid structure editor with cell-based selection.
+// Requirement: Interactive grid structure editor with per-row/column and per-cell controls.
 // Approach: Uses the same global selectedCell as all other tabs. Section context
 //   (which row/column the cell belongs to) is derived, not stored separately.
 //   Size constraints (MIN_SIZE=10, MAX_SIZE=90) prevent cells from becoming unusably small.
+//   UI is split into two clear control groups: section (row/column) and cell controls.
 // Alternatives:
 //   - Separate structureSelection state: Rejected — caused sync bugs between internal
 //     and global selection, required complex bidirectional sync logic.
@@ -48,6 +49,22 @@ function cellToSection(structure, type, cellIndex) {
   return { sectionIndex: 0, subIndex: 0 }
 }
 
+// Calculate the first cell index of a given section
+function getFirstCellOfSection(structure, sectionIndex) {
+  let idx = 0
+  for (let i = 0; i < sectionIndex; i++) {
+    idx += structure[i].subdivisions || 1
+  }
+  return idx
+}
+
+// Shared button style constants to reduce repetition
+const btnBase = 'px-3 py-2 text-sm rounded-lg font-medium'
+const btnAction = `${btnBase} bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40`
+const btnDisabled = `${btnBase} bg-violet-100 dark:bg-violet-900/30 text-violet-300 dark:text-violet-600 cursor-not-allowed`
+const btnDelete = `${btnBase} bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50`
+const btnSnap = `${btnBase} bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50`
+
 export default memo(function LayoutTab({
   layout,
   onLayoutChange,
@@ -67,10 +84,10 @@ export default memo(function LayoutTab({
   const selectedSection = type !== 'fullbleed' && structure.length > 0 ? structure[selectedSectionIndex] : null
   const hasSubdivisions = (selectedSection?.subdivisions || 1) > 1
 
-  const platformAspectRatio = useMemo(() => {
-    const p = platforms.find((pl) => pl.id === platform) || platforms[0]
-    return p.width / p.height
-  }, [platform])
+  // Layout-aware labels for rows vs columns
+  const isRows = type === 'rows'
+  const sectionLabel = isRows ? 'Row' : 'Column'
+  const cellLabel = isRows ? 'Cell' : 'Cell'
 
   // Change layout type
   const handleTypeChange = (newType) => {
@@ -88,12 +105,13 @@ export default memo(function LayoutTab({
         ],
       })
     }
-    // Clamp global cell selection to valid range for the new layout
     const newCellCount = newType === 'fullbleed' ? 1 : 2
     if (selectedCell >= newCellCount) {
       onSelectCell?.(0)
     }
   }
+
+  // --- Section (Row/Column) Operations ---
 
   // Requirement: Insert a section at a specific position (before/after a given index)
   // Approach: splice() to insert at position, redistribute sizes equally, shift cell indices
@@ -105,7 +123,6 @@ export default memo(function LayoutTab({
     const newSize = 100 / (structure.length + 1)
     const newStructure = structure.map((s) => ({ ...s, size: newSize }))
     newStructure.splice(position, 0, { size: newSize, subdivisions: 1, subSizes: [100] })
-    // Calculate which cell index the new section occupies so we can shift data
     let firstCellAtPosition = 0
     for (let i = 0; i < position; i++) {
       firstCellAtPosition += structure[i].subdivisions || 1
@@ -114,15 +131,9 @@ export default memo(function LayoutTab({
       structure: newStructure,
       _cellShift: { fromIndex: firstCellAtPosition, shiftBy: 1 },
     })
-    // Shift selectedCell to follow the cell that moved
     if (selectedCell >= firstCellAtPosition) {
       onSelectCell?.(selectedCell + 1)
     }
-  }
-
-  // Add a section at the end (used when no section is selected)
-  const addSection = () => {
-    insertSection(structure.length)
   }
 
   // Requirement: Remove a section, shifting cell indices after the removed section.
@@ -136,16 +147,11 @@ export default memo(function LayoutTab({
     const newStructure = structure
       .filter((_, i) => i !== index)
       .map((s) => ({ ...s, size: newSize }))
-    // Calculate first cell index of the removed section
-    let firstCellOfRemoved = 0
-    for (let i = 0; i < index; i++) {
-      firstCellOfRemoved += structure[i].subdivisions || 1
-    }
+    let firstCellOfRemoved = getFirstCellOfSection(structure, index)
     onLayoutChange({
       structure: newStructure,
       _cellShift: { fromIndex: firstCellOfRemoved + removedSubs, shiftBy: -removedSubs },
     })
-    // Update selectedCell: clamp if in removed section, shift if after it
     const newCellCount = newStructure.reduce((total, s) => total + (s.subdivisions || 1), 0)
     if (selectedCell >= firstCellOfRemoved && selectedCell < firstCellOfRemoved + removedSubs) {
       onSelectCell?.(Math.min(firstCellOfRemoved, newCellCount - 1))
@@ -155,35 +161,27 @@ export default memo(function LayoutTab({
   }
 
   // Update section size with dynamic constraints
-  // Max size is limited by needing to leave MIN_SIZE for each other section
   const updateSectionSize = (index, newSize) => {
     const numSections = structure.length
     const maxAllowed = getMaxSize(numSections)
-
-    // Clamp the new size to valid range
     const clampedSize = Math.max(MIN_SIZE, Math.min(maxAllowed, newSize))
-
     const newStructure = [...structure]
     const oldSize = newStructure[index].size
     const sizeDiff = clampedSize - oldSize
-
     const otherIndices = structure.map((_, i) => i).filter((i) => i !== index)
     const otherTotalSize = otherIndices.reduce((sum, i) => sum + structure[i].size, 0)
 
     if (otherTotalSize > 0 && otherIndices.length > 0) {
-      // Distribute the size change proportionally among other sections
       otherIndices.forEach((i) => {
         const proportion = structure[i].size / otherTotalSize
         const adjustment = sizeDiff * proportion
         const newOtherSize = structure[i].size - adjustment
-        // Ensure each other section maintains at least MIN_SIZE
         newStructure[i] = { ...newStructure[i], size: Math.max(MIN_SIZE, Math.min(maxAllowed, newOtherSize)) }
       })
     }
 
     newStructure[index] = { ...newStructure[index], size: clampedSize }
 
-    // Normalize to ensure total is exactly 100%
     const total = newStructure.reduce((sum, s) => sum + s.size, 0)
     if (Math.abs(total - 100) > 0.1) {
       const scale = 100 / total
@@ -195,117 +193,6 @@ export default memo(function LayoutTab({
     onLayoutChange({ structure: newStructure })
   }
 
-  // Requirement: Add subdivision to a section, shifting cell indices after this section.
-  // Approach: New sub is appended at end of section. Cells after this section shift by 1.
-  // Alternatives:
-  //   - No shift: Rejected — content in later cells moves to wrong visual position.
-  const addSubdivision = (sectionIndex) => {
-    const newStructure = [...structure]
-    const section = newStructure[sectionIndex]
-    const currentSubs = section.subdivisions || 1
-
-    if (currentSubs >= 3) return
-
-    const newSubs = currentSubs + 1
-    const evenSize = 100 / newSubs
-    const newSubSizes = Array(newSubs).fill(evenSize)
-
-    newStructure[sectionIndex] = { ...section, subdivisions: newSubs, subSizes: newSubSizes }
-    // The new sub is added at the end of this section, so cells after it shift
-    let firstCellAfterSection = 0
-    for (let i = 0; i <= sectionIndex; i++) {
-      firstCellAfterSection += structure[i].subdivisions || 1
-    }
-    onLayoutChange({
-      structure: newStructure,
-      _cellShift: { fromIndex: firstCellAfterSection, shiftBy: 1 },
-    })
-    // Shift selectedCell if it's after the new subdivision
-    if (selectedCell >= firstCellAfterSection) {
-      onSelectCell?.(selectedCell + 1)
-    }
-  }
-
-  // Requirement: Remove subdivision from a section, shifting cell indices after it.
-  // Approach: Last sub is removed. Cells after this section shift down by 1.
-  // Alternatives:
-  //   - No shift: Rejected — content in later cells moves to wrong visual position.
-  const removeSubdivision = (sectionIndex) => {
-    const newStructure = [...structure]
-    const section = newStructure[sectionIndex]
-    const currentSubs = section.subdivisions || 1
-
-    if (currentSubs <= 1) return
-
-    const newSubs = currentSubs - 1
-    const evenSize = 100 / newSubs
-    const newSubSizes = Array(newSubs).fill(evenSize)
-
-    newStructure[sectionIndex] = { ...section, subdivisions: newSubs, subSizes: newSubSizes }
-
-    // The last sub of this section is removed, so cells after it shift down
-    let firstCellAfterSection = 0
-    for (let i = 0; i <= sectionIndex; i++) {
-      firstCellAfterSection += structure[i].subdivisions || 1
-    }
-    // Shift from firstCellAfterSection (the cell that was after the removed sub)
-    const removedCellIndex = firstCellAfterSection - 1
-    onLayoutChange({
-      structure: newStructure,
-      _cellShift: { fromIndex: firstCellAfterSection, shiftBy: -1 },
-    })
-    // Update selectedCell: move to previous if removed, shift if after it
-    if (selectedCell === removedCellIndex) {
-      onSelectCell?.(Math.max(0, removedCellIndex - 1))
-    } else if (selectedCell >= firstCellAfterSection) {
-      onSelectCell?.(selectedCell - 1)
-    }
-  }
-
-  // Update subdivision sizes with dynamic constraints
-  // Max size is limited by needing to leave MIN_SIZE for each other subdivision
-  const updateSubSize = (sectionIndex, subIndex, newSize) => {
-    const newStructure = [...structure]
-    const section = newStructure[sectionIndex]
-    const subSizes = [...(section.subSizes || [])]
-    const numSubs = subSizes.length
-    const maxAllowed = getMaxSize(numSubs)
-
-    // Clamp the new size to valid range
-    const clampedSize = Math.max(MIN_SIZE, Math.min(maxAllowed, newSize))
-
-    const oldSize = subSizes[subIndex]
-    const sizeDiff = clampedSize - oldSize
-
-    const otherIndices = subSizes.map((_, i) => i).filter((i) => i !== subIndex)
-    const otherTotalSize = otherIndices.reduce((sum, i) => sum + subSizes[i], 0)
-
-    if (otherTotalSize > 0 && otherIndices.length > 0) {
-      // Distribute the size change proportionally among other subdivisions
-      otherIndices.forEach((i) => {
-        const proportion = subSizes[i] / otherTotalSize
-        const adjustment = sizeDiff * proportion
-        const newOtherSize = subSizes[i] - adjustment
-        // Ensure each other subdivision maintains at least MIN_SIZE
-        subSizes[i] = Math.max(MIN_SIZE, Math.min(maxAllowed, newOtherSize))
-      })
-    }
-
-    subSizes[subIndex] = clampedSize
-
-    // Normalize to ensure total is exactly 100%
-    const total = subSizes.reduce((sum, s) => sum + s, 0)
-    if (Math.abs(total - 100) > 0.1) {
-      const scale = 100 / total
-      subSizes.forEach((s, i) => {
-        subSizes[i] = Math.max(MIN_SIZE, s * scale)
-      })
-    }
-
-    newStructure[sectionIndex] = { ...section, subSizes }
-    onLayoutChange({ structure: newStructure })
-  }
-
   // Requirement: Swap two adjacent sections so users can reorder rows/columns.
   // Approach: Swap structure entries and build a bidirectional cell index map via _cellSwap.
   // Alternatives:
@@ -314,19 +201,12 @@ export default memo(function LayoutTab({
   const swapSections = (indexA, indexB) => {
     if (indexA < 0 || indexB < 0 || indexA >= structure.length || indexB >= structure.length) return
     if (indexA === indexB) return
-
-    // Ensure A < B for consistent mapping
     const [lo, hi] = indexA < indexB ? [indexA, indexB] : [indexB, indexA]
-
     const newStructure = [...structure]
     newStructure[lo] = structure[hi]
     newStructure[hi] = structure[lo]
 
-    // Build bidirectional cell index map.
-    // Compute cell start offsets for old and new structure, then map each cell
-    // from its old position to where it lands after the swap.
     const cellMap = {}
-
     const oldStarts = []
     let idx = 0
     for (let i = 0; i < structure.length; i++) {
@@ -339,37 +219,159 @@ export default memo(function LayoutTab({
       newStarts.push(idx)
       idx += newStructure[i].subdivisions || 1
     }
-
-    // Old section s moves to destIndex in new order.
-    // Middle sections (between lo and hi) stay at same index but may shift
-    // if lo and hi have different subdivision counts.
     for (let s = 0; s < structure.length; s++) {
       const subs = structure[s].subdivisions || 1
       const destIndex = s === lo ? hi : s === hi ? lo : s
       const oldStart = oldStarts[s]
       const newStart = newStarts[destIndex]
-
       for (let sub = 0; sub < subs; sub++) {
         cellMap[oldStart + sub] = newStart + sub
       }
     }
 
-    onLayoutChange({
-      structure: newStructure,
-      _cellSwap: cellMap,
-    })
-
-    // Remap selectedCell through the same cellMap used for data
+    onLayoutChange({ structure: newStructure, _cellSwap: cellMap })
     if (cellMap[selectedCell] !== undefined) {
       onSelectCell?.(cellMap[selectedCell])
     }
   }
 
+  // --- Cell (Subdivision) Operations ---
+
+  // Requirement: Insert a cell at a specific position within a section.
+  // Approach: Splice into subSizes at position, redistribute sizes evenly, shift cell indices.
+  // Alternatives:
+  //   - Only append at end: Rejected — user can't add cell before the selected one.
+  //   - No index shift: Rejected — content in later cells moves to wrong visual position.
+  const insertCell = (sectionIndex, subPosition) => {
+    const section = structure[sectionIndex]
+    const currentSubs = section.subdivisions || 1
+    if (currentSubs >= 3) return
+
+    const newSubs = currentSubs + 1
+    const evenSize = 100 / newSubs
+    const newSubSizes = [...(section.subSizes || Array(currentSubs).fill(100 / currentSubs))]
+    newSubSizes.splice(subPosition, 0, evenSize)
+    // Redistribute evenly after insert
+    const redistributed = Array(newSubs).fill(evenSize)
+
+    const newStructure = [...structure]
+    newStructure[sectionIndex] = { ...section, subdivisions: newSubs, subSizes: redistributed }
+
+    // The inserted cell shifts everything at and after its absolute index
+    const firstCellOfSection = getFirstCellOfSection(structure, sectionIndex)
+    const insertedCellIndex = firstCellOfSection + subPosition
+    onLayoutChange({
+      structure: newStructure,
+      _cellShift: { fromIndex: insertedCellIndex, shiftBy: 1 },
+    })
+    if (selectedCell >= insertedCellIndex) {
+      onSelectCell?.(selectedCell + 1)
+    }
+  }
+
+  // Requirement: Remove a specific cell (subdivision) from a section.
+  // Approach: Remove from subSizes at position, redistribute evenly, shift cell indices.
+  // Alternatives:
+  //   - Only remove last: Rejected — user can't remove a specific cell in the middle.
+  //   - No index shift: Rejected — content in later cells moves to wrong visual position.
+  const removeCell = (sectionIndex, subIndex) => {
+    const section = structure[sectionIndex]
+    const currentSubs = section.subdivisions || 1
+    if (currentSubs <= 1) return
+
+    const newSubs = currentSubs - 1
+    const evenSize = 100 / newSubs
+    const redistributed = Array(newSubs).fill(evenSize)
+
+    const newStructure = [...structure]
+    newStructure[sectionIndex] = { ...section, subdivisions: newSubs, subSizes: redistributed }
+
+    const firstCellOfSection = getFirstCellOfSection(structure, sectionIndex)
+    const removedCellIndex = firstCellOfSection + subIndex
+    // Cells after the removed one shift down by 1
+    onLayoutChange({
+      structure: newStructure,
+      _cellShift: { fromIndex: removedCellIndex + 1, shiftBy: -1 },
+    })
+    // Update selectedCell: move to neighbor if removed, shift if after it
+    const newCellCount = newStructure.reduce((total, s) => total + (s.subdivisions || 1), 0)
+    if (selectedCell === removedCellIndex) {
+      onSelectCell?.(Math.min(removedCellIndex, newCellCount - 1))
+    } else if (selectedCell > removedCellIndex) {
+      onSelectCell?.(selectedCell - 1)
+    }
+  }
+
+  // Requirement: Swap two adjacent cells (subdivisions) within a section.
+  // Approach: Swap subSizes entries and build a bidirectional cell map via _cellSwap.
+  // Alternatives:
+  //   - Drag-to-reorder: Rejected — complex for mobile.
+  //   - Two sequential shifts: Rejected — overlapping ranges cause data loss.
+  const swapCells = (sectionIndex, subIndexA, subIndexB) => {
+    const section = structure[sectionIndex]
+    const currentSubs = section.subdivisions || 1
+    if (subIndexA < 0 || subIndexB < 0 || subIndexA >= currentSubs || subIndexB >= currentSubs) return
+    if (subIndexA === subIndexB) return
+
+    const newSubSizes = [...(section.subSizes || Array(currentSubs).fill(100 / currentSubs))]
+    const temp = newSubSizes[subIndexA]
+    newSubSizes[subIndexA] = newSubSizes[subIndexB]
+    newSubSizes[subIndexB] = temp
+
+    const newStructure = [...structure]
+    newStructure[sectionIndex] = { ...section, subSizes: newSubSizes }
+
+    const firstCellOfSection = getFirstCellOfSection(structure, sectionIndex)
+    const cellIndexA = firstCellOfSection + subIndexA
+    const cellIndexB = firstCellOfSection + subIndexB
+    const cellMap = { [cellIndexA]: cellIndexB, [cellIndexB]: cellIndexA }
+
+    onLayoutChange({ structure: newStructure, _cellSwap: cellMap })
+    if (cellMap[selectedCell] !== undefined) {
+      onSelectCell?.(cellMap[selectedCell])
+    }
+  }
+
+  // Update subdivision sizes with dynamic constraints
+  const updateSubSize = (sectionIndex, subIndex, newSize) => {
+    const newStructure = [...structure]
+    const section = newStructure[sectionIndex]
+    const subSizes = [...(section.subSizes || [])]
+    const numSubs = subSizes.length
+    const maxAllowed = getMaxSize(numSubs)
+    const clampedSize = Math.max(MIN_SIZE, Math.min(maxAllowed, newSize))
+    const oldSize = subSizes[subIndex]
+    const sizeDiff = clampedSize - oldSize
+    const otherIndices = subSizes.map((_, i) => i).filter((i) => i !== subIndex)
+    const otherTotalSize = otherIndices.reduce((sum, i) => sum + subSizes[i], 0)
+
+    if (otherTotalSize > 0 && otherIndices.length > 0) {
+      otherIndices.forEach((i) => {
+        const proportion = subSizes[i] / otherTotalSize
+        const adjustment = sizeDiff * proportion
+        const newOtherSize = subSizes[i] - adjustment
+        subSizes[i] = Math.max(MIN_SIZE, Math.min(maxAllowed, newOtherSize))
+      })
+    }
+
+    subSizes[subIndex] = clampedSize
+    const total = subSizes.reduce((sum, s) => sum + s, 0)
+    if (Math.abs(total - 100) > 0.1) {
+      const scale = 100 / total
+      subSizes.forEach((s, i) => {
+        subSizes[i] = Math.max(MIN_SIZE, s * scale)
+      })
+    }
+
+    newStructure[sectionIndex] = { ...section, subSizes }
+    onLayoutChange({ structure: newStructure })
+  }
+
+  // --- Snap to Fit ---
+
   // Requirement: Snap cell boundary so a contained image fills the cell with no empty space.
   // Approach: Compare image aspect ratio to cell aspect ratio, then adjust the boundary
-  //   (section size or subdivision size) that eliminates the empty space. Direction is automatic:
-  //   - If image is wider than cell → empty top/bottom → adjust section height (rows) or sub height (columns)
-  //   - If image is narrower than cell → empty left/right → adjust sub width (rows) or section width (columns)
+  //   (section size or subdivision size) that eliminates the empty space.
   // Alternatives:
   //   - Manual slider adjustment: Still available — snap is a convenience shortcut.
   //   - Change fit mode to cover: Rejected — user explicitly wants contain (full image visible).
@@ -380,17 +382,14 @@ export default memo(function LayoutTab({
     const image = images.find(img => img.id === imageId)
     if (!image || image.fit !== 'contain') return
 
-    // Get image dimensions — use stored values or load async as fallback
     const doSnap = (imgWidth, imgHeight) => {
       const imageAR = imgWidth / imgHeight
       const platformData = platforms.find(p => p.id === platform) || platforms[0]
-      const isRows = type === 'rows'
 
       const section = structure[sectionIndex]
       const subs = section.subdivisions || 1
       const subSizes = section.subSizes || Array(subs).fill(100 / subs)
 
-      // Calculate actual cell dimensions in pixels
       let cellWidth, cellHeight
       if (isRows) {
         cellWidth = platformData.width * (subSizes[subIndex] / 100)
@@ -401,35 +400,23 @@ export default memo(function LayoutTab({
       }
 
       const cellAR = cellWidth / cellHeight
-
-      // Already a close fit — no adjustment needed
       if (Math.abs(imageAR - cellAR) < 0.01) return
 
       if (imageAR > cellAR) {
-        // Image wider than cell → empty space top/bottom
         if (isRows) {
-          // Rows: reduce section height
           const newHeight = cellWidth / imageAR
-          const newSectionPercent = (newHeight / platformData.height) * 100
-          updateSectionSize(sectionIndex, newSectionPercent)
+          updateSectionSize(sectionIndex, (newHeight / platformData.height) * 100)
         } else {
-          // Columns: reduce sub size (cell height within section)
           const newHeight = cellWidth / imageAR
-          const newSubPercent = (newHeight / platformData.height) * 100
-          updateSubSize(sectionIndex, subIndex, newSubPercent)
+          updateSubSize(sectionIndex, subIndex, (newHeight / platformData.height) * 100)
         }
       } else {
-        // Image narrower than cell → empty space left/right
         if (isRows) {
-          // Rows: reduce sub size (cell width within section)
           const newWidth = cellHeight * imageAR
-          const newSubPercent = (newWidth / platformData.width) * 100
-          updateSubSize(sectionIndex, subIndex, newSubPercent)
+          updateSubSize(sectionIndex, subIndex, (newWidth / platformData.width) * 100)
         } else {
-          // Columns: reduce section width
           const newWidth = cellHeight * imageAR
-          const newSectionPercent = (newWidth / platformData.width) * 100
-          updateSectionSize(sectionIndex, newSectionPercent)
+          updateSectionSize(sectionIndex, (newWidth / platformData.width) * 100)
         }
       }
     }
@@ -437,15 +424,13 @@ export default memo(function LayoutTab({
     if (image.naturalWidth && image.naturalHeight) {
       doSnap(image.naturalWidth, image.naturalHeight)
     } else {
-      // Fallback: load image to read dimensions (for images uploaded before this feature)
       const img = new Image()
       img.onload = () => doSnap(img.naturalWidth, img.naturalHeight)
-      img.onerror = () => {} // Silently ignore — corrupted src can't be snapped
+      img.onerror = () => {}
       img.src = image.src
     }
   }
 
-  // Helper: check if snap-to-fit is available for a cell
   const canSnapCell = (cellIndex) => {
     const imageId = cellImages[cellIndex]
     if (!imageId) return false
@@ -453,7 +438,6 @@ export default memo(function LayoutTab({
     return image && image.fit === 'contain'
   }
 
-  // Reset to default
   const handleReset = () => {
     onLayoutChange(defaultState.layout)
     onSelectCell?.(0)
@@ -487,7 +471,7 @@ export default memo(function LayoutTab({
             </div>
           </div>
 
-          {/* Cell Selector — same as other tabs */}
+          {/* Cell Selector */}
           <div className="space-y-3">
             <label className="block text-xs font-medium text-ui-text-muted text-center">
               Select Cell <span className="text-ui-text-faint font-normal">(to configure)</span>
@@ -505,57 +489,72 @@ export default memo(function LayoutTab({
             {type !== 'fullbleed' && selectedSection && (
               <div className="text-sm text-center py-2 bg-ui-surface-elevated rounded-lg">
                 <span className="text-primary dark:text-violet-400">
-                  Cell {selectedCell + 1} in{' '}
-                  <strong>{type === 'rows' ? `Row ${selectedSectionIndex + 1}` : `Column ${selectedSectionIndex + 1}`}</strong>
+                  {hasSubdivisions
+                    ? `${isRows ? 'Column' : 'Row'} ${selectedSubIndex + 1} in ${sectionLabel} ${selectedSectionIndex + 1}`
+                    : `${sectionLabel} ${selectedSectionIndex + 1}`}
                 </span>
               </div>
             )}
           </div>
 
-          {/* Row/Column editing — controls for the section containing the selected cell */}
+          {/* Section Controls (Row or Column) */}
           {type !== 'fullbleed' && selectedSection && (
             <div className="space-y-4 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
-                  {type === 'rows' ? `Row ${selectedSectionIndex + 1}` : `Column ${selectedSectionIndex + 1}`}
+                  {sectionLabel} {selectedSectionIndex + 1}
                 </span>
                 <span className="text-xs text-violet-400 dark:text-violet-500">
-                  {structure.length} {type === 'rows' ? 'rows' : 'columns'}
+                  {structure.length} {isRows ? 'rows' : 'columns'}
                 </span>
               </div>
 
-              {/* Move section up/down (reorder) */}
+              {/* Add section above/below (or before/after for columns) */}
+              {structure.length < 4 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => insertSection(selectedSectionIndex)}
+                    className={`flex-1 ${btnAction}`}
+                  >
+                    + {isRows ? 'Row Above' : 'Col Left'}
+                  </button>
+                  <button
+                    onClick={() => insertSection(selectedSectionIndex + 1)}
+                    className={`flex-1 ${btnAction}`}
+                  >
+                    + {isRows ? 'Row Below' : 'Col Right'}
+                  </button>
+                </div>
+              )}
+
+              {/* Move section up/down or left/right */}
               {structure.length > 1 && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => swapSections(selectedSectionIndex, selectedSectionIndex - 1)}
                     disabled={selectedSectionIndex === 0}
-                    className={`flex-1 px-3 py-2 text-sm rounded-lg font-medium ${
-                      selectedSectionIndex === 0
-                        ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-300 dark:text-violet-600 cursor-not-allowed'
-                        : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40'
-                    }`}
+                    className={`flex-1 ${selectedSectionIndex === 0 ? btnDisabled : btnAction}`}
                   >
-                    {type === 'rows' ? '↑ Move Up' : '← Move Left'}
+                    {isRows ? 'Move Up' : 'Move Left'}
                   </button>
                   <button
                     onClick={() => swapSections(selectedSectionIndex, selectedSectionIndex + 1)}
                     disabled={selectedSectionIndex === structure.length - 1}
-                    className={`flex-1 px-3 py-2 text-sm rounded-lg font-medium ${
-                      selectedSectionIndex === structure.length - 1
-                        ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-300 dark:text-violet-600 cursor-not-allowed'
-                        : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40'
-                    }`}
+                    className={`flex-1 ${selectedSectionIndex === structure.length - 1 ? btnDisabled : btnAction}`}
                   >
-                    {type === 'rows' ? '↓ Move Down' : '→ Move Right'}
+                    {isRows ? 'Move Down' : 'Move Right'}
                   </button>
                 </div>
               )}
 
+              {/* Section size slider (height for rows, width for columns) */}
               {structure.length > 1 && (
                 <div>
                   <label className="block text-xs text-primary dark:text-violet-400 mb-2 font-medium">
-                    {type === 'rows' ? 'Height' : 'Width'} <span className="font-normal text-violet-400 dark:text-primary">({MIN_SIZE}–{getMaxSize(structure.length)}%)</span>
+                    {isRows ? 'Row Height' : 'Col Width'}{' '}
+                    <span className="font-normal text-violet-400 dark:text-primary">
+                      ({MIN_SIZE}–{getMaxSize(structure.length)}%)
+                    </span>
                   </label>
                   <div className="flex items-center gap-3">
                     <input
@@ -574,115 +573,133 @@ export default memo(function LayoutTab({
                 </div>
               )}
 
-              <div>
-                <label className="block text-xs text-primary dark:text-violet-400 mb-2 font-medium">
-                  Split into {type === 'rows' ? 'columns' : 'rows'}
-                </label>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => removeSubdivision(selectedSectionIndex)}
-                    disabled={(selectedSection.subdivisions || 1) <= 1}
-                    className={`w-9 h-9 text-base rounded-lg font-medium ${
-                      (selectedSection.subdivisions || 1) <= 1
-                        ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-300 dark:text-primary cursor-not-allowed'
-                        : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40'
-                    }`}
-                  >
-                    −
-                  </button>
-                  <span className="text-base font-semibold text-violet-700 dark:text-violet-300 w-8 text-center">
-                    {selectedSection.subdivisions || 1}
-                  </span>
-                  <button
-                    onClick={() => addSubdivision(selectedSectionIndex)}
-                    disabled={(selectedSection.subdivisions || 1) >= 3}
-                    className={`w-9 h-9 text-base rounded-lg font-medium ${
-                      (selectedSection.subdivisions || 1) >= 3
-                        ? 'bg-violet-100 dark:bg-violet-900/30 text-violet-300 dark:text-primary cursor-not-allowed'
-                        : 'bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40'
-                    }`}
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-
-              {structure.length < 4 && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => insertSection(selectedSectionIndex)}
-                    className="flex-1 px-3 py-2 text-sm bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40 rounded-lg font-medium"
-                  >
-                    + {type === 'rows' ? 'Above' : 'Before'}
-                  </button>
-                  <button
-                    onClick={() => insertSection(selectedSectionIndex + 1)}
-                    className="flex-1 px-3 py-2 text-sm bg-violet-100 dark:bg-violet-900/30 text-violet-700 dark:text-violet-300 hover:bg-violet-200 dark:hover:bg-violet-900/40 rounded-lg font-medium"
-                  >
-                    + {type === 'rows' ? 'Below' : 'After'}
-                  </button>
-                </div>
-              )}
-
-              {/* Snap to Fit — snap the section boundary to fit the image */}
+              {/* Snap to Fit — only for single-cell sections */}
               {!hasSubdivisions && canSnapCell(selectedCell) && (
                 <button
                   onClick={() => snapCellToImage(selectedCell, selectedSectionIndex, 0)}
-                  className="w-full px-3 py-2 text-sm bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 rounded-lg font-medium"
-                  title="Adjust this row/column size so the contained image fills the cell perfectly"
+                  className={`w-full ${btnSnap}`}
+                  title={`Adjust this ${sectionLabel.toLowerCase()} size so the contained image fills the cell perfectly`}
                 >
                   Snap to Fit Image
                 </button>
               )}
 
+              {/* Delete section */}
               {structure.length > 1 && (
                 <button
                   onClick={() => removeSection(selectedSectionIndex)}
-                  className="w-full px-3 py-2 text-sm bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50 rounded-lg font-medium"
+                  className={`w-full ${btnDelete}`}
                 >
-                  Delete {type === 'rows' ? 'Row' : 'Column'}
+                  Delete {sectionLabel}
                 </button>
               )}
             </div>
           )}
 
-          {/* Cell subdivision editing — only shown when section has subdivisions */}
-          {type !== 'fullbleed' && hasSubdivisions && selectedSection && (
-            <div className="space-y-4 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
-              <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
-                {type === 'rows'
-                  ? `Row ${selectedSectionIndex + 1}, Column ${selectedSubIndex + 1}`
-                  : `Column ${selectedSectionIndex + 1}, Row ${selectedSubIndex + 1}`}
-              </span>
-
-              <div>
-                <label className="block text-xs text-primary dark:text-violet-400 mb-2 font-medium">
-                  {type === 'rows' ? 'Width' : 'Height'} <span className="font-normal text-violet-400 dark:text-primary">({MIN_SIZE}–{getMaxSize(selectedSection.subdivisions || 2)}%)</span>
-                </label>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="range"
-                    min={MIN_SIZE}
-                    max={getMaxSize(selectedSection.subdivisions || 2)}
-                    step="5"
-                    value={selectedSection.subSizes?.[selectedSubIndex] || 50}
-                    onChange={(e) => updateSubSize(selectedSectionIndex, selectedSubIndex, Number(e.target.value))}
-                    className="flex-1"
-                  />
-                  <span className="text-sm text-violet-700 dark:text-violet-300 w-12 text-right font-medium">
-                    {Math.round(selectedSection.subSizes?.[selectedSubIndex] || 50)}%
-                  </span>
-                </div>
+          {/* Cell Controls (subdivision within a section) */}
+          {type !== 'fullbleed' && selectedSection && (
+            <div className="space-y-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
+                  {hasSubdivisions
+                    ? `${isRows ? 'Column' : 'Row'} ${selectedSubIndex + 1}`
+                    : `${cellLabel}`}
+                </span>
+                <span className="text-xs text-indigo-400 dark:text-indigo-500">
+                  {selectedSection.subdivisions || 1} {selectedSection.subdivisions > 1 ? (isRows ? 'columns' : 'rows') : 'cell'} in {sectionLabel.toLowerCase()} {selectedSectionIndex + 1}
+                </span>
               </div>
 
-              {/* Snap to Fit — adjust boundary so contained image fills this cell */}
-              {canSnapCell(selectedCell) && (
+              {/* Add cell before/after */}
+              {(selectedSection.subdivisions || 1) < 3 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => insertCell(selectedSectionIndex, selectedSubIndex)}
+                    className={`flex-1 ${btnBase} bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/40`}
+                  >
+                    + {isRows ? 'Cell Left' : 'Cell Above'}
+                  </button>
+                  <button
+                    onClick={() => insertCell(selectedSectionIndex, selectedSubIndex + 1)}
+                    className={`flex-1 ${btnBase} bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/40`}
+                  >
+                    + {isRows ? 'Cell Right' : 'Cell Below'}
+                  </button>
+                </div>
+              )}
+
+              {/* Move cell left/right or up/down */}
+              {hasSubdivisions && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => swapCells(selectedSectionIndex, selectedSubIndex, selectedSubIndex - 1)}
+                    disabled={selectedSubIndex === 0}
+                    className={`flex-1 ${btnBase} ${
+                      selectedSubIndex === 0
+                        ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-300 dark:text-indigo-600 cursor-not-allowed'
+                        : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/40'
+                    }`}
+                  >
+                    {isRows ? 'Move Left' : 'Move Up'}
+                  </button>
+                  <button
+                    onClick={() => swapCells(selectedSectionIndex, selectedSubIndex, selectedSubIndex + 1)}
+                    disabled={selectedSubIndex === (selectedSection.subdivisions || 1) - 1}
+                    className={`flex-1 ${btnBase} ${
+                      selectedSubIndex === (selectedSection.subdivisions || 1) - 1
+                        ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-300 dark:text-indigo-600 cursor-not-allowed'
+                        : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/40'
+                    }`}
+                  >
+                    {isRows ? 'Move Right' : 'Move Down'}
+                  </button>
+                </div>
+              )}
+
+              {/* Cell size slider (width for rows, height for columns) */}
+              {hasSubdivisions && (
+                <div>
+                  <label className="block text-xs text-indigo-600 dark:text-indigo-400 mb-2 font-medium">
+                    {isRows ? 'Cell Width' : 'Cell Height'}{' '}
+                    <span className="font-normal text-indigo-400 dark:text-indigo-500">
+                      ({MIN_SIZE}–{getMaxSize(selectedSection.subdivisions || 2)}%)
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={MIN_SIZE}
+                      max={getMaxSize(selectedSection.subdivisions || 2)}
+                      step="5"
+                      value={selectedSection.subSizes?.[selectedSubIndex] || 50}
+                      onChange={(e) => updateSubSize(selectedSectionIndex, selectedSubIndex, Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <span className="text-sm text-indigo-700 dark:text-indigo-300 w-12 text-right font-medium">
+                      {Math.round(selectedSection.subSizes?.[selectedSubIndex] || 50)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Snap to Fit — for cells in subdivided sections */}
+              {hasSubdivisions && canSnapCell(selectedCell) && (
                 <button
                   onClick={() => snapCellToImage(selectedCell, selectedSectionIndex, selectedSubIndex)}
-                  className="w-full px-3 py-2 text-sm bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-900/50 rounded-lg font-medium"
+                  className={`w-full ${btnSnap}`}
                   title="Adjust this cell's boundary so the contained image fills it perfectly"
                 >
                   Snap to Fit Image
+                </button>
+              )}
+
+              {/* Delete cell */}
+              {hasSubdivisions && (
+                <button
+                  onClick={() => removeCell(selectedSectionIndex, selectedSubIndex)}
+                  className={`w-full ${btnBase} bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50`}
+                >
+                  Delete {isRows ? 'Cell' : 'Cell'}
                 </button>
               )}
             </div>
