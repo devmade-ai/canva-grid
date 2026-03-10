@@ -4,7 +4,7 @@ import { overlayTypes, hexToRgb, getOverlayType } from '../config/layouts'
 import { platforms } from '../config/platforms'
 import { fonts } from '../config/fonts'
 import { getNeutralColor } from '../config/themes'
-import { defaultTextLayer } from '../config/textDefaults'
+import { defaultTextLayer, spacerSizeMap } from '../config/textDefaults'
 
 marked.setOptions({
   breaks: true,
@@ -379,7 +379,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     return getCellTextAlign(cellIndex)
   }
 
-  // Requirement: Per-cell structured text — each cell has its own text elements
+  // Requirement: Per-cell structured text — each cell has its own text elements.
   // Approach: Filter for elements that are both visible and have content, so the
   //   wrapping container div is only rendered when there's actual content to show.
   // Alternatives:
@@ -390,6 +390,64 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     const cellText = text[cellIndex]
     if (!cellText) return []
     return elementIds.filter((id) => cellText[id]?.visible && cellText[id]?.content)
+  }
+
+  // Requirement: Per-element spacers and line separators in structured text mode.
+  // Approach: Read spacerAbove/spacerBelow/lineAbove/lineBelow from each text layer
+  //   and render decoration divs before/after the element.
+  const renderElementDecorations = (elementId, position, cellIndex) => {
+    const layer = getTextLayer(cellIndex, elementId)
+    const spacerKey = position === 'above' ? 'spacerAbove' : 'spacerBelow'
+    const lineKey = position === 'above' ? 'lineAbove' : 'lineBelow'
+    const spacerValue = layer[spacerKey] || 0
+    const lineActive = layer[lineKey] || false
+    const decorations = []
+
+    if (position === 'above') {
+      if (spacerValue > 0) {
+        decorations.push(
+          <div key={`spacer-above-${elementId}`} style={{ height: `${spacerSizeMap[spacerValue]}em` }} />
+        )
+      }
+      if (lineActive) {
+        decorations.push(
+          <div
+            key={`line-above-${elementId}`}
+            style={{
+              width: '60%',
+              height: 0,
+              borderTop: `1px solid ${themeColors.secondary}`,
+              opacity: 0.4,
+              alignSelf: 'center',
+              margin: '0.3em auto',
+            }}
+          />
+        )
+      }
+    } else {
+      if (lineActive) {
+        decorations.push(
+          <div
+            key={`line-below-${elementId}`}
+            style={{
+              width: '60%',
+              height: 0,
+              borderTop: `1px solid ${themeColors.secondary}`,
+              opacity: 0.4,
+              alignSelf: 'center',
+              margin: '0.3em auto',
+            }}
+          />
+        )
+      }
+      if (spacerValue > 0) {
+        decorations.push(
+          <div key={`spacer-below-${elementId}`} style={{ height: `${spacerSizeMap[spacerValue]}em` }} />
+        )
+      }
+    }
+
+    return decorations
   }
 
   const renderTextElement = (elementId, withShadow = false, cellIndex = 0) => {
@@ -493,35 +551,75 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     )
   }
 
+  // Requirement: Multi-block freeform text — render array of independently styled markdown blocks.
+  // Approach: Iterate blocks array, render each with its own styling + spacer/line decorations.
+  // Alternatives:
+  //   - Single block per cell: Rejected — user requested multiple blocks with independent styling.
   const renderFreeformTextForCell = (cellIndex, isOnImage) => {
     const freeformText = state.freeformText || {}
-    const cellData = freeformText[cellIndex]
-    if (!cellData || !cellData.content) return null
+    const cellBlocks = freeformText[cellIndex]
+    if (!Array.isArray(cellBlocks) || cellBlocks.length === 0) return null
+
+    const blocksWithContent = cellBlocks.filter((b) => b.content)
+    if (blocksWithContent.length === 0) return null
 
     const padding = getCellPadding(cellIndex)
     const verticalAlign = getCellVerticalAlign(cellIndex)
     const withShadow = isOnImage
 
-    const textColor = getTextColor(cellData.color || 'secondary')
-    const fontSize = Math.round(platform.width * 0.022 * (cellData.size || 1))
-    const textAlign = cellData.textAlign || getCellTextAlign(cellIndex)
+    const content = []
+    blocksWithContent.forEach((block) => {
+      const spacerAbove = block.spacerAbove || 0
+      const spacerBelow = block.spacerBelow || 0
 
-    // Always parse markdown in freeform mode - no toggle needed
-    const html = marked.parse(cellData.content)
-    const textStyle = {
-      fontSize,
-      fontWeight: cellData.bold ? 700 : 400,
-      fontStyle: cellData.italic ? 'italic' : 'normal',
-      fontFamily: bodyFont.family,
-      color: textColor,
-      lineHeight: 1.6,
-      letterSpacing: `${cellData.letterSpacing || 0}px`,
-      textAlign,
-      whiteSpace: 'normal',
-      wordWrap: 'break-word',
-      overflowWrap: 'break-word',
-      ...(withShadow ? { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}),
-    }
+      // Above decorations
+      if (spacerAbove > 0) {
+        content.push(<div key={`spacer-above-${block.id}`} style={{ height: `${spacerSizeMap[spacerAbove]}em` }} />)
+      }
+      if (block.lineAbove) {
+        content.push(
+          <div key={`line-above-${block.id}`} style={{ width: '60%', height: 0, borderTop: `1px solid ${themeColors.secondary}`, opacity: 0.4, alignSelf: 'center', margin: '0.3em auto' }} />
+        )
+      }
+
+      // Block content
+      const textColor = getTextColor(block.color || 'secondary')
+      const fontSize = Math.round(platform.width * 0.022 * (block.size || 1))
+      const textAlign = block.textAlign || getCellTextAlign(cellIndex)
+      const html = marked.parse(block.content)
+
+      content.push(
+        <div
+          key={block.id}
+          className="freeform-markdown"
+          style={{
+            fontSize,
+            fontWeight: block.bold ? 700 : 400,
+            fontStyle: block.italic ? 'italic' : 'normal',
+            fontFamily: bodyFont.family,
+            color: textColor,
+            lineHeight: 1.6,
+            letterSpacing: `${block.letterSpacing || 0}px`,
+            textAlign,
+            whiteSpace: 'normal',
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            ...(withShadow ? { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}),
+          }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      )
+
+      // Below decorations
+      if (block.lineBelow) {
+        content.push(
+          <div key={`line-below-${block.id}`} style={{ width: '60%', height: 0, borderTop: `1px solid ${themeColors.secondary}`, opacity: 0.4, alignSelf: 'center', margin: '0.3em auto' }} />
+        )
+      }
+      if (spacerBelow > 0) {
+        content.push(<div key={`spacer-below-${block.id}`} style={{ height: `${spacerSizeMap[spacerBelow]}em` }} />)
+      }
+    })
 
     return (
       <div
@@ -529,6 +627,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: getJustifyContent(verticalAlign),
+          alignItems: 'stretch',
           padding,
           width: '100%',
           height: '100%',
@@ -537,20 +636,30 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           overflow: 'hidden',
         }}
       >
-        <div
-          className="freeform-markdown"
-          style={textStyle}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        {content}
       </div>
     )
   }
 
+  // Requirement: Render structured text with per-element spacers and line separators.
+  // Approach: Flat iteration over visible elements, rendering above/below decorations
+  //   around each individual element via renderElementDecorations.
+  // Alternatives:
+  //   - Per-group decorations: Rejected — user requested per-element granularity.
   const renderTextElementsForCell = (cellIndex, isOnImage) => {
-    const elements = getElementsForCell(cellIndex)
     const withShadow = isOnImage
     const padding = getCellPadding(cellIndex)
     const verticalAlign = getCellVerticalAlign(cellIndex)
+
+    const visibleElements = getElementsForCell(cellIndex)
+    if (visibleElements.length === 0) return null
+
+    const content = []
+    visibleElements.forEach((elementId) => {
+      content.push(...renderElementDecorations(elementId, 'above', cellIndex))
+      content.push(renderTextElement(elementId, withShadow, cellIndex))
+      content.push(...renderElementDecorations(elementId, 'below', cellIndex))
+    })
 
     return (
       <div
@@ -558,7 +667,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: getJustifyContent(verticalAlign),
-          alignItems: 'stretch', // Allow elements to control their own horizontal alignment via alignSelf
+          alignItems: 'stretch',
           padding,
           width: '100%',
           height: '100%',
@@ -567,7 +676,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           overflow: 'hidden',
         }}
       >
-        {elements.map(elementId => renderTextElement(elementId, withShadow, cellIndex))}
+        {content}
       </div>
     )
   }
@@ -623,8 +732,8 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
 
     const renderTextContent = () => {
       if (isFreeformMode) {
-        const freeformData = (state.freeformText || {})[cellIndex]
-        if (freeformData && freeformData.content) {
+        const cellBlocks = (state.freeformText || {})[cellIndex]
+        if (Array.isArray(cellBlocks) && cellBlocks.some((b) => b.content)) {
           return (
             <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
               {renderFreeformTextForCell(cellIndex, hasImage)}
