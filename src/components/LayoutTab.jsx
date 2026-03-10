@@ -326,11 +326,18 @@ export default memo(function LayoutTab({
       structure: newStructure,
       _cellShift: { fromIndex: firstCellAtPosition, shiftBy: 1 },
     })
-    // Update selection to track the element that moved
+    // Update internal selection to track the element that moved
     if (structureSelection?.type === 'section' && structureSelection.index >= position) {
       setStructureSelection({ type: 'section', index: structureSelection.index + 1 })
     } else if (structureSelection?.type === 'cell' && structureSelection.cellIndex >= firstCellAtPosition) {
       setStructureSelection({ type: 'cell', cellIndex: structureSelection.cellIndex + 1 })
+    }
+
+    // Keep global cell selection in sync: shift selectedCell if it's at or after the inserted section
+    if (selectedCell >= firstCellAtPosition) {
+      const newGlobalCell = selectedCell + 1
+      lastInternalCell.current = newGlobalCell
+      onSelectCell?.(newGlobalCell)
     }
   }
 
@@ -359,7 +366,7 @@ export default memo(function LayoutTab({
       structure: newStructure,
       _cellShift: { fromIndex: firstCellOfRemoved + removedSubs, shiftBy: -removedSubs },
     })
-    // Update cell selection: clear if selected cell was in removed section, shift if after it
+    // Update internal cell selection: clear if selected cell was in removed section, shift if after it
     if (structureSelection?.type === 'cell') {
       const ci = structureSelection.cellIndex
       if (ci >= firstCellOfRemoved && ci < firstCellOfRemoved + removedSubs) {
@@ -367,6 +374,19 @@ export default memo(function LayoutTab({
       } else if (ci >= firstCellOfRemoved + removedSubs) {
         setStructureSelection({ type: 'cell', cellIndex: ci - removedSubs })
       }
+    }
+
+    // Keep global cell selection in sync after section removal
+    const newCellCount = newStructure.reduce((total, s) => total + (s.subdivisions || 1), 0)
+    if (selectedCell >= firstCellOfRemoved && selectedCell < firstCellOfRemoved + removedSubs) {
+      // Selected cell was in the removed section — clamp to nearest valid cell
+      const newCell = Math.min(firstCellOfRemoved, newCellCount - 1)
+      lastInternalCell.current = newCell
+      onSelectCell?.(newCell)
+    } else if (selectedCell >= firstCellOfRemoved + removedSubs) {
+      const newGlobalCell = selectedCell - removedSubs
+      lastInternalCell.current = newGlobalCell
+      onSelectCell?.(newGlobalCell)
     }
   }
 
@@ -436,9 +456,16 @@ export default memo(function LayoutTab({
       structure: newStructure,
       _cellShift: { fromIndex: firstCellAfterSection, shiftBy: 1 },
     })
-    // Update cell selection if it's after the newly added subdivision
+    // Update internal cell selection if it's after the newly added subdivision
     if (structureSelection?.type === 'cell' && structureSelection.cellIndex >= firstCellAfterSection) {
       setStructureSelection({ type: 'cell', cellIndex: structureSelection.cellIndex + 1 })
+    }
+
+    // Keep global cell selection in sync: shift selectedCell if it's after the new subdivision
+    if (selectedCell >= firstCellAfterSection) {
+      const newGlobalCell = selectedCell + 1
+      lastInternalCell.current = newGlobalCell
+      onSelectCell?.(newGlobalCell)
     }
   }
 
@@ -470,7 +497,7 @@ export default memo(function LayoutTab({
       structure: newStructure,
       _cellShift: { fromIndex: firstCellAfterSection, shiftBy: -1 },
     })
-    // Update cell selection: clear if it was the removed sub, shift if after it
+    // Update internal cell selection: clear if it was the removed sub, shift if after it
     if (structureSelection?.type === 'cell') {
       const ci = structureSelection.cellIndex
       if (ci === removedCellIndex) {
@@ -478,6 +505,18 @@ export default memo(function LayoutTab({
       } else if (ci >= firstCellAfterSection) {
         setStructureSelection({ type: 'cell', cellIndex: ci - 1 })
       }
+    }
+
+    // Keep global cell selection in sync after subdivision removal
+    if (selectedCell === removedCellIndex) {
+      // Selected cell was the removed subdivision — move to previous cell
+      const newCell = Math.max(0, removedCellIndex - 1)
+      lastInternalCell.current = newCell
+      onSelectCell?.(newCell)
+    } else if (selectedCell >= firstCellAfterSection) {
+      const newGlobalCell = selectedCell - 1
+      lastInternalCell.current = newGlobalCell
+      onSelectCell?.(newGlobalCell)
     }
   }
 
@@ -578,7 +617,7 @@ export default memo(function LayoutTab({
       _cellSwap: cellMap,
     })
 
-    // Update selection to follow the moved section
+    // Update internal selection to follow the moved section
     if (structureSelection?.type === 'section') {
       if (structureSelection.index === lo) setStructureSelection({ type: 'section', index: hi })
       else if (structureSelection.index === hi) setStructureSelection({ type: 'section', index: lo })
@@ -599,6 +638,17 @@ export default memo(function LayoutTab({
         }
         setStructureSelection({ type: 'cell', cellIndex: newCi, sectionIndex: newSectionIdx, subIndex: remaining })
       }
+    }
+
+    // Requirement: Keep global cell selection (ContextBar, other tabs) in sync after swap.
+    // Approach: Remap selectedCell through the same cellMap used for data.
+    // Alternatives:
+    //   - Reset to 0: Rejected — loses user's position, confusing UX.
+    //   - Don't update: Rejected — selection points to wrong cell after swap.
+    if (cellMap[selectedCell] !== undefined) {
+      const newGlobalCell = cellMap[selectedCell]
+      lastInternalCell.current = newGlobalCell
+      onSelectCell?.(newGlobalCell)
     }
   }
 
