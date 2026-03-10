@@ -588,7 +588,7 @@ export default memo(function LayoutTab({
                 <span className="text-sm font-medium text-indigo-700 dark:text-indigo-300">
                   {hasSubdivisions
                     ? `${isRows ? 'Column' : 'Row'} ${selectedSubIndex + 1}`
-                    : Cell}
+                    : 'Cell'}
                 </span>
                 <span className="text-xs text-indigo-400 dark:text-indigo-500">
                   {selectedSection.subdivisions || 1} {selectedSection.subdivisions > 1 ? (isRows ? 'columns' : 'rows') : 'cell'} in {sectionLabel.toLowerCase()} {selectedSectionIndex + 1}
