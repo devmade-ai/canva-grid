@@ -334,75 +334,169 @@ export default memo(function LayoutTab({
     }
   }
 
-  // Requirement: Move a cell from one section to the last position in an adjacent section.
-  // Approach: Remove cell from source section, append to target section, build complete
-  //   cell index map via _cellSwap so all per-cell data follows correctly.
+  // Requirement: Move a cell from one section to an adjacent section, automatically creating
+  //   a new section if none exists in that direction, or deleting the source section if it
+  //   would be left empty (source had only 1 cell).
+  // Approach: Three cases handled atomically via _cellSwap:
+  //   Case 1 (normal): source has 2+ cells, target exists → move cell, source shrinks
+  //   Case 2 (delete source): source has 1 cell, target exists → move cell, delete source section
+  //   Case 3 (create target): target doesn't exist, source has 2+ cells → create new section, move cell
   // Alternatives:
   //   - Two separate operations (remove + insert): Rejected — intermediate state loses data.
   //   - Drag-and-drop across sections: Rejected — complex for mobile.
   const moveCellToSection = (sourceSectionIndex, sourceSubIndex, targetSectionIndex) => {
     const sourceSection = structure[sourceSectionIndex]
-    const targetSection = structure[targetSectionIndex]
     const sourceSubs = sourceSection.subdivisions || 1
-    const targetSubs = targetSection.subdivisions || 1
+    const targetExists = targetSectionIndex >= 0 && targetSectionIndex < structure.length
+    const deleteSource = sourceSubs === 1
+    const needsNewSection = !targetExists
 
-    if (sourceSubs <= 1 || targetSubs >= 3 || sourceSectionIndex === targetSectionIndex) return
+    // Can't move lone cell to non-existent section (would create+delete = no-op)
+    if (needsNewSection && deleteSource) return
+    // Can't create section beyond max (4 sections)
+    if (needsNewSection && structure.length >= 4) return
+    // Can't move to full target section (3 cells max)
+    if (targetExists && (structure[targetSectionIndex].subdivisions || 1) >= 3) return
+    if (sourceSectionIndex === targetSectionIndex) return
 
-    const newSourceSubs = sourceSubs - 1
-    const newTargetSubs = targetSubs + 1
-
-    const newStructure = [...structure]
-    newStructure[sourceSectionIndex] = {
-      ...sourceSection,
-      subdivisions: newSourceSubs,
-      subSizes: Array(newSourceSubs).fill(100 / newSourceSubs),
-    }
-    newStructure[targetSectionIndex] = {
-      ...targetSection,
-      subdivisions: newTargetSubs,
-      subSizes: Array(newTargetSubs).fill(100 / newTargetSubs),
-    }
-
-    // Compute old and new cell start indices per section
+    // Compute old cell start indices
     const oldStarts = []
     let idx = 0
     for (let s = 0; s < structure.length; s++) {
       oldStarts.push(idx)
       idx += structure[s].subdivisions || 1
     }
-    const newStarts = []
-    idx = 0
-    for (let s = 0; s < newStructure.length; s++) {
-      newStarts.push(idx)
-      idx += newStructure[s].subdivisions || 1
-    }
 
-    // Build complete cell index map (old → new)
-    const cellMap = {}
-    for (let s = 0; s < structure.length; s++) {
-      const oldSubs = structure[s].subdivisions || 1
+    let newStructure
+    let cellMap = {}
 
-      if (s === sourceSectionIndex) {
-        // Source: skip moved cell, map remaining cells sequentially
-        let newSubIdx = 0
-        for (let sub = 0; sub < oldSubs; sub++) {
-          if (sub === sourceSubIndex) {
-            // Moved cell → last position in target section
-            cellMap[oldStarts[s] + sub] = newStarts[targetSectionIndex] + newTargetSubs - 1
-          } else {
-            cellMap[oldStarts[s] + sub] = newStarts[s] + newSubIdx
-            newSubIdx++
+    if (needsNewSection) {
+      // Case 3: Create new section at edge, move cell into it
+      const insertPos = targetSectionIndex < 0 ? 0 : structure.length
+      const newSize = 100 / (structure.length + 1)
+      newStructure = structure.map(s => ({ ...s, size: newSize }))
+      newStructure.splice(insertPos, 0, { size: newSize, subdivisions: 1, subSizes: [100] })
+
+      // Source section index shifts if new section was inserted before it
+      const adjSourceIdx = insertPos <= sourceSectionIndex ? sourceSectionIndex + 1 : sourceSectionIndex
+      newStructure[adjSourceIdx] = {
+        ...newStructure[adjSourceIdx],
+        subdivisions: sourceSubs - 1,
+        subSizes: Array(sourceSubs - 1).fill(100 / (sourceSubs - 1)),
+      }
+
+      // Compute new starts
+      const newStarts = []
+      idx = 0
+      for (let s = 0; s < newStructure.length; s++) {
+        newStarts.push(idx)
+        idx += newStructure[s].subdivisions || 1
+      }
+
+      // Build cell map: old sections map to shifted positions
+      for (let s = 0; s < structure.length; s++) {
+        const oldSubs = structure[s].subdivisions || 1
+        const newSIdx = insertPos <= s ? s + 1 : s
+
+        if (s === sourceSectionIndex) {
+          let newSubIdx = 0
+          for (let sub = 0; sub < oldSubs; sub++) {
+            if (sub === sourceSubIndex) {
+              cellMap[oldStarts[s] + sub] = newStarts[insertPos]
+            } else {
+              cellMap[oldStarts[s] + sub] = newStarts[newSIdx] + newSubIdx
+              newSubIdx++
+            }
+          }
+        } else {
+          for (let sub = 0; sub < oldSubs; sub++) {
+            cellMap[oldStarts[s] + sub] = newStarts[newSIdx] + sub
           }
         }
-      } else if (s === targetSectionIndex) {
-        // Target: existing cells keep their order (moved cell appended at end by source block)
-        for (let sub = 0; sub < oldSubs; sub++) {
-          cellMap[oldStarts[s] + sub] = newStarts[s] + sub
+      }
+    } else if (deleteSource) {
+      // Case 2: Move lone cell to target, delete empty source section
+      const targetSubs = structure[targetSectionIndex].subdivisions || 1
+      const newTargetSubs = targetSubs + 1
+
+      const newSize = 100 / (structure.length - 1)
+      newStructure = structure
+        .filter((_, i) => i !== sourceSectionIndex)
+        .map(s => ({ ...s, size: newSize }))
+
+      // Target index shifts down if source was before it
+      const adjTargetIdx = targetSectionIndex > sourceSectionIndex
+        ? targetSectionIndex - 1
+        : targetSectionIndex
+      newStructure[adjTargetIdx] = {
+        ...newStructure[adjTargetIdx],
+        subdivisions: newTargetSubs,
+        subSizes: Array(newTargetSubs).fill(100 / newTargetSubs),
+      }
+
+      // Compute new starts
+      const newStarts = []
+      idx = 0
+      for (let s = 0; s < newStructure.length; s++) {
+        newStarts.push(idx)
+        idx += newStructure[s].subdivisions || 1
+      }
+
+      // Build cell map: source's lone cell goes to end of target, others shift
+      for (let s = 0; s < structure.length; s++) {
+        const oldSubs = structure[s].subdivisions || 1
+
+        if (s === sourceSectionIndex) {
+          cellMap[oldStarts[s] + sourceSubIndex] = newStarts[adjTargetIdx] + newTargetSubs - 1
+        } else {
+          const newSIdx = s > sourceSectionIndex ? s - 1 : s
+          for (let sub = 0; sub < oldSubs; sub++) {
+            cellMap[oldStarts[s] + sub] = newStarts[newSIdx] + sub
+          }
         }
-      } else {
-        // Unchanged sections: map cells to their new positions (may shift due to size changes)
-        for (let sub = 0; sub < oldSubs; sub++) {
-          cellMap[oldStarts[s] + sub] = newStarts[s] + sub
+      }
+    } else {
+      // Case 1: Normal move (source has 2+ cells, target exists)
+      const targetSection = structure[targetSectionIndex]
+      const targetSubs = targetSection.subdivisions || 1
+      const newSourceSubs = sourceSubs - 1
+      const newTargetSubs = targetSubs + 1
+
+      newStructure = [...structure]
+      newStructure[sourceSectionIndex] = {
+        ...sourceSection,
+        subdivisions: newSourceSubs,
+        subSizes: Array(newSourceSubs).fill(100 / newSourceSubs),
+      }
+      newStructure[targetSectionIndex] = {
+        ...targetSection,
+        subdivisions: newTargetSubs,
+        subSizes: Array(newTargetSubs).fill(100 / newTargetSubs),
+      }
+
+      const newStarts = []
+      idx = 0
+      for (let s = 0; s < newStructure.length; s++) {
+        newStarts.push(idx)
+        idx += newStructure[s].subdivisions || 1
+      }
+
+      for (let s = 0; s < structure.length; s++) {
+        const oldSubs = structure[s].subdivisions || 1
+        if (s === sourceSectionIndex) {
+          let newSubIdx = 0
+          for (let sub = 0; sub < oldSubs; sub++) {
+            if (sub === sourceSubIndex) {
+              cellMap[oldStarts[s] + sub] = newStarts[targetSectionIndex] + newTargetSubs - 1
+            } else {
+              cellMap[oldStarts[s] + sub] = newStarts[s] + newSubIdx
+              newSubIdx++
+            }
+          }
+        } else {
+          for (let sub = 0; sub < oldSubs; sub++) {
+            cellMap[oldStarts[s] + sub] = newStarts[s] + sub
+          }
         }
       }
     }
@@ -411,6 +505,31 @@ export default memo(function LayoutTab({
     if (cellMap[selectedCell] !== undefined) {
       onSelectCell?.(cellMap[selectedCell])
     }
+  }
+
+  // Check if a cell can be moved to an adjacent section in the given direction
+  const canMoveCellToSection = (direction) => {
+    if (type === 'fullbleed' || !selectedSection) return false
+    const targetIdx = selectedSectionIndex + direction
+    const targetExists = targetIdx >= 0 && targetIdx < structure.length
+    const sourceSubs = selectedSection.subdivisions || 1
+    const deleteSource = sourceSubs === 1
+    const needsNewSection = !targetExists
+
+    if (needsNewSection && deleteSource) return false
+    if (needsNewSection && structure.length >= 4) return false
+    if (targetExists && (structure[targetIdx].subdivisions || 1) >= 3) return false
+    return true
+  }
+
+  // Get label for move-to-section button
+  const getMoveSectionLabel = (direction) => {
+    const targetIdx = selectedSectionIndex + direction
+    const targetExists = targetIdx >= 0 && targetIdx < structure.length
+    if (!targetExists) {
+      return isRows ? 'To New Row' : 'To New Col'
+    }
+    return isRows ? `To Row ${targetIdx + 1}` : `To Col ${targetIdx + 1}`
   }
 
   // Update subdivision sizes with dynamic constraints
@@ -641,30 +760,30 @@ export default memo(function LayoutTab({
                 </div>
               )}
 
-              {/* Move cell to adjacent section (row above/below or column left/right) */}
-              {hasSubdivisions && structure.length > 1 && (
+              {/* Move cell to adjacent section — auto-creates/deletes sections as needed */}
+              {(canMoveCellToSection(-1) || canMoveCellToSection(1)) && (
                 <div className="flex gap-2">
                   <button
                     onClick={() => moveCellToSection(selectedSectionIndex, selectedSubIndex, selectedSectionIndex - 1)}
-                    disabled={selectedSectionIndex === 0 || (structure[selectedSectionIndex - 1]?.subdivisions || 1) >= 3}
+                    disabled={!canMoveCellToSection(-1)}
                     className={`flex-1 ${btnBase} ${
-                      selectedSectionIndex === 0 || (structure[selectedSectionIndex - 1]?.subdivisions || 1) >= 3
+                      !canMoveCellToSection(-1)
                         ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-300 dark:text-indigo-600 cursor-not-allowed'
                         : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/40'
                     }`}
                   >
-                    {isRows ? `To Row ${selectedSectionIndex}` : `To Col ${selectedSectionIndex}`}
+                    {getMoveSectionLabel(-1)}
                   </button>
                   <button
                     onClick={() => moveCellToSection(selectedSectionIndex, selectedSubIndex, selectedSectionIndex + 1)}
-                    disabled={selectedSectionIndex === structure.length - 1 || (structure[selectedSectionIndex + 1]?.subdivisions || 1) >= 3}
+                    disabled={!canMoveCellToSection(1)}
                     className={`flex-1 ${btnBase} ${
-                      selectedSectionIndex === structure.length - 1 || (structure[selectedSectionIndex + 1]?.subdivisions || 1) >= 3
+                      !canMoveCellToSection(1)
                         ? 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-300 dark:text-indigo-600 cursor-not-allowed'
                         : 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 hover:bg-indigo-200 dark:hover:bg-indigo-900/40'
                     }`}
                   >
-                    {isRows ? `To Row ${selectedSectionIndex + 2}` : `To Col ${selectedSectionIndex + 2}`}
+                    {getMoveSectionLabel(1)}
                   </button>
                 </div>
               )}
