@@ -12,7 +12,7 @@ import ColorPicker from './ColorPicker'
 import AlignmentPicker from './AlignmentPicker'
 import MiniCellGrid from './MiniCellGrid'
 import { getCellInfo, getCellPositionLabel } from '../utils/cellUtils'
-import { defaultTextLayer, defaultGroupSpacing } from '../config/textDefaults'
+import { defaultTextLayer } from '../config/textDefaults'
 import { textAlignOptions, verticalAlignOptions } from '../config/alignment'
 
 const noop = () => {}
@@ -250,89 +250,65 @@ function TextElementEditor({
               ))}
             </div>
           </div>
+
+          {/* Spacers and line separators above/below this element */}
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-ui-text-subtle w-10 shrink-0">Above</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onTextChange(cellIndex, element.id, { spacerAbove: ((layerState.spacerAbove || 0) + 1) % 3 })}
+                title={`Spacer above: ${['None', 'Small', 'Large'][layerState.spacerAbove || 0]}`}
+                className={`flex items-center gap-1 px-2 h-7 sm:h-6 text-[11px] sm:text-[10px] active:scale-90 rounded ${
+                  (layerState.spacerAbove || 0) > 0
+                    ? 'bg-primary text-white'
+                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
+                }`}
+              >
+                Gap {['Off', 'S', 'L'][layerState.spacerAbove || 0]}
+              </button>
+              <button
+                onClick={() => onTextChange(cellIndex, element.id, { lineAbove: !layerState.lineAbove })}
+                title={`Line above: ${layerState.lineAbove ? 'On' : 'Off'}`}
+                className={`flex items-center gap-1 px-2 h-7 sm:h-6 text-[11px] sm:text-[10px] active:scale-90 rounded ${
+                  layerState.lineAbove
+                    ? 'bg-primary text-white'
+                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
+                }`}
+              >
+                Line
+              </button>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-ui-text-subtle w-10 shrink-0">Below</span>
+            <div className="flex items-center gap-1">
+              <button
+                onClick={() => onTextChange(cellIndex, element.id, { spacerBelow: ((layerState.spacerBelow || 0) + 1) % 3 })}
+                title={`Spacer below: ${['None', 'Small', 'Large'][layerState.spacerBelow || 0]}`}
+                className={`flex items-center gap-1 px-2 h-7 sm:h-6 text-[11px] sm:text-[10px] active:scale-90 rounded ${
+                  (layerState.spacerBelow || 0) > 0
+                    ? 'bg-primary text-white'
+                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
+                }`}
+              >
+                Gap {['Off', 'S', 'L'][layerState.spacerBelow || 0]}
+              </button>
+              <button
+                onClick={() => onTextChange(cellIndex, element.id, { lineBelow: !layerState.lineBelow })}
+                title={`Line below: ${layerState.lineBelow ? 'On' : 'Off'}`}
+                className={`flex items-center gap-1 px-2 h-7 sm:h-6 text-[11px] sm:text-[10px] active:scale-90 rounded ${
+                  layerState.lineBelow
+                    ? 'bg-primary text-white'
+                    : 'bg-ui-surface-inset text-ui-text-muted hover:bg-ui-surface-hover'
+                }`}
+              >
+                Line
+              </button>
+            </div>
+          </div>
         </div>
       )}
-    </div>
-  )
-}
-
-// Requirement: Per-group spacer and line separator controls for structured text mode.
-// Approach: Compact toggle row rendered above/below each text group. Spacer cycles through
-//   none → small → large on each click. Line is a simple on/off toggle.
-// Alternatives:
-//   - Slider for spacer size: Rejected — 3 states is enough, simpler UI.
-//   - Separate settings panel: Rejected — inline controls are more discoverable.
-const spacerLabels = ['None', 'Small', 'Large']
-
-function GroupSpacingControls({ position, groupId, cellIndex, cellText, onTextChange }) {
-  const groupSpacing = cellText?.groupSpacing?.[groupId] || defaultGroupSpacing
-  const spacerKey = position === 'above' ? 'spacerAbove' : 'spacerBelow'
-  const lineKey = position === 'above' ? 'lineAbove' : 'lineBelow'
-  const spacerValue = groupSpacing[spacerKey] || 0
-  const lineValue = groupSpacing[lineKey] || false
-
-  const updateSpacing = (updates) => {
-    const currentGroupSpacing = cellText?.groupSpacing || {}
-    const currentGroup = currentGroupSpacing[groupId] || { ...defaultGroupSpacing }
-    onTextChange(cellIndex, 'groupSpacing', {
-      ...currentGroupSpacing,
-      [groupId]: { ...currentGroup, ...updates },
-    })
-  }
-
-  const cycleSpacerSize = () => {
-    updateSpacing({ [spacerKey]: (spacerValue + 1) % 3 })
-  }
-
-  const toggleLine = () => {
-    updateSpacing({ [lineKey]: !lineValue })
-  }
-
-  return (
-    <div className="flex items-center gap-1 py-0.5">
-      <button
-        onClick={cycleSpacerSize}
-        title={`Spacer ${position}: ${spacerLabels[spacerValue]}`}
-        className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded transition-colors active:scale-95 ${
-          spacerValue > 0
-            ? 'bg-primary/10 text-primary'
-            : 'bg-ui-surface-inset text-ui-text-faint hover:bg-ui-surface-hover hover:text-ui-text-subtle'
-        }`}
-      >
-        <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-          {position === 'above' ? (
-            <>
-              <line x1="1" y1="2" x2="11" y2="2" />
-              <line x1="6" y1="5" x2="6" y2="10" />
-              <line x1="3.5" y1="7.5" x2="6" y2="5" />
-              <line x1="8.5" y1="7.5" x2="6" y2="5" />
-            </>
-          ) : (
-            <>
-              <line x1="1" y1="10" x2="11" y2="10" />
-              <line x1="6" y1="2" x2="6" y2="7" />
-              <line x1="3.5" y1="4.5" x2="6" y2="7" />
-              <line x1="8.5" y1="4.5" x2="6" y2="7" />
-            </>
-          )}
-        </svg>
-        {spacerLabels[spacerValue]}
-      </button>
-
-      <button
-        onClick={toggleLine}
-        title={`Line ${position}: ${lineValue ? 'On' : 'Off'}`}
-        className={`flex items-center gap-1 px-2 py-1 text-[10px] rounded transition-colors active:scale-95 ${
-          lineValue
-            ? 'bg-primary/10 text-primary'
-            : 'bg-ui-surface-inset text-ui-text-faint hover:bg-ui-surface-hover hover:text-ui-text-subtle'
-        }`}
-      >
-        <svg className="w-3 h-3" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.5">
-          <line x1="1" y1="6" x2="11" y2="6" />
-        </svg>
-        Line
-      </button>
     </div>
   )
 }
@@ -683,54 +659,26 @@ export default memo(function ContentTab({
         <>
           {textGroups.map((group, i) => {
             const preview = getGroupPreview(group, activeCellText)
-            const groupSpacing = activeCellText?.groupSpacing?.[group.id]
-            const hasAboveDecorations = groupSpacing?.spacerAbove > 0 || groupSpacing?.lineAbove
-            const hasBelowDecorations = groupSpacing?.spacerBelow > 0 || groupSpacing?.lineBelow
             return (
-              <div key={group.id} className="space-y-0">
-                {/* Above spacing/line controls */}
-                <div className={`flex items-center gap-1 ${hasAboveDecorations ? '' : 'opacity-40 hover:opacity-100'} transition-opacity`}>
-                  <span className="text-[9px] text-ui-text-faint w-9 shrink-0">Above</span>
-                  <GroupSpacingControls
-                    position="above"
-                    groupId={group.id}
-                    cellIndex={activeCell}
-                    cellText={activeCellText}
-                    onTextChange={onTextChange}
-                  />
+              <CollapsibleSection
+                key={group.id}
+                title={group.name}
+                subtitle={preview}
+                defaultExpanded={i === 0}
+              >
+                <div className="space-y-3">
+                  {group.elements.map((element) => (
+                    <TextElementEditor
+                      key={element.id}
+                      element={element}
+                      cellIndex={activeCell}
+                      cellText={activeCellText}
+                      onTextChange={onTextChange}
+                      theme={theme}
+                    />
+                  ))}
                 </div>
-
-                <CollapsibleSection
-                  title={group.name}
-                  subtitle={preview}
-                  defaultExpanded={i === 0}
-                >
-                  <div className="space-y-3">
-                    {group.elements.map((element) => (
-                      <TextElementEditor
-                        key={element.id}
-                        element={element}
-                        cellIndex={activeCell}
-                        cellText={activeCellText}
-                        onTextChange={onTextChange}
-                        theme={theme}
-                      />
-                    ))}
-                  </div>
-                </CollapsibleSection>
-
-                {/* Below spacing/line controls */}
-                <div className={`flex items-center gap-1 ${hasBelowDecorations ? '' : 'opacity-40 hover:opacity-100'} transition-opacity`}>
-                  <span className="text-[9px] text-ui-text-faint w-9 shrink-0">Below</span>
-                  <GroupSpacingControls
-                    position="below"
-                    groupId={group.id}
-                    cellIndex={activeCell}
-                    cellText={activeCellText}
-                    onTextChange={onTextChange}
-                  />
-                </div>
-              </div>
+              </CollapsibleSection>
             )
           })}
         </>

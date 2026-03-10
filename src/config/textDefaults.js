@@ -14,14 +14,11 @@ export const defaultTextLayer = {
   letterSpacing: 0,
   textAlign: null,
   textVerticalAlign: null,
-}
-
-// Requirement: Per-group spacers and line separators in structured text mode.
-// Approach: Stored as text[cellIndex].groupSpacing[groupId], read by AdCanvas for rendering.
-// Alternatives:
-//   - Store in layout state: Rejected — this is content decoration, not layout structure.
-//   - Per-element instead of per-group: Rejected — groups are the visual unit users see.
-export const defaultGroupSpacing = {
+  // Requirement: Per-element spacers and line separators in structured text mode.
+  // Approach: Stored directly on each text layer, rendered by AdCanvas above/below the element.
+  // Alternatives:
+  //   - Per-group (groupSpacing object): Rejected — per-element gives finer control.
+  //   - Separate decoration state: Rejected — co-locating with the element is simpler.
   spacerAbove: 0,   // 0 = none, 1 = small (0.5em), 2 = large (1.5em)
   spacerBelow: 0,
   lineAbove: false,
