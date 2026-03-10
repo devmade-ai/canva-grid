@@ -497,106 +497,7 @@ export default memo(function LayoutTab({
             )}
           </div>
 
-          {/* Section Controls (Row or Column) */}
-          {type !== 'fullbleed' && selectedSection && (
-            <div className="space-y-4 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
-                  {sectionLabel} {selectedSectionIndex + 1}
-                </span>
-                <span className="text-xs text-violet-400 dark:text-violet-500">
-                  {structure.length} {isRows ? 'rows' : 'columns'}
-                </span>
-              </div>
-
-              {/* Add section above/below (or before/after for columns) */}
-              {structure.length < 4 && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => insertSection(selectedSectionIndex)}
-                    className={`flex-1 ${btnAction}`}
-                  >
-                    + {isRows ? 'Row Above' : 'Col Left'}
-                  </button>
-                  <button
-                    onClick={() => insertSection(selectedSectionIndex + 1)}
-                    className={`flex-1 ${btnAction}`}
-                  >
-                    + {isRows ? 'Row Below' : 'Col Right'}
-                  </button>
-                </div>
-              )}
-
-              {/* Move section up/down or left/right */}
-              {structure.length > 1 && (
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => swapSections(selectedSectionIndex, selectedSectionIndex - 1)}
-                    disabled={selectedSectionIndex === 0}
-                    className={`flex-1 ${selectedSectionIndex === 0 ? btnDisabled : btnAction}`}
-                  >
-                    {isRows ? 'Move Up' : 'Move Left'}
-                  </button>
-                  <button
-                    onClick={() => swapSections(selectedSectionIndex, selectedSectionIndex + 1)}
-                    disabled={selectedSectionIndex === structure.length - 1}
-                    className={`flex-1 ${selectedSectionIndex === structure.length - 1 ? btnDisabled : btnAction}`}
-                  >
-                    {isRows ? 'Move Down' : 'Move Right'}
-                  </button>
-                </div>
-              )}
-
-              {/* Section size slider (height for rows, width for columns) */}
-              {structure.length > 1 && (
-                <div>
-                  <label className="block text-xs text-primary dark:text-violet-400 mb-2 font-medium">
-                    {isRows ? 'Row Height' : 'Col Width'}{' '}
-                    <span className="font-normal text-violet-400 dark:text-primary">
-                      ({MIN_SIZE}–{getMaxSize(structure.length)}%)
-                    </span>
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <input
-                      type="range"
-                      min={MIN_SIZE}
-                      max={getMaxSize(structure.length)}
-                      step="5"
-                      value={selectedSection.size}
-                      onChange={(e) => updateSectionSize(selectedSectionIndex, Number(e.target.value))}
-                      className="flex-1"
-                    />
-                    <span className="text-sm text-violet-700 dark:text-violet-300 w-12 text-right font-medium">
-                      {Math.round(selectedSection.size)}%
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* Snap to Fit — only for single-cell sections */}
-              {!hasSubdivisions && canSnapCell(selectedCell) && (
-                <button
-                  onClick={() => snapCellToImage(selectedCell, selectedSectionIndex, 0)}
-                  className={`w-full ${btnSnap}`}
-                  title={`Adjust this ${sectionLabel.toLowerCase()} size so the contained image fills the cell perfectly`}
-                >
-                  Snap to Fit Image
-                </button>
-              )}
-
-              {/* Delete section */}
-              {structure.length > 1 && (
-                <button
-                  onClick={() => removeSection(selectedSectionIndex)}
-                  className={`w-full ${btnDelete}`}
-                >
-                  Delete {sectionLabel}
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Cell Controls (subdivision within a section) */}
+          {/* Cell Controls (subdivision within a section) — shown first for direct manipulation */}
           {type !== 'fullbleed' && selectedSection && (
             <div className="space-y-4 p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl">
               <div className="flex items-center justify-between">
@@ -700,6 +601,105 @@ export default memo(function LayoutTab({
                   className={`w-full ${btnBase} bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-900/50`}
                 >
                   Delete {isRows ? 'Cell' : 'Cell'}
+                </button>
+              )}
+            </div>
+          )}
+
+          {/* Section Controls (Row or Column) */}
+          {type !== 'fullbleed' && selectedSection && (
+            <div className="space-y-4 p-4 bg-violet-50 dark:bg-violet-900/20 rounded-xl">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-violet-700 dark:text-violet-300">
+                  {sectionLabel} {selectedSectionIndex + 1}
+                </span>
+                <span className="text-xs text-violet-400 dark:text-violet-500">
+                  {structure.length} {isRows ? 'rows' : 'columns'}
+                </span>
+              </div>
+
+              {/* Add section above/below (or before/after for columns) */}
+              {structure.length < 4 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => insertSection(selectedSectionIndex)}
+                    className={`flex-1 ${btnAction}`}
+                  >
+                    + {isRows ? 'Row Above' : 'Col Left'}
+                  </button>
+                  <button
+                    onClick={() => insertSection(selectedSectionIndex + 1)}
+                    className={`flex-1 ${btnAction}`}
+                  >
+                    + {isRows ? 'Row Below' : 'Col Right'}
+                  </button>
+                </div>
+              )}
+
+              {/* Move section up/down or left/right */}
+              {structure.length > 1 && (
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => swapSections(selectedSectionIndex, selectedSectionIndex - 1)}
+                    disabled={selectedSectionIndex === 0}
+                    className={`flex-1 ${selectedSectionIndex === 0 ? btnDisabled : btnAction}`}
+                  >
+                    {isRows ? 'Move Up' : 'Move Left'}
+                  </button>
+                  <button
+                    onClick={() => swapSections(selectedSectionIndex, selectedSectionIndex + 1)}
+                    disabled={selectedSectionIndex === structure.length - 1}
+                    className={`flex-1 ${selectedSectionIndex === structure.length - 1 ? btnDisabled : btnAction}`}
+                  >
+                    {isRows ? 'Move Down' : 'Move Right'}
+                  </button>
+                </div>
+              )}
+
+              {/* Section size slider (height for rows, width for columns) */}
+              {structure.length > 1 && (
+                <div>
+                  <label className="block text-xs text-primary dark:text-violet-400 mb-2 font-medium">
+                    {isRows ? 'Row Height' : 'Col Width'}{' '}
+                    <span className="font-normal text-violet-400 dark:text-primary">
+                      ({MIN_SIZE}–{getMaxSize(structure.length)}%)
+                    </span>
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={MIN_SIZE}
+                      max={getMaxSize(structure.length)}
+                      step="5"
+                      value={selectedSection.size}
+                      onChange={(e) => updateSectionSize(selectedSectionIndex, Number(e.target.value))}
+                      className="flex-1"
+                    />
+                    <span className="text-sm text-violet-700 dark:text-violet-300 w-12 text-right font-medium">
+                      {Math.round(selectedSection.size)}%
+                    </span>
+                  </div>
+                </div>
+              )}
+
+              {/* Snap to Fit — only for single-cell sections */}
+              {!hasSubdivisions && canSnapCell(selectedCell) && (
+                <button
+                  onClick={() => snapCellToImage(selectedCell, selectedSectionIndex, 0)}
+                  className={`w-full ${btnSnap}`}
+                  title={`Adjust this ${sectionLabel.toLowerCase()} size so the contained image fills the cell perfectly`}
+                >
+                  Snap to Fit Image
+                </button>
+              )}
+
+              {/* Delete section */}
+              {structure.length > 1 && (
+                <button
+                  onClick={() => removeSection(selectedSectionIndex)}
+                  className={`w-full ${btnDelete}`}
+                >
+                  Delete {sectionLabel}
                 </button>
               )}
             </div>
