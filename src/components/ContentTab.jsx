@@ -459,6 +459,7 @@ function FreeformBlockEditor({
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
   const confirmTimerRef = useRef(null)
+  const blurTimerRef = useRef(null)
 
   const handleContentChange = useCallback(
     (newContent) => onUpdateBlock(cellIndex, block.id, { content: newContent }),
@@ -468,6 +469,7 @@ function FreeformBlockEditor({
   const textareaRows = Math.min(10, Math.max(3, (block.content || '').split('\n').length + 1))
 
   const handleFocus = useCallback((e) => {
+    clearTimeout(blurTimerRef.current)
     setIsFocused(true)
     const el = e.target
     setTimeout(() => {
@@ -475,8 +477,13 @@ function FreeformBlockEditor({
     }, 100)
   }, [])
 
+  // Requirement: Delayed blur so toolbar clicks register before unmount.
+  // Approach: 150ms delay gives the toolbar button's onClick time to fire.
+  // Alternatives:
+  //   - Immediate blur: Rejected — toolbar unmounts before click event, breaking formatting.
+  //   - onMouseDown preventDefault on toolbar: Rejected — prevents focus ring behavior.
   const handleBlur = useCallback(() => {
-    setIsFocused(false)
+    blurTimerRef.current = setTimeout(() => setIsFocused(false), 150)
   }, [])
 
   // Requirement: Confirm-delete with timeout fallback for mobile touch reliability.
@@ -502,9 +509,12 @@ function FreeformBlockEditor({
     setConfirmDelete(false)
   }, [])
 
-  // Cleanup timer on unmount
+  // Cleanup timers on unmount
   useEffect(() => {
-    return () => clearTimeout(confirmTimerRef.current)
+    return () => {
+      clearTimeout(confirmTimerRef.current)
+      clearTimeout(blurTimerRef.current)
+    }
   }, [])
 
   const isMultiBlock = total > 1
