@@ -11,6 +11,7 @@ import { presetThemes } from '../config/themes'
 import { getLookSettingsForLayout } from '../config/stylePresets'
 import { useHistory } from './useHistory'
 import { countCells, cleanupOrphanedCells, shiftCellIndices, swapCellIndices } from '../utils/cellUtils'
+import { createFreeformBlock } from '../config/textDefaults'
 import * as designStorage from '../utils/designStorage'
 import { debugLog } from '../utils/debugLog'
 
@@ -802,25 +803,65 @@ export function useAdState() {
     setState((prev) => ({ ...prev, textMode: mode }))
   }, [setState])
 
-  const setFreeformText = useCallback((cellIndex, updates) => {
-    setState((prev) => ({
-      ...prev,
-      freeformText: {
-        ...(prev.freeformText || {}),
-        [cellIndex]: {
-          ...(prev.freeformText?.[cellIndex] || {
-            content: '',
-            color: 'secondary',
-            size: 1,
-            bold: false,
-            italic: false,
-            letterSpacing: 0,
-            textAlign: null,
-          }),
-          ...updates,
+  // Requirement: Multi-block freeform text — array of independently styled markdown blocks per cell.
+  // Approach: CRUD helpers that operate on freeformText[cellIndex] as an array of block objects.
+  // Alternatives:
+  //   - Single block per cell: Rejected — user requested multiple appendable blocks with reordering.
+  const addFreeformBlock = useCallback((cellIndex, overrides = {}) => {
+    setState((prev) => {
+      const cellBlocks = prev.freeformText?.[cellIndex] || []
+      return {
+        ...prev,
+        freeformText: {
+          ...(prev.freeformText || {}),
+          [cellIndex]: [...cellBlocks, createFreeformBlock(overrides)],
         },
-      },
-    }))
+      }
+    })
+  }, [setState])
+
+  const updateFreeformBlock = useCallback((cellIndex, blockId, updates) => {
+    setState((prev) => {
+      const cellBlocks = prev.freeformText?.[cellIndex] || []
+      return {
+        ...prev,
+        freeformText: {
+          ...(prev.freeformText || {}),
+          [cellIndex]: cellBlocks.map((b) => b.id === blockId ? { ...b, ...updates } : b),
+        },
+      }
+    })
+  }, [setState])
+
+  const removeFreeformBlock = useCallback((cellIndex, blockId) => {
+    setState((prev) => {
+      const cellBlocks = prev.freeformText?.[cellIndex] || []
+      return {
+        ...prev,
+        freeformText: {
+          ...(prev.freeformText || {}),
+          [cellIndex]: cellBlocks.filter((b) => b.id !== blockId),
+        },
+      }
+    })
+  }, [setState])
+
+  const moveFreeformBlock = useCallback((cellIndex, blockId, direction) => {
+    setState((prev) => {
+      const cellBlocks = [...(prev.freeformText?.[cellIndex] || [])]
+      const idx = cellBlocks.findIndex((b) => b.id === blockId)
+      if (idx < 0) return prev
+      const newIdx = idx + direction
+      if (newIdx < 0 || newIdx >= cellBlocks.length) return prev
+      ;[cellBlocks[idx], cellBlocks[newIdx]] = [cellBlocks[newIdx], cellBlocks[idx]]
+      return {
+        ...prev,
+        freeformText: {
+          ...(prev.freeformText || {}),
+          [cellIndex]: cellBlocks,
+        },
+      }
+    })
   }, [setState])
 
   // Requirement: Migrate localStorage designs to IndexedDB on first mount.
@@ -947,6 +988,9 @@ export function useAdState() {
     getPageCount,
     getPageState,
     setTextMode,
-    setFreeformText,
+    addFreeformBlock,
+    updateFreeformBlock,
+    removeFreeformBlock,
+    moveFreeformBlock,
   }
 }

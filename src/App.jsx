@@ -162,7 +162,10 @@ function App() {
     getPageState,
     // Text mode
     setTextMode,
-    setFreeformText,
+    addFreeformBlock,
+    updateFreeformBlock,
+    removeFreeformBlock,
+    moveFreeformBlock,
   } = useAdState()
 
   // Clamp selectedCell when layout structure changes
@@ -597,7 +600,10 @@ function App() {
                     textMode={state.textMode || 'structured'}
                     onTextModeChange={setTextMode}
                     freeformText={state.freeformText || {}}
-                    onFreeformTextChange={setFreeformText}
+                    onAddBlock={addFreeformBlock}
+                    onUpdateBlock={updateFreeformBlock}
+                    onRemoveBlock={removeFreeformBlock}
+                    onMoveBlock={moveFreeformBlock}
                     selectedCell={selectedCell}
                     onSelectCell={setSelectedCell}
                   />

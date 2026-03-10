@@ -551,35 +551,75 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     )
   }
 
+  // Requirement: Multi-block freeform text — render array of independently styled markdown blocks.
+  // Approach: Iterate blocks array, render each with its own styling + spacer/line decorations.
+  // Alternatives:
+  //   - Single block per cell: Rejected — user requested multiple blocks with independent styling.
   const renderFreeformTextForCell = (cellIndex, isOnImage) => {
     const freeformText = state.freeformText || {}
-    const cellData = freeformText[cellIndex]
-    if (!cellData || !cellData.content) return null
+    const cellBlocks = freeformText[cellIndex]
+    if (!Array.isArray(cellBlocks) || cellBlocks.length === 0) return null
+
+    const blocksWithContent = cellBlocks.filter((b) => b.content)
+    if (blocksWithContent.length === 0) return null
 
     const padding = getCellPadding(cellIndex)
     const verticalAlign = getCellVerticalAlign(cellIndex)
     const withShadow = isOnImage
 
-    const textColor = getTextColor(cellData.color || 'secondary')
-    const fontSize = Math.round(platform.width * 0.022 * (cellData.size || 1))
-    const textAlign = cellData.textAlign || getCellTextAlign(cellIndex)
+    const content = []
+    blocksWithContent.forEach((block) => {
+      const spacerAbove = block.spacerAbove || 0
+      const spacerBelow = block.spacerBelow || 0
 
-    // Always parse markdown in freeform mode - no toggle needed
-    const html = marked.parse(cellData.content)
-    const textStyle = {
-      fontSize,
-      fontWeight: cellData.bold ? 700 : 400,
-      fontStyle: cellData.italic ? 'italic' : 'normal',
-      fontFamily: bodyFont.family,
-      color: textColor,
-      lineHeight: 1.6,
-      letterSpacing: `${cellData.letterSpacing || 0}px`,
-      textAlign,
-      whiteSpace: 'normal',
-      wordWrap: 'break-word',
-      overflowWrap: 'break-word',
-      ...(withShadow ? { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}),
-    }
+      // Above decorations
+      if (spacerAbove > 0) {
+        content.push(<div key={`spacer-above-${block.id}`} style={{ height: `${spacerSizeMap[spacerAbove]}em` }} />)
+      }
+      if (block.lineAbove) {
+        content.push(
+          <div key={`line-above-${block.id}`} style={{ width: '60%', height: 0, borderTop: `1px solid ${themeColors.secondary}`, opacity: 0.4, alignSelf: 'center', margin: '0.3em auto' }} />
+        )
+      }
+
+      // Block content
+      const textColor = getTextColor(block.color || 'secondary')
+      const fontSize = Math.round(platform.width * 0.022 * (block.size || 1))
+      const textAlign = block.textAlign || getCellTextAlign(cellIndex)
+      const html = marked.parse(block.content)
+
+      content.push(
+        <div
+          key={block.id}
+          className="freeform-markdown"
+          style={{
+            fontSize,
+            fontWeight: block.bold ? 700 : 400,
+            fontStyle: block.italic ? 'italic' : 'normal',
+            fontFamily: bodyFont.family,
+            color: textColor,
+            lineHeight: 1.6,
+            letterSpacing: `${block.letterSpacing || 0}px`,
+            textAlign,
+            whiteSpace: 'normal',
+            wordWrap: 'break-word',
+            overflowWrap: 'break-word',
+            ...(withShadow ? { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}),
+          }}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      )
+
+      // Below decorations
+      if (block.lineBelow) {
+        content.push(
+          <div key={`line-below-${block.id}`} style={{ width: '60%', height: 0, borderTop: `1px solid ${themeColors.secondary}`, opacity: 0.4, alignSelf: 'center', margin: '0.3em auto' }} />
+        )
+      }
+      if (spacerBelow > 0) {
+        content.push(<div key={`spacer-below-${block.id}`} style={{ height: `${spacerSizeMap[spacerBelow]}em` }} />)
+      }
+    })
 
     return (
       <div
@@ -587,6 +627,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           display: 'flex',
           flexDirection: 'column',
           justifyContent: getJustifyContent(verticalAlign),
+          alignItems: 'stretch',
           padding,
           width: '100%',
           height: '100%',
@@ -595,11 +636,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           overflow: 'hidden',
         }}
       >
-        <div
-          className="freeform-markdown"
-          style={textStyle}
-          dangerouslySetInnerHTML={{ __html: html }}
-        />
+        {content}
       </div>
     )
   }
@@ -695,8 +732,8 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
 
     const renderTextContent = () => {
       if (isFreeformMode) {
-        const freeformData = (state.freeformText || {})[cellIndex]
-        if (freeformData && freeformData.content) {
+        const cellBlocks = (state.freeformText || {})[cellIndex]
+        if (Array.isArray(cellBlocks) && cellBlocks.some((b) => b.content)) {
           return (
             <div style={{ position: 'absolute', inset: 0, zIndex: 2 }}>
               {renderFreeformTextForCell(cellIndex, hasImage)}

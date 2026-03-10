@@ -25,6 +25,31 @@ export const defaultTextLayer = {
   lineBelow: false,
 }
 
+// Requirement: Multi-block freeform text — each block has independent styling.
+// Approach: Shared default used by ContentTab (editing) and AdCanvas (rendering).
+export const defaultFreeformBlock = {
+  id: '',
+  content: '',
+  color: 'secondary',
+  size: 1,
+  bold: false,
+  italic: false,
+  letterSpacing: 0,
+  textAlign: null,
+  spacerAbove: 0,
+  spacerBelow: 0,
+  lineAbove: false,
+  lineBelow: false,
+}
+
+export function createFreeformBlock(overrides = {}) {
+  return {
+    ...defaultFreeformBlock,
+    id: `block-${Date.now()}-${Math.random().toString(36).substr(2, 6)}`,
+    ...overrides,
+  }
+}
+
 // Map spacer values to em units for rendering
 export const spacerSizeMap = {
   0: 0,
