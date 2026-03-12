@@ -151,11 +151,13 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                 </p>
               ) : (
                 designs.map((design) => (
-                  <button
+                  <div
                     key={design.id}
-                    onClick={() => handleLoad(design.id)}
-                    disabled={loading}
-                    className="w-full p-3 rounded-lg bg-ui-surface-inset hover:bg-ui-surface-hover active:bg-ui-surface-hover/80 text-left group transition-colors disabled:opacity-50"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => !loading && handleLoad(design.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !loading) handleLoad(design.id) }}
+                    className={`w-full p-3 rounded-lg bg-ui-surface-inset hover:bg-ui-surface-hover active:bg-ui-surface-hover/80 text-left group transition-colors cursor-pointer ${loading ? 'opacity-50 pointer-events-none' : ''}`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -173,7 +175,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                         </svg>
                       </ConfirmButton>
                     </div>
-                  </button>
+                  </div>
                 ))
               )}
             </div>

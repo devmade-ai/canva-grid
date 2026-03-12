@@ -96,8 +96,8 @@ function ToastItem({ toast, onRemove }) {
       className={`flex items-center gap-2 px-4 py-2.5 rounded-xl shadow-lg text-sm font-medium transition-all duration-200 ${
         typeStyles[toast.type] || typeStyles.info
       } ${isExiting ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'}`}
-      role="status"
-      aria-live="polite"
+      role={toast.type === 'error' ? 'alert' : 'status'}
+      aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
     >
       {icons[toast.type]}
       <span>{toast.message}</span>

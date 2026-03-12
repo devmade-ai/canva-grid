@@ -140,6 +140,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   // PDF quality maps to pixelRatio for capture. Print formats always use 1x regardless.
   const [pdfQuality, setPdfQuality] = useState('standard')
   const [showPdfQuality, setShowPdfQuality] = useState(false)
+  const [showMoreOptions, setShowMoreOptions] = useState(false)
 
   const exportFormat = state.exportFormat || 'png'
   const ext = FILE_EXTENSIONS[exportFormat] || 'png'
@@ -226,7 +227,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       updateExporting(false)
       setExportOp(null)
     }
-  }, [canvasRef, state.platform, state.activePage, exportFormat, ext, pageCount, updateExporting])
+  }, [canvasRef, state.platform, state.activePage, exportFormat, ext, pageCount, updateExporting, addToast])
 
   const handleExportAllPages = useCallback(async () => {
     if (!canvasRef.current || pageCount <= 1) return
@@ -277,7 +278,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       setExportProgress(null)
       setExportOp(null)
     }
-  }, [canvasRef, state.platform, state.activePage, exportFormat, ext, pageCount, onSetActivePage, updateExporting])
+  }, [canvasRef, state.platform, state.activePage, exportFormat, ext, pageCount, onSetActivePage, updateExporting, addToast])
 
   // Requirement: PDF export for LinkedIn carousel documents and general print-to-PDF
   // Approach: Capture pages as lossless PNG at pixelRatio:2 (digital) or 1 (print),
@@ -388,7 +389,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       setExportProgress(null)
       setExportOp(null)
     }
-  }, [canvasRef, state.platform, state.activePage, pageCount, onSetActivePage, updateExporting, pdfQuality])
+  }, [canvasRef, state.platform, state.activePage, pageCount, onSetActivePage, updateExporting, pdfQuality, addToast])
 
   const handleExportMultiple = useCallback(async () => {
     if (!canvasRef.current) return
@@ -441,17 +442,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       setExportProgress(null)
       setExportOp(null)
     }
-  }, [canvasRef, state.platform, exportFormat, ext, onPlatformChange, updateExporting, selectedPlatforms])
-
-  // Requirement: Progressive disclosure for export options.
-  // Approach: Primary download button always visible. Secondary options (PDF, all pages,
-  //   multi-platform) collapsed into "More export options" expandable section.
-  // Why: 4-5 buttons at once is visually overwhelming for non-technical users.
-  //   The article confirms Canva uses a clean Share → Download → format → quality flow.
-  // Alternatives:
-  //   - All buttons visible: Current state — too much visual noise.
-  //   - Dropdown menu: Rejected — harder to scan, hides format selector.
-  const [showMoreOptions, setShowMoreOptions] = useState(false)
+  }, [canvasRef, state.platform, exportFormat, ext, onPlatformChange, updateExporting, selectedPlatforms, addToast])
 
   return (
     <div className="space-y-3">

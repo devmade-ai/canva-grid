@@ -69,7 +69,7 @@ function CanvasCellOverlay({ layout, selectedCell, onSelectCell }) {
           //   - Borders on all cells: Rejected — looks like export borders, confuses users
           sectionCells.push(
             <div
-              key={`overlay-cell-${currentCellIndex}-${isSelected ? 'sel' : ''}`}
+              key={`overlay-cell-${currentCellIndex}`}
               onClick={() => onSelectCell(currentCellIndex)}
               style={{
                 flex: `1 1 ${subSizes[subIndex]}%`,
@@ -219,6 +219,13 @@ function App() {
         }
       }
 
+      // Escape closes modals/overlays
+      if (e.key === 'Escape' && showShortcuts) {
+        e.preventDefault()
+        setShowShortcuts(false)
+        return
+      }
+
       // Reader mode navigation with arrow keys
       if (isReaderMode) {
         if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
@@ -238,7 +245,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [undo, redo, isReaderMode, state.activePage, pageCount, setActivePage])
+  }, [undo, redo, isReaderMode, state.activePage, pageCount, setActivePage, showShortcuts])
 
   // Track window height for reader mode scaling
   useEffect(() => {
@@ -760,9 +767,10 @@ function App() {
               {!isExporting && (
                 <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 shadow-sm px-1 py-0.5">
                   <button
-                    onClick={() => setZoomLevel(Math.max((zoomLevel || autoScale) - 0.1, 0.1))}
+                    onClick={() => setZoomLevel(Math.round(Math.max((zoomLevel || autoScale) - 0.1, 0.25) * 100) / 100)}
                     className="w-6 h-6 flex items-center justify-center text-ui-text-muted hover:text-ui-text rounded transition-colors text-xs font-bold"
                     title="Zoom out"
+                    aria-label="Zoom out"
                   >
                     −
                   </button>
@@ -770,13 +778,15 @@ function App() {
                     onClick={() => setZoomLevel(null)}
                     className="px-1 min-w-[36px] h-6 flex items-center justify-center text-[10px] font-medium text-ui-text-muted hover:text-ui-text rounded transition-colors"
                     title="Fit to container"
+                    aria-label={`Zoom ${Math.round(previewScale * 100)}%, click to fit`}
                   >
                     {Math.round(previewScale * 100)}%
                   </button>
                   <button
-                    onClick={() => setZoomLevel(Math.min((zoomLevel || autoScale) + 0.1, 2))}
+                    onClick={() => setZoomLevel(Math.round(Math.min((zoomLevel || autoScale) + 0.1, 2) * 100) / 100)}
                     className="w-6 h-6 flex items-center justify-center text-ui-text-muted hover:text-ui-text rounded transition-colors text-xs font-bold"
                     title="Zoom in"
+                    aria-label="Zoom in"
                   >
                     +
                   </button>
@@ -787,7 +797,7 @@ function App() {
               {isExporting && (
                 <div className="absolute inset-0 bg-dark-page/80 flex items-center justify-center rounded-xl backdrop-blur-sm">
                   <div className="text-center">
-                    <div className="inline-block w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin mb-3" />
+                    <div className="inline-block w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mb-3" />
                     <p className="text-white font-medium">Exporting...</p>
                   </div>
                 </div>
@@ -855,6 +865,9 @@ function App() {
         <div
           className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
           onClick={() => setShowShortcuts(false)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="Keyboard shortcuts"
         >
           <div
             className="bg-ui-surface rounded-xl shadow-2xl w-full max-w-sm p-5"
