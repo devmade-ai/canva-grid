@@ -1,5 +1,6 @@
 import { useState, useMemo, memo } from 'react'
 import CollapsibleSection from './CollapsibleSection'
+import Tooltip from './Tooltip'
 import { lookPresets } from '../config/stylePresets'
 import {
   layoutPresets,
@@ -113,15 +114,17 @@ function LayoutPresetIcon({ presetId, isActive }) {
 }
 
 // Requirement: Hover preview for theme presets — shows enlarged color swatches before applying.
-// Approach: Tooltip-style popover on hover showing the three colors with labels.
+// Approach: Portal-based Tooltip component showing the three colors with labels.
+//   Portal prevents clipping when themes are in first row or at sidebar edges.
 // Why: Users (non-technical) can't tell what "Ocean" or "Sunset" means from tiny swatches.
 //   Canva shows hover previews for templates; we adapt this for color themes.
 // Alternatives:
 //   - Live preview on canvas: Rejected — too expensive, causes flickering.
 //   - Name-only tooltip: Rejected — colors are visual, text names aren't enough.
-function ThemePreviewTooltip({ preset }) {
+//   - Inline absolute tooltip: Rejected — clips at container overflow boundaries.
+function ThemePreviewContent({ preset }) {
   return (
-    <div className="absolute -top-20 left-1/2 -translate-x-1/2 z-20 bg-ui-surface border border-ui-border rounded-lg shadow-lg p-2.5 pointer-events-none min-w-[120px]">
+    <div className="bg-ui-surface border border-ui-border rounded-lg shadow-lg p-2.5 min-w-[120px]">
       <div className="flex gap-2 mb-1.5 justify-center">
         <div className="flex flex-col items-center gap-0.5">
           <div className="w-7 h-7 rounded-full shadow-sm border border-black/10" style={{ backgroundColor: preset.primary }} />
@@ -137,8 +140,6 @@ function ThemePreviewTooltip({ preset }) {
         </div>
       </div>
       <p className="text-[10px] text-ui-text text-center font-medium">{preset.name}</p>
-      {/* Arrow */}
-      <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-ui-surface border-r border-b border-ui-border" />
     </div>
   )
 }
@@ -156,8 +157,6 @@ export default memo(function TemplatesTab({
   const isCustomTheme = theme?.preset === 'custom'
   const [layoutCategory, setLayoutCategory] = useState('all')
   const [aspectRatioFilter, setAspectRatioFilter] = useState('all')
-  const [hoveredTheme, setHoveredTheme] = useState(null)
-  const [hoveredLook, setHoveredLook] = useState(null)
 
   const displayLayoutPresets = useMemo(() => {
     // First filter by aspect ratio
@@ -292,13 +291,10 @@ export default memo(function TemplatesTab({
           <label className="block text-xs font-medium text-ui-text-muted">Presets</label>
           <div className="grid grid-cols-3 gap-2">
             {presetThemes.map((preset) => (
-              <div
+              <Tooltip
                 key={preset.id}
-                className="relative"
-                onMouseEnter={() => setHoveredTheme(preset.id)}
-                onMouseLeave={() => setHoveredTheme(null)}
+                content={<ThemePreviewContent preset={preset} />}
               >
-                {hoveredTheme === preset.id && <ThemePreviewTooltip preset={preset} />}
                 <button
                   onClick={() => onThemePresetChange?.(preset.id)}
                   className={`w-full p-2 rounded-lg border-2 transition-all ${
@@ -314,7 +310,7 @@ export default memo(function TemplatesTab({
                   </div>
                   <span className="text-[10px] text-ui-text font-medium">{preset.name}</span>
                 </button>
-              </div>
+              </Tooltip>
             ))}
           </div>
         </div>
@@ -362,18 +358,14 @@ export default memo(function TemplatesTab({
           {/* Look preset grid */}
           <div className="grid grid-cols-4 gap-2">
             {lookPresets.map((preset) => (
-              <div
+              <Tooltip
                 key={preset.id}
-                className="relative"
-                onMouseEnter={() => setHoveredLook(preset.id)}
-                onMouseLeave={() => setHoveredLook(null)}
-              >
-                {hoveredLook === preset.id && (
-                  <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-20 bg-ui-surface border border-ui-border rounded-lg shadow-lg px-2.5 py-1.5 pointer-events-none whitespace-nowrap">
+                content={
+                  <div className="bg-ui-surface border border-ui-border rounded-lg shadow-lg px-2.5 py-1.5 whitespace-nowrap">
                     <p className="text-[10px] text-ui-text text-center">{preset.description}</p>
-                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45 bg-ui-surface border-r border-b border-ui-border" />
                   </div>
-                )}
+                }
+              >
                 <button
                   onClick={() => onSelectStylePreset(preset)}
                   className={`w-full flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
@@ -393,7 +385,7 @@ export default memo(function TemplatesTab({
                     {preset.name}
                   </span>
                 </button>
-              </div>
+              </Tooltip>
             ))}
           </div>
 

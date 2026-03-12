@@ -19,7 +19,7 @@ Future enhancements and ideas for CanvaGrid.
 | Item | Effort | Description |
 |------|--------|-------------|
 | **Looks define per-element text styling** | Medium | Extend `stylePresets.js` to include text colors and bold/italic per element. Makes presets feel more polished. |
-| **Extract large components** | Medium | `MediaTab.jsx` (1328), `LayoutTab.jsx` (911), `useAdState.js` (852), `AdCanvas.jsx` (818), `App.jsx` (815) all exceed the 800-line threshold. Extract sub-components when next modifying these files. |
+| **Extract large components** | Medium | `MediaTab.jsx` (1328), `LayoutTab.jsx` (911), `useAdState.js` (852), `AdCanvas.jsx` (818) exceed the 800-line threshold. Extract sub-components when next modifying these files. `App.jsx` reduced to ~820 via extraction of `KeyboardShortcutsOverlay`, `EmptyStateGuide`, `ZoomControls`, `QuickActionsBar`. |
 | ~~**Replace browser confirm() in SaveLoadModal and ContextBar**~~ | ~~Low~~ | Done — `ConfirmButton.jsx` replaces `confirm()` in both components. |
 | ~~**Save feedback**~~ | ~~Low~~ | Done — Toast notifications added for save, delete, and all export operations. |
 | **Unassigned image feedback** | Low | `useAdState.js:224` — `addImage()` auto-assigns to first unoccupied image cell, but if all cells are occupied the image is added to the library with no cell and no feedback to the user about why. |

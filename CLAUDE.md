@@ -437,6 +437,11 @@ src/
 │   ├── MiniCellGrid.jsx       # Compact cell grid for ContextBar
 │   ├── Toast.jsx              # Toast notification system (ToastProvider + useToast hook)
 │   ├── ConfirmButton.jsx      # Inline confirmation replacing browser confirm()
+│   ├── Tooltip.jsx            # Portal-based tooltip (prevents clipping at container edges)
+│   ├── KeyboardShortcutsOverlay.jsx # Keyboard shortcuts modal
+│   ├── EmptyStateGuide.jsx    # Empty canvas guidance overlay
+│   ├── ZoomControls.jsx       # Canvas zoom controls (−, %, +)
+│   ├── QuickActionsBar.jsx    # Cell quick-action shortcuts (Image, Text, Style)
 │   └── DebugPill.jsx          # Floating debug panel (separate React root, dev only)
 ├── config/         # Configuration
 │   ├── layouts.js        # 34 overlay types (solid, gradients, radial, effects, blends, textures)

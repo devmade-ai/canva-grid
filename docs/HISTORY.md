@@ -14,6 +14,13 @@
 - **Zoom controls** — Floating −/% /+ controls on canvas. Click percentage to reset to auto-fit.
 - **Keyboard shortcuts** — 1-5 for tab switching. Shortcut overlay panel accessible from header.
 
+### Code quality improvements
+
+- **Portal-based tooltips** — `Tooltip.jsx` uses `createPortal` to render tooltips at document.body, preventing clipping at sidebar overflow boundaries. Replaces inline absolute tooltips in TemplatesTab.
+- **Removed addToast prop drilling** — ExportButtons and SaveLoadModal now use `useToast()` hook directly instead of receiving `addToast` as a prop.
+- **App.jsx component extraction** — Extracted `KeyboardShortcutsOverlay`, `EmptyStateGuide`, `ZoomControls`, and `QuickActionsBar` to reduce App.jsx from 950+ to ~820 lines.
+- **Freeform text empty state fix** — `isCanvasEmpty` now correctly detects freeform text blocks (arrays of objects, not single objects).
+
 ---
 
 ## 2026-03-09

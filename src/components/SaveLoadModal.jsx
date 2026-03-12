@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import ConfirmButton from './ConfirmButton'
+import { useToast } from './Toast'
 
-export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelete, getSavedDesigns, addToast }) {
+export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelete, getSavedDesigns }) {
+  const { addToast } = useToast()
   const [designs, setDesigns] = useState([])
   const [saveName, setSaveName] = useState('')
   const [activeTab, setActiveTab] = useState('save')
@@ -31,7 +33,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
       await refreshDesigns()
       setSaveName('')
       setActiveTab('load')
-      addToast?.(`Saved "${name}"`, { type: 'success' })
+      addToast(`Saved "${name}"`, { type: 'success' })
     } else {
       setError(result.error || 'Failed to save design')
     }
@@ -54,7 +56,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     const result = await onDelete(designId)
     if (result.success) {
       await refreshDesigns()
-      addToast?.('Design deleted', { type: 'info' })
+      addToast('Design deleted', { type: 'info' })
     } else {
       setError(result.error || 'Failed to delete design')
     }

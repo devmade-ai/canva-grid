@@ -23,7 +23,11 @@ import InstallInstructionsModal from './components/InstallInstructionsModal'
 import TutorialModal from './components/TutorialModal'
 import SaveLoadModal from './components/SaveLoadModal'
 import ContextBar from './components/ContextBar'
-import { ToastProvider, useToast } from './components/Toast'
+import { ToastProvider } from './components/Toast'
+import KeyboardShortcutsOverlay from './components/KeyboardShortcutsOverlay'
+import EmptyStateGuide from './components/EmptyStateGuide'
+import ZoomControls from './components/ZoomControls'
+import QuickActionsBar from './components/QuickActionsBar'
 import { useOnlineStatus } from './hooks/useOnlineStatus'
 import { platforms } from './config/platforms'
 import { fonts } from './config/fonts'
@@ -116,7 +120,6 @@ function App() {
   const { canInstall, install, showManualInstructions, getInstallInstructions, isInstalled } = usePWAInstall()
   const { hasUpdate, update } = usePWAUpdate()
   const isOnline = useOnlineStatus()
-  const { addToast } = useToast()
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(null) // null = auto-fit
 
@@ -736,61 +739,12 @@ function App() {
 
               {/* Empty state guidance — helps new users get started */}
               {isCanvasEmpty && !isExporting && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="text-center p-6 pointer-events-auto">
-                    <div className="w-12 h-12 mx-auto mb-3 rounded-full bg-primary/10 flex items-center justify-center">
-                      <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                      </svg>
-                    </div>
-                    <p className="text-sm font-medium text-ui-text-muted mb-1">Your canvas is empty</p>
-                    <p className="text-xs text-ui-text-subtle mb-3">Start by choosing a preset or uploading images</p>
-                    <div className="flex gap-2 justify-center">
-                      <button
-                        onClick={() => setActiveSection('templates')}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-primary text-white hover:bg-primary-hover transition-all"
-                      >
-                        Browse Presets
-                      </button>
-                      <button
-                        onClick={() => setActiveSection('media')}
-                        className="px-3 py-1.5 text-xs font-medium rounded-lg bg-ui-surface-inset text-ui-text hover:bg-ui-surface-hover border border-ui-border transition-all"
-                      >
-                        Upload Images
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <EmptyStateGuide onNavigate={setActiveSection} />
               )}
 
               {/* Zoom controls — floating bottom-right of canvas */}
               {!isExporting && (
-                <div className="absolute bottom-2 right-2 flex items-center gap-1 bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm rounded-lg border border-zinc-200/60 dark:border-zinc-700/60 shadow-sm px-1 py-0.5">
-                  <button
-                    onClick={() => setZoomLevel(Math.round(Math.max((zoomLevel || autoScale) - 0.1, 0.25) * 100) / 100)}
-                    className="w-6 h-6 flex items-center justify-center text-ui-text-muted hover:text-ui-text rounded transition-colors text-xs font-bold"
-                    title="Zoom out"
-                    aria-label="Zoom out"
-                  >
-                    −
-                  </button>
-                  <button
-                    onClick={() => setZoomLevel(null)}
-                    className="px-1 min-w-[36px] h-6 flex items-center justify-center text-[10px] font-medium text-ui-text-muted hover:text-ui-text rounded transition-colors"
-                    title="Fit to container"
-                    aria-label={`Zoom ${Math.round(previewScale * 100)}%, click to fit`}
-                  >
-                    {Math.round(previewScale * 100)}%
-                  </button>
-                  <button
-                    onClick={() => setZoomLevel(Math.round(Math.min((zoomLevel || autoScale) + 0.1, 2) * 100) / 100)}
-                    className="w-6 h-6 flex items-center justify-center text-ui-text-muted hover:text-ui-text rounded transition-colors text-xs font-bold"
-                    title="Zoom in"
-                    aria-label="Zoom in"
-                  >
-                    +
-                  </button>
-                </div>
+                <ZoomControls zoomLevel={zoomLevel} autoScale={autoScale} onZoomChange={setZoomLevel} />
               )}
 
               {/* Export overlay */}
@@ -806,39 +760,7 @@ function App() {
 
             {/* Quick actions bar for selected cell — shortcuts to common per-cell actions */}
             {totalCells > 1 && (
-              <div className="mt-2 flex items-center justify-center gap-1.5">
-                <span className="text-[10px] text-ui-text-faint mr-1">Cell {selectedCell + 1}:</span>
-                <button
-                  onClick={() => setActiveSection('media')}
-                  className="px-2 py-1 text-[11px] font-medium rounded-md text-ui-text-muted hover:text-ui-text hover:bg-ui-surface-hover transition-all flex items-center gap-1"
-                  title="Go to Media tab to add/change image for this cell"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
-                  Image
-                </button>
-                <button
-                  onClick={() => setActiveSection('content')}
-                  className="px-2 py-1 text-[11px] font-medium rounded-md text-ui-text-muted hover:text-ui-text hover:bg-ui-surface-hover transition-all flex items-center gap-1"
-                  title="Go to Content tab to edit text for this cell"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                  </svg>
-                  Text
-                </button>
-                <button
-                  onClick={() => setActiveSection('style')}
-                  className="px-2 py-1 text-[11px] font-medium rounded-md text-ui-text-muted hover:text-ui-text hover:bg-ui-surface-hover transition-all flex items-center gap-1"
-                  title="Go to Style tab to change overlay/spacing for this cell"
-                >
-                  <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" />
-                  </svg>
-                  Style
-                </button>
-              </div>
+              <QuickActionsBar selectedCell={selectedCell} onNavigate={setActiveSection} />
             )}
 
             {/* Export Buttons */}
@@ -852,7 +774,6 @@ function App() {
                   onExportingChange={setIsExporting}
                   pageCount={pageCount}
                   onSetActivePage={setActivePage}
-                  addToast={addToast}
                 />
               </ErrorBoundary>
             </div>
@@ -862,55 +783,7 @@ function App() {
 
       {/* Keyboard shortcuts overlay */}
       {showShortcuts && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm"
-          onClick={() => setShowShortcuts(false)}
-          role="dialog"
-          aria-modal="true"
-          aria-label="Keyboard shortcuts"
-        >
-          <div
-            className="bg-ui-surface rounded-xl shadow-2xl w-full max-w-sm p-5"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-ui-text">Keyboard Shortcuts</h3>
-              <button
-                onClick={() => setShowShortcuts(false)}
-                className="p-1 rounded-lg hover:bg-ui-surface-hover text-ui-text-muted"
-              >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-            </div>
-            <div className="space-y-2">
-              {[
-                ['Ctrl + Z', 'Undo'],
-                ['Ctrl + Shift + Z', 'Redo'],
-                ['Ctrl + Y', 'Redo'],
-                ['1 – 5', 'Switch tabs (Presets, Media, Content, Structure, Style)'],
-              ].map(([key, desc]) => (
-                <div key={key} className="flex items-center justify-between text-sm">
-                  <span className="text-ui-text-muted">{desc}</span>
-                  <kbd className="px-2 py-0.5 bg-ui-surface-inset border border-ui-border rounded text-xs font-mono text-ui-text">{key}</kbd>
-                </div>
-              ))}
-              <div className="pt-2 border-t border-ui-border-subtle mt-2">
-                <p className="text-[10px] text-ui-text-faint font-medium uppercase tracking-wide mb-2">Reader Mode</p>
-                {[
-                  ['← →', 'Previous / Next page'],
-                  ['Esc', 'Exit reader mode'],
-                ].map(([key, desc]) => (
-                  <div key={key} className="flex items-center justify-between text-sm mb-1">
-                    <span className="text-ui-text-muted">{desc}</span>
-                    <kbd className="px-2 py-0.5 bg-ui-surface-inset border border-ui-border rounded text-xs font-mono text-ui-text">{key}</kbd>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
+        <KeyboardShortcutsOverlay onClose={() => setShowShortcuts(false)} />
       )}
 
       {/* Install Instructions Modal */}
@@ -934,7 +807,6 @@ function App() {
         onLoad={loadDesign}
         onDelete={deleteDesign}
         getSavedDesigns={getSavedDesigns}
-        addToast={addToast}
       />
     </div>
   )

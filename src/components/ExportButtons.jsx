@@ -5,6 +5,7 @@ import JSZip from 'jszip'
 import { saveAs } from 'file-saver'
 import { platforms, categoryLabels, categoryOrder, platformsByCategory, findFormat } from '../config/platforms'
 import { debugLog } from '../utils/debugLog'
+import { useToast } from './Toast'
 
 // Requirement: Export in multiple image formats (PNG, JPG, WebP)
 // Approach: Format toggle above export buttons, shared captureElement helper
@@ -127,7 +128,8 @@ function downloadDiagnosticImage(imageResult, platformId) {
   saveAs(blob, `pdf-diagnostic-${platformId}.png`)
 }
 
-export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, pageCount = 1, onSetActivePage, addToast }) {
+export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, pageCount = 1, onSetActivePage }) {
+  const { addToast } = useToast()
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(null)
   // Requirement: Track which export operation is active so each button shows its own progress.
@@ -218,10 +220,10 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       const pageSuffix = pageCount > 1 ? `-p${String(state.activePage + 1).padStart(2, '0')}` : ''
       saveAs(blob, `${ts}-${platform.id}-${platform.width}x${platform.height}${pageSuffix}.${ext}`)
       debugLog('export', 'single-success', { platform: platform.id, sizeKB: Math.round(blob.size / 1024) })
-      addToast?.('Download complete', { type: 'success' })
+      addToast('Download complete', { type: 'success' })
     } catch (error) {
       debugLog('export', 'single-error', { platform: platform.id, error: error.message }, 'error')
-      addToast?.('Export failed. Please try again.', { type: 'error', duration: 5000 })
+      addToast('Export failed. Please try again.', { type: 'error', duration: 5000 })
     } finally {
       restoreOpacity()
       updateExporting(false)
@@ -265,12 +267,12 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       const ts = getTimestamp()
       saveAs(content, `${ts}-pages.zip`)
       debugLog('export', 'all-pages-success', { pageCount, sizeKB: Math.round(content.size / 1024) })
-      addToast?.(`${pageCount} pages exported`, { type: 'success' })
+      addToast(`${pageCount} pages exported`, { type: 'success' })
 
       onSetActivePage(originalActivePage)
     } catch (error) {
       debugLog('export', 'all-pages-error', { error: error.message }, 'error')
-      addToast?.('Export failed. Please try again.', { type: 'error', duration: 5000 })
+      addToast('Export failed. Please try again.', { type: 'error', duration: 5000 })
       onSetActivePage(originalActivePage)
     } finally {
       restoreOpacity()
@@ -376,10 +378,10 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         `${ts}-${platform.id}-${platform.width}x${platform.height}.pdf`
       )
       debugLog('export', 'pdf-success', { platform: platform.id, pagePt: `${widthPt}x${heightPt}`, pixelRatio: pdfPixelRatio, sizeKB: Math.round(pdfBytes.length / 1024), totalPages })
-      addToast?.('PDF saved', { type: 'success' })
+      addToast('PDF saved', { type: 'success' })
     } catch (error) {
       debugLog('export', 'pdf-error', { platform: platform.id, error: error.message }, 'error')
-      addToast?.('PDF export failed. Please try again.', { type: 'error', duration: 5000 })
+      addToast('PDF export failed. Please try again.', { type: 'error', duration: 5000 })
       if (totalPages > 1) {
         onSetActivePage(originalActivePage)
       }
@@ -394,7 +396,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   const handleExportMultiple = useCallback(async () => {
     if (!canvasRef.current) return
     if (selectedPlatforms.size === 0) {
-      addToast?.('Select at least one platform to export.', { type: 'warning' })
+      addToast('Select at least one platform to export.', { type: 'warning' })
       return
     }
 
@@ -428,13 +430,13 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       const ts = getTimestamp()
       saveAs(content, `${ts}-multi.zip`)
       debugLog('export', 'multi-success', { platformCount: platformsToExport.length, sizeKB: Math.round(content.size / 1024) })
-      addToast?.(`${platformsToExport.length} platforms exported`, { type: 'success' })
+      addToast(`${platformsToExport.length} platforms exported`, { type: 'success' })
 
       onPlatformChange(originalPlatform)
       setShowMultiSelect(false)
     } catch (error) {
       debugLog('export', 'multi-error', { error: error.message }, 'error')
-      addToast?.('Export failed. Please try again.', { type: 'error', duration: 5000 })
+      addToast('Export failed. Please try again.', { type: 'error', duration: 5000 })
       onPlatformChange(originalPlatform)
     } finally {
       restoreOpacity()
