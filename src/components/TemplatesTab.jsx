@@ -1,5 +1,6 @@
 import { useState, useMemo, memo } from 'react'
 import CollapsibleSection from './CollapsibleSection'
+import Tooltip from './Tooltip'
 import { lookPresets } from '../config/stylePresets'
 import {
   layoutPresets,
@@ -112,6 +113,37 @@ function LayoutPresetIcon({ presetId, isActive }) {
   )
 }
 
+// Requirement: Hover preview for theme presets — shows enlarged color swatches before applying.
+// Approach: Portal-based Tooltip component showing the three colors with labels.
+//   Portal prevents clipping when themes are in first row or at sidebar edges.
+// Why: Users (non-technical) can't tell what "Ocean" or "Sunset" means from tiny swatches.
+//   Canva shows hover previews for templates; we adapt this for color themes.
+// Alternatives:
+//   - Live preview on canvas: Rejected — too expensive, causes flickering.
+//   - Name-only tooltip: Rejected — colors are visual, text names aren't enough.
+//   - Inline absolute tooltip: Rejected — clips at container overflow boundaries.
+function ThemePreviewContent({ preset }) {
+  return (
+    <div className="bg-ui-surface border border-ui-border rounded-lg shadow-lg p-2.5 min-w-[120px]">
+      <div className="flex gap-2 mb-1.5 justify-center">
+        <div className="flex flex-col items-center gap-0.5">
+          <div className="w-7 h-7 rounded-full shadow-sm border border-black/10" style={{ backgroundColor: preset.primary }} />
+          <span className="text-[8px] text-ui-text-faint">Primary</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <div className="w-7 h-7 rounded-full shadow-sm border border-black/10" style={{ backgroundColor: preset.secondary }} />
+          <span className="text-[8px] text-ui-text-faint">Secondary</span>
+        </div>
+        <div className="flex flex-col items-center gap-0.5">
+          <div className="w-7 h-7 rounded-full shadow-sm border border-black/10" style={{ backgroundColor: preset.accent }} />
+          <span className="text-[8px] text-ui-text-faint">Accent</span>
+        </div>
+      </div>
+      <p className="text-[10px] text-ui-text text-center font-medium">{preset.name}</p>
+    </div>
+  )
+}
+
 export default memo(function TemplatesTab({
   activeStylePreset,
   onSelectStylePreset,
@@ -145,13 +177,33 @@ export default memo(function TemplatesTab({
 
   const activeLookPreset = lookPresets.find((p) => p.id === activeStylePreset)
 
-  // Check if a layout preset matches current layout (structure only, no imageCells)
-  const isLayoutPresetActive = (preset) => {
-    return (
-      layout.type === preset.layout.type &&
-      JSON.stringify(layout.structure) === JSON.stringify(preset.layout.structure)
-    )
-  }
+  // Performance: memoize active layout preset ID to avoid JSON.stringify comparison
+  // on every render for every preset button. Compare structure once, store the result.
+  const activeLayoutPresetId = useMemo(() => {
+    for (const preset of layoutPresets) {
+      if (layout.type !== preset.layout.type) continue
+      const a = layout.structure
+      const b = preset.layout.structure
+      if (!a || !b || a.length !== b.length) continue
+      let match = true
+      for (let i = 0; i < a.length; i++) {
+        if (a[i].size !== b[i].size || a[i].subdivisions !== b[i].subdivisions) {
+          match = false
+          break
+        }
+        const subA = a[i].subSizes || [100]
+        const subB = b[i].subSizes || [100]
+        if (subA.length !== subB.length || subA.some((v, j) => v !== subB[j])) {
+          match = false
+          break
+        }
+      }
+      if (match) return preset.id
+    }
+    return null
+  }, [layout.type, layout.structure])
+
+  const isLayoutPresetActive = (preset) => preset.id === activeLayoutPresetId
 
   return (
     <div className="space-y-3">
@@ -221,7 +273,7 @@ export default memo(function TemplatesTab({
           </div>
 
           {/* Layout preset grid */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {displayLayoutPresets.map((preset) => {
               const isActive = isLayoutPresetActive(preset)
               return (
@@ -257,24 +309,28 @@ export default memo(function TemplatesTab({
         {/* Preset Themes */}
         <div className="space-y-2">
           <label className="block text-xs font-medium text-ui-text-muted">Presets</label>
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
             {presetThemes.map((preset) => (
-              <button
+              <Tooltip
                 key={preset.id}
-                onClick={() => onThemePresetChange?.(preset.id)}
-                className={`p-2 rounded-lg border-2 transition-all ${
-                  theme?.preset === preset.id
-                    ? 'border-primary bg-violet-50 dark:bg-violet-900/20 ring-2 ring-primary/20'
-                    : 'border-ui-border hover:border-ui-border-strong hover:bg-ui-surface-elevated'
-                }`}
+                content={<ThemePreviewContent preset={preset} />}
               >
-                <div className="flex gap-1 mb-1.5 justify-center">
-                  <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.primary }} />
-                  <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.secondary }} />
-                  <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.accent }} />
-                </div>
-                <span className="text-[10px] text-ui-text font-medium">{preset.name}</span>
-              </button>
+                <button
+                  onClick={() => onThemePresetChange?.(preset.id)}
+                  className={`w-full p-2 rounded-lg border-2 transition-all ${
+                    theme?.preset === preset.id
+                      ? 'border-primary bg-violet-50 dark:bg-violet-900/20 ring-2 ring-primary/20'
+                      : 'border-ui-border hover:border-ui-border-strong hover:bg-ui-surface-elevated'
+                  }`}
+                >
+                  <div className="flex gap-1 mb-1.5 justify-center">
+                    <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.primary }} />
+                    <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.secondary }} />
+                    <div className="w-4 h-4 rounded-full shadow-sm" style={{ backgroundColor: preset.accent }} />
+                  </div>
+                  <span className="text-[10px] text-ui-text font-medium">{preset.name}</span>
+                </button>
+              </Tooltip>
             ))}
           </div>
         </div>
@@ -320,29 +376,36 @@ export default memo(function TemplatesTab({
           )}
 
           {/* Look preset grid */}
-          <div className="grid grid-cols-4 gap-2">
+          <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
             {lookPresets.map((preset) => (
-              <button
+              <Tooltip
                 key={preset.id}
-                onClick={() => onSelectStylePreset(preset)}
-                title={`${preset.name}: ${preset.description}`}
-                className={`flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
-                  activeStylePreset === preset.id
-                    ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-primary'
-                    : 'hover:bg-zinc-50 dark:hover:bg-dark-subtle'
-                }`}
+                content={
+                  <div className="bg-ui-surface border border-ui-border rounded-lg shadow-lg px-2.5 py-1.5 whitespace-nowrap">
+                    <p className="text-[10px] text-ui-text text-center">{preset.description}</p>
+                  </div>
+                }
               >
-                <LookSwatch preset={preset} isActive={activeStylePreset === preset.id} theme={theme} />
-                <span
-                  className={`text-[10px] leading-tight text-center line-clamp-1 ${
+                <button
+                  onClick={() => onSelectStylePreset(preset)}
+                  className={`w-full flex flex-col items-center gap-1.5 p-2 rounded-lg transition-all ${
                     activeStylePreset === preset.id
-                      ? 'text-violet-700 dark:text-violet-300 font-medium'
-                      : 'text-ui-text-subtle'
+                      ? 'bg-violet-50 dark:bg-violet-900/20 ring-2 ring-primary'
+                      : 'hover:bg-zinc-50 dark:hover:bg-dark-subtle'
                   }`}
                 >
-                  {preset.name}
-                </span>
-              </button>
+                  <LookSwatch preset={preset} isActive={activeStylePreset === preset.id} theme={theme} />
+                  <span
+                    className={`text-[10px] leading-tight text-center line-clamp-1 ${
+                      activeStylePreset === preset.id
+                        ? 'text-violet-700 dark:text-violet-300 font-medium'
+                        : 'text-ui-text-subtle'
+                    }`}
+                  >
+                    {preset.name}
+                  </span>
+                </button>
+              </Tooltip>
             ))}
           </div>
 

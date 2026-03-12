@@ -5,22 +5,32 @@ Compact context summary for session continuity. Rewrite at session end.
 ---
 
 ## Worked on
-Per-cell background color feature + PDF export improvements.
+UX/UI improvements + code quality pass (tooltip clipping, prop drilling, component extraction).
 
 ## Accomplished
 
-1. **Per-cell background color** — Cells can now override the theme primary background with any theme color or neutral. Stored in `layout.cellBackgrounds` (object keyed by cell index). UI in Style > Spacing section with checkbox + ThemeColorPicker.
-2. **PDF font loading** — Added `document.fonts.ready` wait before PDF capture.
-3. **PDF metadata** — Added title and creator metadata to exported PDFs.
-4. **PDF page size investigation** — Tried pxToPt=0.5 to reduce page dimensions for mobile viewers, but reverted because it would reduce quality for the intended use case (sharing/uploading full-resolution designs). Still using pxToPt=1 for digital formats.
+### UX/UI features (previous commit)
+1. Toast notifications, inline confirmations, export progressive disclosure
+2. Quick-actions bar, hover previews, empty state guidance, zoom controls, keyboard shortcuts
+
+### Code quality fixes (this session)
+1. **Portal-based tooltips** — New `Tooltip.jsx` using `createPortal` to document.body. Prevents clipping at sidebar overflow edges. Replaced inline absolute tooltips in TemplatesTab for both themes and looks.
+2. **Removed addToast prop drilling** — ExportButtons and SaveLoadModal now use `useToast()` directly instead of receiving addToast as a prop from App.jsx. Removed optional chaining (`addToast?.()` → `addToast()`).
+3. **App.jsx component extraction** — Extracted 4 components to reduce App.jsx from 950+ to ~820 lines:
+   - `KeyboardShortcutsOverlay.jsx` — Shortcuts modal
+   - `EmptyStateGuide.jsx` — Empty canvas overlay with action buttons
+   - `ZoomControls.jsx` — Floating zoom controls (−, %, +)
+   - `QuickActionsBar.jsx` — Cell quick-action shortcuts
+4. **Freeform text empty state fix** — `isCanvasEmpty` now correctly handles freeform text stored as arrays of block objects.
 
 ## Current state
 
-- **Working** — Per-cell background colors, PDF export with font loading and metadata
-- PDF quality issue still open — user reports it "looks like shit" but specific visual problems not yet identified
+- **Working** — All features building successfully (288 modules).
+- App.jsx at 822 lines — still slightly over 800 but remaining bulk is reader mode + header (tightly coupled to App state).
 
 ## Key context
 
-- `layout.cellBackgrounds` follows the same pattern as `cellOverlays` — object with cellIndex keys, shift/swap/cleanup in setLayout
-- ThemeColorPicker supports theme colors (primary/secondary/accent) + 6 neutral colors
-- PDF export: pxToPt=1 for digital (full resolution), 72/150 for print (correct physical size)
+- `Tooltip.jsx` — Portal-based, auto-positions above trigger, flips below if clipped at top, clamps horizontally to viewport. Used in TemplatesTab for theme/look hover previews.
+- `Toast.jsx` exports `ToastProvider` (wraps App) and `useToast` hook. Components that need toasts call `useToast()` directly.
+- `zoomLevel` state in App — `null` means auto-fit, number overrides previewScale. Resets on platform change.
+- Tab switching shortcuts: 1=Presets, 2=Media, 3=Content, 4=Structure, 5=Style.

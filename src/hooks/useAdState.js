@@ -71,7 +71,7 @@ const PAGE_FIELDS = [
 function extractPageData(state) {
   const data = {}
   PAGE_FIELDS.forEach(field => {
-    if (state[field] !== undefined) data[field] = JSON.parse(JSON.stringify(state[field]))
+    if (state[field] !== undefined) data[field] = structuredClone(state[field])
   })
   return data
 }
@@ -684,7 +684,7 @@ export function useAdState() {
 
       return {
         ...prev,
-        ...JSON.parse(JSON.stringify(defaultPageData)),
+        ...structuredClone(defaultPageData),
         pages: newPages,
         activePage: insertIndex,
       }
@@ -702,7 +702,7 @@ export function useAdState() {
       const insertIndex = prev.activePage + 1
       newPages.splice(insertIndex, 0, null)
 
-      const duplicateData = JSON.parse(JSON.stringify(currentPageData))
+      const duplicateData = structuredClone(currentPageData)
 
       return {
         ...prev,
@@ -907,7 +907,10 @@ export function useAdState() {
         if (!loadedState.pages) loadedState.pages = [null]
         if (!loadedState.textMode) loadedState.textMode = 'structured'
         if (!loadedState.freeformText) loadedState.freeformText = {}
-        const activePage = loadedState.activePage || 0
+        // Requirement: Validate activePage bounds to prevent crash on corrupted saves
+        // Approach: Clamp activePage to valid range
+        const activePage = Math.max(0, Math.min(loadedState.activePage || 0, loadedState.pages.length - 1))
+        loadedState.activePage = activePage
         if (loadedState.pages[activePage] !== null) {
           const pageData = loadedState.pages[activePage]
           Object.assign(loadedState, pageData)

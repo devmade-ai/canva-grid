@@ -1,8 +1,15 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
+import ConfirmButton from './ConfirmButton'
+import { useToast } from './Toast'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 
 export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelete, getSavedDesigns }) {
+  const { addToast } = useToast()
+  const modalRef = useRef(null)
+  useFocusTrap(modalRef, isOpen)
   const [designs, setDesigns] = useState([])
   const [saveName, setSaveName] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
   const [activeTab, setActiveTab] = useState('save')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -16,6 +23,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     if (isOpen) {
       refreshDesigns()
       setSaveName('')
+      setSearchQuery('')
       setError(null)
     }
   }, [isOpen, refreshDesigns])
@@ -30,6 +38,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
       await refreshDesigns()
       setSaveName('')
       setActiveTab('load')
+      addToast(`Saved "${name}"`, { type: 'success' })
     } else {
       setError(result.error || 'Failed to save design')
     }
@@ -47,16 +56,14 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     }
   }
 
-  const handleDelete = async (designId, e) => {
-    e.stopPropagation()
-    if (confirm('Delete this design?')) {
-      setError(null)
-      const result = await onDelete(designId)
-      if (result.success) {
-        await refreshDesigns()
-      } else {
-        setError(result.error || 'Failed to delete design')
-      }
+  const handleDelete = async (designId) => {
+    setError(null)
+    const result = await onDelete(designId)
+    if (result.success) {
+      await refreshDesigns()
+      addToast('Design deleted', { type: 'info' })
+    } else {
+      setError(result.error || 'Failed to delete design')
     }
   }
 
@@ -69,7 +76,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div className="bg-ui-surface rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
+      <div ref={modalRef} className="bg-ui-surface rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-ui-border">
           <h2 className="text-lg font-semibold text-ui-text">Saved Designs</h2>
@@ -145,34 +152,47 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
 
           {activeTab === 'load' && (
             <div className="space-y-2">
+              {/* Search filter for saved designs */}
+              {designs.length > 3 && (
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search designs..."
+                  className="w-full px-3 py-2 rounded-lg bg-ui-surface-inset border border-ui-border text-ui-text text-sm placeholder-ui-text-muted focus:outline-none focus:ring-2 focus:ring-primary mb-2"
+                />
+              )}
               {designs.length === 0 ? (
                 <p className="text-center text-ui-text-muted py-8">
                   No saved designs yet.
                 </p>
               ) : (
-                designs.map((design) => (
-                  <button
+                designs.filter((d) => !searchQuery || d.name.toLowerCase().includes(searchQuery.toLowerCase())).map((design) => (
+                  <div
                     key={design.id}
-                    onClick={() => handleLoad(design.id)}
-                    disabled={loading}
-                    className="w-full p-3 rounded-lg bg-ui-surface-inset hover:bg-ui-surface-hover active:bg-ui-surface-hover/80 text-left group transition-colors disabled:opacity-50"
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => !loading && handleLoad(design.id)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' && !loading) handleLoad(design.id) }}
+                    className={`w-full p-3 rounded-lg bg-ui-surface-inset hover:bg-ui-surface-hover active:bg-ui-surface-hover/80 text-left group transition-colors cursor-pointer ${loading ? 'opacity-50 pointer-events-none' : ''}`}
                   >
                     <div className="flex items-center justify-between">
                       <div>
                         <div className="font-medium text-ui-text">{design.name}</div>
                         <div className="text-xs text-ui-text-muted">{formatDate(design.savedAt)}</div>
                       </div>
-                      <button
-                        onClick={(e) => handleDelete(design.id, e)}
+                      <ConfirmButton
+                        onConfirm={() => handleDelete(design.id)}
+                        confirmLabel="Delete?"
                         className="p-2 rounded-lg opacity-50 sm:opacity-0 group-hover:opacity-100 hover:bg-red-100 dark:hover:bg-red-900/30 active:bg-red-200 dark:active:bg-red-900/50 text-red-500 transition-all"
                         title="Delete design"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                         </svg>
-                      </button>
+                      </ConfirmButton>
                     </div>
-                  </button>
+                  </div>
                 ))
               )}
             </div>
