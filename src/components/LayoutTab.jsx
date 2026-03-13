@@ -38,6 +38,8 @@ function cellToSection(structure, type, cellIndex) {
     type === 'fullbleed' || !structure || structure.length === 0
       ? [{ size: 100, subdivisions: 1, subSizes: [100] }]
       : structure
+  // Guard: clamp invalid indices to first cell instead of silently misattributing
+  if (cellIndex < 0) return { sectionIndex: 0, subIndex: 0 }
   let idx = 0
   for (let si = 0; si < normalized.length; si++) {
     const subs = normalized[si].subdivisions || 1
@@ -46,6 +48,7 @@ function cellToSection(structure, type, cellIndex) {
       idx++
     }
   }
+  // cellIndex exceeds total cells — fall back to first cell
   return { sectionIndex: 0, subIndex: 0 }
 }
 

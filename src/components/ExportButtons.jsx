@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react'
+import { useState, useCallback, useRef, memo } from 'react'
 import { toCanvas } from 'html-to-image'
 import { PDFDocument } from 'pdf-lib'
 import JSZip from 'jszip'
@@ -144,6 +144,9 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   const [pdfQuality, setPdfQuality] = useState('standard')
   const [showPdfQuality, setShowPdfQuality] = useState(false)
   const [showMoreOptions, setShowMoreOptions] = useState(false)
+  // Requirement: Abort in-flight multi-page/PDF exports if component unmounts or user cancels.
+  // Approach: Ref checked in the export loop between page captures.
+  const cancelledRef = useRef(false)
 
   const exportFormat = state.exportFormat || 'png'
   const ext = FILE_EXTENSIONS[exportFormat] || 'png'
@@ -237,6 +240,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     updateExporting(true)
     setExportOp('allPages')
+    cancelledRef.current = false
     const zip = new JSZip()
     const platform = platforms.find((p) => p.id === state.platform)
     if (!platform) { updateExporting(false); setExportOp(null); return }
@@ -247,6 +251,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     try {
       for (let i = 0; i < pageCount; i++) {
+        if (cancelledRef.current) break
         setExportProgress({ current: i + 1, total: pageCount, name: `Page ${i + 1}` })
         debugLog('export', 'all-pages-capture', { page: i + 1, total: pageCount }, 'debug')
 
@@ -305,6 +310,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     updateExporting(true)
     setExportOp('pdf')
+    cancelledRef.current = false
     const restoreOpacity = hideCanvas(canvasRef.current)
 
     const pageImages = []
@@ -321,6 +327,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       await document.fonts.ready
 
       for (let i = 0; i < totalPages; i++) {
+        if (cancelledRef.current) break
         if (totalPages > 1) {
           setExportProgress({ current: i + 1, total: totalPages, name: `Page ${i + 1}` })
           onSetActivePage(i)

@@ -184,11 +184,16 @@ function App() {
     moveFreeformBlock,
   } = useAdState()
 
-  // Clamp selectedCell when layout structure changes
+  // Requirement: Clamp selectedCell synchronously so children never see an out-of-bounds index.
+  // Approach: Derive safeSelectedCell via useMemo instead of useEffect (which runs post-render).
+  // Alternatives:
+  //   - useEffect clamping: Rejected — one render frame shows stale index to children.
   const totalCells = useMemo(() => {
     const structure = state.layout.structure || [{ size: 100, subdivisions: 1, subSizes: [100] }]
     return structure.reduce((total, section) => total + (section.subdivisions || 1), 0)
   }, [state.layout.structure])
+
+  const safeSelectedCell = selectedCell >= totalCells ? 0 : selectedCell
 
   useEffect(() => {
     if (selectedCell >= totalCells) {
@@ -623,7 +628,7 @@ function App() {
       <ContextBar
         layout={state.layout}
         cellImages={state.cellImages}
-        selectedCell={selectedCell}
+        selectedCell={safeSelectedCell}
         onSelectCell={setSelectedCell}
         platform={state.platform}
         undo={undo}
@@ -692,7 +697,7 @@ function App() {
                     platform={state.platform}
                     theme={state.theme}
                     // Global cell selection
-                    selectedCell={selectedCell}
+                    selectedCell={safeSelectedCell}
                     onSelectCell={setSelectedCell}
                   />
                 )}
@@ -714,7 +719,7 @@ function App() {
                     onUpdateBlock={updateFreeformBlock}
                     onRemoveBlock={removeFreeformBlock}
                     onMoveBlock={moveFreeformBlock}
-                    selectedCell={selectedCell}
+                    selectedCell={safeSelectedCell}
                     onSelectCell={setSelectedCell}
                   />
                 )}
@@ -726,7 +731,7 @@ function App() {
                     layout={state.layout}
                     onLayoutChange={setLayout}
                     platform={state.platform}
-                    selectedCell={selectedCell}
+                    selectedCell={safeSelectedCell}
                     onSelectCell={setSelectedCell}
                     cellImages={state.cellImages}
                     images={state.images}
@@ -749,7 +754,7 @@ function App() {
                     frame={state.frame}
                     onFrameChange={setFrame}
                     cellImages={state.cellImages}
-                    selectedCell={selectedCell}
+                    selectedCell={safeSelectedCell}
                     onSelectCell={setSelectedCell}
                   />
                 )}
@@ -787,7 +792,7 @@ function App() {
                   {totalCells > 1 && (
                     <CanvasCellOverlay
                       layout={state.layout}
-                      selectedCell={selectedCell}
+                      selectedCell={safeSelectedCell}
                       onSelectCell={setSelectedCell}
                     />
                   )}
@@ -823,7 +828,7 @@ function App() {
 
             {/* Quick actions bar for selected cell — shortcuts to common per-cell actions */}
             {totalCells > 1 && (
-              <QuickActionsBar selectedCell={selectedCell} onNavigate={setActiveSection} />
+              <QuickActionsBar selectedCell={safeSelectedCell} onNavigate={setActiveSection} />
             )}
 
             {/* Export Buttons */}

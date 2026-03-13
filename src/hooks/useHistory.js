@@ -17,7 +17,12 @@ function deepEqual(a, b, depth = 0) {
   if (a === b) return true
   if (a == null || b == null) return a === b
   if (typeof a !== typeof b) return false
-  if (depth >= MAX_DEPTH) return false
+  if (depth >= MAX_DEPTH) {
+    if (import.meta.env.DEV) {
+      console.warn('deepEqual: MAX_DEPTH reached — state nesting exceeds', MAX_DEPTH, 'levels')
+    }
+    return false
+  }
 
   if (Array.isArray(a)) {
     if (!Array.isArray(b) || a.length !== b.length) return false

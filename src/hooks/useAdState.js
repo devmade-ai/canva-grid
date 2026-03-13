@@ -10,7 +10,7 @@ import { useCallback, useEffect, useRef } from 'react'
 import { presetThemes } from '../config/themes'
 import { getLookSettingsForLayout } from '../config/stylePresets'
 import { useHistory } from './useHistory'
-import { countCells, cleanupOrphanedCells, shiftCellIndices, swapCellIndices } from '../utils/cellUtils'
+import { countCells, cleanupOrphanedCells, shiftCellIndices, swapCellIndices, shiftLayoutCellData, swapLayoutCellData } from '../utils/cellUtils'
 import { createFreeformBlock } from '../config/textDefaults'
 import * as designStorage from '../utils/designStorage'
 import { debugLog } from '../utils/debugLog'
@@ -384,49 +384,11 @@ export function useAdState() {
         const { fromIndex, shiftBy } = _cellShift
         const shifted = shiftCellIndices(prev, fromIndex, shiftBy)
 
-        // Shift cellAlignments (array) and cellOverlays (object) from the layout too
-        const oldAlignments = newLayout.cellAlignments || []
-        const shiftedAlignments = []
-        for (let i = 0; i < oldAlignments.length; i++) {
-          if (i >= fromIndex) {
-            const newIdx = i + shiftBy
-            if (newIdx >= 0) shiftedAlignments[newIdx] = oldAlignments[i]
-          } else {
-            shiftedAlignments[i] = oldAlignments[i]
-          }
-        }
-        // Fill gaps with null alignment
-        for (let i = 0; i < shiftedAlignments.length; i++) {
-          if (!shiftedAlignments[i]) shiftedAlignments[i] = { textAlign: null, textVerticalAlign: null }
-        }
-
-        const oldOverlays = newLayout.cellOverlays || {}
-        const shiftedOverlays = {}
-        for (const [key, value] of Object.entries(oldOverlays)) {
-          const idx = parseInt(key, 10)
-          if (idx >= fromIndex) {
-            const newIdx = idx + shiftBy
-            if (newIdx >= 0) shiftedOverlays[newIdx] = value
-          } else {
-            shiftedOverlays[key] = value
-          }
-        }
-
-        const oldBackgrounds = newLayout.cellBackgrounds || {}
-        const shiftedBackgrounds = {}
-        for (const [key, value] of Object.entries(oldBackgrounds)) {
-          const idx = parseInt(key, 10)
-          if (idx >= fromIndex) {
-            const newIdx = idx + shiftBy
-            if (newIdx >= 0) shiftedBackgrounds[newIdx] = value
-          } else {
-            shiftedBackgrounds[key] = value
-          }
-        }
-
-        newLayout.cellAlignments = shiftedAlignments
-        newLayout.cellOverlays = shiftedOverlays
-        newLayout.cellBackgrounds = shiftedBackgrounds
+        // Shift layout-internal per-cell data (alignments, overlays, backgrounds)
+        const shiftedLayoutData = shiftLayoutCellData(newLayout, fromIndex, shiftBy)
+        newLayout.cellAlignments = shiftedLayoutData.cellAlignments
+        newLayout.cellOverlays = shiftedLayoutData.cellOverlays
+        newLayout.cellBackgrounds = shiftedLayoutData.cellBackgrounds
 
         // Build intermediate state with shifted data for cleanupOrphanedCells
         stateForCleanup = {
@@ -444,35 +406,11 @@ export function useAdState() {
       if (_cellSwap) {
         const swapped = swapCellIndices(stateForCleanup, _cellSwap)
 
-        // Remap cellAlignments (array)
-        const oldAlignments = newLayout.cellAlignments || []
-        const swappedAlignments = [...oldAlignments]
-        for (const [oldIdx, newIdx] of Object.entries(_cellSwap)) {
-          swappedAlignments[newIdx] = oldAlignments[parseInt(oldIdx, 10)] || { textAlign: null, textVerticalAlign: null }
-        }
-        newLayout.cellAlignments = swappedAlignments
-
-        // Remap cellOverlays (object)
-        const oldOverlays = newLayout.cellOverlays || {}
-        const swappedOverlays = { ...oldOverlays }
-        for (const oldIdx of Object.keys(_cellSwap)) {
-          delete swappedOverlays[oldIdx]
-        }
-        for (const [oldIdx, newIdx] of Object.entries(_cellSwap)) {
-          if (oldOverlays[oldIdx]) swappedOverlays[newIdx] = oldOverlays[oldIdx]
-        }
-        newLayout.cellOverlays = swappedOverlays
-
-        // Remap cellBackgrounds (object)
-        const oldBgs = newLayout.cellBackgrounds || {}
-        const swappedBgs = { ...oldBgs }
-        for (const oldIdx of Object.keys(_cellSwap)) {
-          delete swappedBgs[oldIdx]
-        }
-        for (const [oldIdx, newIdx] of Object.entries(_cellSwap)) {
-          if (oldBgs[oldIdx]) swappedBgs[newIdx] = oldBgs[oldIdx]
-        }
-        newLayout.cellBackgrounds = swappedBgs
+        // Remap layout-internal per-cell data (alignments, overlays, backgrounds)
+        const swappedLayoutData = swapLayoutCellData(newLayout, _cellSwap)
+        newLayout.cellAlignments = swappedLayoutData.cellAlignments
+        newLayout.cellOverlays = swappedLayoutData.cellOverlays
+        newLayout.cellBackgrounds = swappedLayoutData.cellBackgrounds
 
         stateForCleanup = {
           ...stateForCleanup,
