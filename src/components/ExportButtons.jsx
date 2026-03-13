@@ -129,7 +129,7 @@ function downloadDiagnosticImage(imageResult, platformId) {
   saveAs(blob, `pdf-diagnostic-${platformId}.png`)
 }
 
-export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, pageCount = 1, onSetActivePage }) {
+export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, cancelExportRef, pageCount = 1, onSetActivePage }) {
   const { addToast } = useToast()
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(null)
@@ -146,7 +146,9 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   const [showMoreOptions, setShowMoreOptions] = useState(false)
   // Requirement: Abort in-flight multi-page/PDF exports if component unmounts or user cancels.
   // Approach: Ref checked in the export loop between page captures.
-  const cancelledRef = useRef(false)
+  // The external cancelExportRef (from App) lets the overlay Cancel button abort exports too.
+  const internalCancelRef = useRef(false)
+  const cancelledRef = cancelExportRef || internalCancelRef
 
   const exportFormat = state.exportFormat || 'png'
   const ext = FILE_EXTENSIONS[exportFormat] || 'png'

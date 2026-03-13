@@ -120,6 +120,8 @@ function App() {
   const [containerWidth, setContainerWidth] = useState(600)
   const [windowHeight, setWindowHeight] = useState(window.innerHeight)
   const [isExporting, setIsExporting] = useState(false)
+  // Ref shared with ExportButtons so the Cancel button can abort in-flight exports
+  const cancelExportRef = useRef(false)
   const [showInstallModal, setShowInstallModal] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
   const [showSaveLoadModal, setShowSaveLoadModal] = useState(false)
@@ -816,7 +818,7 @@ function App() {
                     <div className="inline-block w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mb-3" />
                     <p className="text-white font-medium">Exporting...</p>
                     <button
-                      onClick={() => setIsExporting(false)}
+                      onClick={() => { cancelExportRef.current = true; setIsExporting(false) }}
                       className="mt-3 px-4 py-1.5 text-sm text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
                     >
                       Cancel
@@ -840,6 +842,7 @@ function App() {
                   onPlatformChange={setPlatform}
                   onExportFormatChange={setExportFormat}
                   onExportingChange={setIsExporting}
+                  cancelExportRef={cancelExportRef}
                   pageCount={pageCount}
                   onSetActivePage={setActivePage}
                 />

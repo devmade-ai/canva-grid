@@ -5,7 +5,7 @@
 //   - Separate per-tab implementations: Rejected — divergent code, duplicated layout logic.
 //   - Render prop for cell content: Rejected — mode-based is simpler for 2 known consumers.
 import { useMemo, memo } from 'react'
-import { platforms } from '../config/platforms'
+import { getAspectRatio } from '../config/platforms'
 
 const FULLBLEED_STRUCTURE = [{ size: 100, subdivisions: 1, subSizes: [100] }]
 
@@ -31,8 +31,7 @@ export default memo(function MiniCellGrid({
       ? FULLBLEED_STRUCTURE
       : structure
 
-  const platformData = platforms.find((p) => p.id === platform) || platforms[0]
-  const aspectRatio = platformData.width / platformData.height
+  const aspectRatio = getAspectRatio(platform)
 
   const gridWidth = size === 'large' ? 120 : 64
   const fontSize = size === 'large' ? 'text-[11px] sm:text-[10px]' : 'text-[9px] sm:text-[8px]'
@@ -133,9 +132,13 @@ export default memo(function MiniCellGrid({
               return (
                 <div
                   key={`cell-${currentCellIndex}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Cell ${currentCellIndex + 1}`}
                   className={`relative cursor-pointer transition-colors ${minCellH} ${bgClass} flex items-center justify-center active:opacity-70`}
                   style={{ flex: `1 1 ${subSize}%` }}
                   onClick={() => onSelectCell(currentCellIndex)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectCell(currentCellIndex) } }}
                 >
                   {content}
                 </div>
