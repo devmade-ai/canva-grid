@@ -12,7 +12,13 @@ const DB_VERSION = 1
 const STORE_NAME = 'designs'
 const LEGACY_STORAGE_KEY = 'canvagrid-designs'
 
+// Cache the IDB connection to avoid opening a new one on every operation.
+// If the connection closes unexpectedly (e.g. browser GC), re-open on next call.
+let cachedDB = null
+
 function openDB() {
+  if (cachedDB) return Promise.resolve(cachedDB)
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
     request.onupgradeneeded = (event) => {
@@ -21,7 +27,12 @@ function openDB() {
         db.createObjectStore(STORE_NAME, { keyPath: 'id' })
       }
     }
-    request.onsuccess = () => resolve(request.result)
+    request.onsuccess = () => {
+      cachedDB = request.result
+      // Clear cache if connection closes unexpectedly
+      cachedDB.onclose = () => { cachedDB = null }
+      resolve(cachedDB)
+    }
     request.onerror = () => {
       debugLog('design-storage', 'db-open-error', { error: request.error?.message }, 'error')
       reject(request.error)
@@ -111,18 +122,25 @@ export async function deleteDesign(designId) {
 // Alternatives:
 //   - Keep localStorage forever: Rejected — defeats purpose of migration.
 //   - Delete without migrating: Rejected — users lose saved designs.
+// Migration flag only set to true after successful migration or when no data exists.
+// If migration fails partway, next app load retries — prevents permanent data loss.
 let migrationDone = false
 
 export async function migrateFromLocalStorage(migrateTextFn) {
   if (migrationDone) return
-  migrationDone = true
 
   try {
     const raw = localStorage.getItem(LEGACY_STORAGE_KEY)
-    if (!raw) return
+    if (!raw) {
+      migrationDone = true
+      return
+    }
 
     const designs = JSON.parse(raw)
-    if (!Array.isArray(designs) || designs.length === 0) return
+    if (!Array.isArray(designs) || designs.length === 0) {
+      migrationDone = true
+      return
+    }
 
     debugLog('design-storage', 'migration-start', { count: designs.length })
 
@@ -136,9 +154,10 @@ export async function migrateFromLocalStorage(migrateTextFn) {
 
     // Remove legacy data after successful migration
     localStorage.removeItem(LEGACY_STORAGE_KEY)
+    migrationDone = true
     debugLog('design-storage', 'migration-success', { count: designs.length })
   } catch (error) {
-    // Non-critical — designs stay in localStorage if migration fails
+    // Non-critical — designs stay in localStorage, migration retries on next load
     debugLog('design-storage', 'migration-error', { error: error.message }, 'error')
   }
 }

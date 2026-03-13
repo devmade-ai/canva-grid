@@ -14,18 +14,23 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  // Track whether modal is still open to prevent stale state updates from in-flight IDB queries
+  const activeRef = useRef(false)
+
   const refreshDesigns = useCallback(async () => {
     const list = await getSavedDesigns()
-    setDesigns(list)
+    if (activeRef.current) setDesigns(list)
   }, [getSavedDesigns])
 
   useEffect(() => {
     if (isOpen) {
+      activeRef.current = true
       refreshDesigns()
       setSaveName('')
       setSearchQuery('')
       setError(null)
     }
+    return () => { activeRef.current = false }
   }, [isOpen, refreshDesigns])
 
   const handleSave = async () => {
@@ -72,16 +77,29 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
   }
 
+  // Focus the first interactive element when modal opens
+  const saveInputRef = useRef(null)
+  useEffect(() => {
+    if (isOpen) {
+      // Delay focus slightly to ensure DOM is ready after render
+      const timer = setTimeout(() => saveInputRef.current?.focus(), 50)
+      return () => clearTimeout(timer)
+    }
+  }, [isOpen])
+
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
-      <div ref={modalRef} className="bg-ui-surface rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col">
+    // Backdrop — click outside modal to close
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={onClose}>
+      {/* Modal content — stop propagation so clicks inside don't close */}
+      <div ref={modalRef} role="dialog" aria-modal="true" aria-labelledby="save-load-title" className="bg-ui-surface rounded-xl shadow-2xl w-full max-w-md max-h-[80vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-ui-border">
-          <h2 className="text-lg font-semibold text-ui-text">Saved Designs</h2>
+          <h2 id="save-load-title" className="text-lg font-semibold text-ui-text">Saved Designs</h2>
           <button
             onClick={onClose}
+            aria-label="Close dialog"
             className="p-2 rounded-lg hover:bg-ui-surface-hover active:bg-ui-surface-inset text-ui-text-muted"
           >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -130,6 +148,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                   Design Name
                 </label>
                 <input
+                  ref={saveInputRef}
                   type="text"
                   value={saveName}
                   onChange={(e) => setSaveName(e.target.value)}

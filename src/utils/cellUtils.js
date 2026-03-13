@@ -136,6 +136,98 @@ export function cleanupOrphanedCells(prevState, newCellCount) {
 }
 
 /**
+ * Shift layout-internal cell data (cellAlignments, cellOverlays, cellBackgrounds)
+ * when cells are inserted or removed at a position.
+ * Requirement: Layout-internal per-cell data must stay in sync with shiftCellIndices.
+ * Approach: Centralizes the 3 parallel shift loops that were inline in useAdState.setLayout.
+ *
+ * @param {Object} layout - Current layout object
+ * @param {number} fromIndex - First cell index affected by the shift
+ * @param {number} shiftBy - Number of cells to shift (positive = insert, negative = remove)
+ * @returns {Object} { cellAlignments, cellOverlays, cellBackgrounds }
+ */
+export function shiftLayoutCellData(layout, fromIndex, shiftBy) {
+  const defaultAlignment = { textAlign: null, textVerticalAlign: null }
+
+  // Shift array-indexed cellAlignments
+  const oldAlignments = layout.cellAlignments || []
+  const shiftedAlignments = []
+  for (let i = 0; i < oldAlignments.length; i++) {
+    if (i >= fromIndex) {
+      const newIdx = i + shiftBy
+      if (newIdx >= 0) shiftedAlignments[newIdx] = oldAlignments[i]
+    } else {
+      shiftedAlignments[i] = oldAlignments[i]
+    }
+  }
+  for (let i = 0; i < shiftedAlignments.length; i++) {
+    if (!shiftedAlignments[i]) shiftedAlignments[i] = defaultAlignment
+  }
+
+  // Shift object-keyed fields using a shared helper
+  const shiftObjKeys = (obj) => {
+    if (!obj) return {}
+    const result = {}
+    for (const [key, value] of Object.entries(obj)) {
+      const idx = parseInt(key, 10)
+      if (idx >= fromIndex) {
+        const newIdx = idx + shiftBy
+        if (newIdx >= 0) result[newIdx] = value
+      } else {
+        result[key] = value
+      }
+    }
+    return result
+  }
+
+  return {
+    cellAlignments: shiftedAlignments,
+    cellOverlays: shiftObjKeys(layout.cellOverlays),
+    cellBackgrounds: shiftObjKeys(layout.cellBackgrounds),
+  }
+}
+
+/**
+ * Swap layout-internal cell data (cellAlignments, cellOverlays, cellBackgrounds)
+ * when sections are reordered.
+ * Requirement: Layout-internal per-cell data must stay in sync with swapCellIndices.
+ * Approach: Centralizes the 3 parallel swap blocks that were inline in useAdState.setLayout.
+ *
+ * @param {Object} layout - Current layout object
+ * @param {Object} cellMap - Map of oldIndex → newIndex
+ * @returns {Object} { cellAlignments, cellOverlays, cellBackgrounds }
+ */
+export function swapLayoutCellData(layout, cellMap) {
+  const defaultAlignment = { textAlign: null, textVerticalAlign: null }
+
+  // Remap cellAlignments (array)
+  const oldAlignments = layout.cellAlignments || []
+  const swappedAlignments = [...oldAlignments]
+  for (const [oldIdx, newIdx] of Object.entries(cellMap)) {
+    swappedAlignments[newIdx] = oldAlignments[parseInt(oldIdx, 10)] || defaultAlignment
+  }
+
+  // Remap object-keyed fields
+  const remapObjKeys = (obj) => {
+    if (!obj) return {}
+    const result = { ...obj }
+    for (const oldIdx of Object.keys(cellMap)) {
+      delete result[oldIdx]
+    }
+    for (const [oldIdx, newIdx] of Object.entries(cellMap)) {
+      if (obj[oldIdx]) result[newIdx] = obj[oldIdx]
+    }
+    return result
+  }
+
+  return {
+    cellAlignments: swappedAlignments,
+    cellOverlays: remapObjKeys(layout.cellOverlays),
+    cellBackgrounds: remapObjKeys(layout.cellBackgrounds),
+  }
+}
+
+/**
  * Shift cell-indexed data when cells are inserted or removed at a position.
  * Requirement: When inserting/removing sections or subdivisions, all per-cell data
  *   (text, images, overlays, etc.) must be remapped so content stays with the correct cell.

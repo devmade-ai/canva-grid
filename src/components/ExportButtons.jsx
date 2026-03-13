@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from 'react'
+import { useState, useCallback, useRef, memo } from 'react'
 import { toCanvas } from 'html-to-image'
 import { PDFDocument } from 'pdf-lib'
 import JSZip from 'jszip'
@@ -37,7 +37,8 @@ function getTimestamp() {
   const dd = String(now.getDate()).padStart(2, '0')
   const hh = String(now.getHours()).padStart(2, '0')
   const min = String(now.getMinutes()).padStart(2, '0')
-  return `${yy}${mm}${dd}-${hh}${min}`
+  const ss = String(now.getSeconds()).padStart(2, '0')
+  return `${yy}${mm}${dd}-${hh}${min}${ss}`
 }
 
 // Wait for React re-render + browser paint to settle before canvas capture.
@@ -128,7 +129,7 @@ function downloadDiagnosticImage(imageResult, platformId) {
   saveAs(blob, `pdf-diagnostic-${platformId}.png`)
 }
 
-export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, pageCount = 1, onSetActivePage }) {
+export default memo(function ExportButtons({ canvasRef, state, onPlatformChange, onExportFormatChange, onExportingChange, cancelExportRef, pageCount = 1, onSetActivePage }) {
   const { addToast } = useToast()
   const [isExporting, setIsExporting] = useState(false)
   const [exportProgress, setExportProgress] = useState(null)
@@ -143,6 +144,11 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
   const [pdfQuality, setPdfQuality] = useState('standard')
   const [showPdfQuality, setShowPdfQuality] = useState(false)
   const [showMoreOptions, setShowMoreOptions] = useState(false)
+  // Requirement: Abort in-flight multi-page/PDF exports if component unmounts or user cancels.
+  // Approach: Ref checked in the export loop between page captures.
+  // The external cancelExportRef (from App) lets the overlay Cancel button abort exports too.
+  const internalCancelRef = useRef(false)
+  const cancelledRef = cancelExportRef || internalCancelRef
 
   const exportFormat = state.exportFormat || 'png'
   const ext = FILE_EXTENSIONS[exportFormat] || 'png'
@@ -236,6 +242,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     updateExporting(true)
     setExportOp('allPages')
+    cancelledRef.current = false
     const zip = new JSZip()
     const platform = platforms.find((p) => p.id === state.platform)
     if (!platform) { updateExporting(false); setExportOp(null); return }
@@ -246,11 +253,14 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     try {
       for (let i = 0; i < pageCount; i++) {
+        if (cancelledRef.current) break
         setExportProgress({ current: i + 1, total: pageCount, name: `Page ${i + 1}` })
         debugLog('export', 'all-pages-capture', { page: i + 1, total: pageCount }, 'debug')
 
         onSetActivePage(i)
-        await new Promise((resolve) => setTimeout(resolve, 300))
+        // Wait for React state update + re-render + paint to settle.
+        // 300ms fixed delay replaced with double waitForPaint for reliability on slow devices.
+        await waitForPaint()
         await waitForPaint()
 
         const restoreTransform = setFullScale(canvasRef.current)
@@ -302,6 +312,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
 
     updateExporting(true)
     setExportOp('pdf')
+    cancelledRef.current = false
     const restoreOpacity = hideCanvas(canvasRef.current)
 
     const pageImages = []
@@ -318,6 +329,7 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
       await document.fonts.ready
 
       for (let i = 0; i < totalPages; i++) {
+        if (cancelledRef.current) break
         if (totalPages > 1) {
           setExportProgress({ current: i + 1, total: totalPages, name: `Page ${i + 1}` })
           onSetActivePage(i)
@@ -410,27 +422,41 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     debugLog('export', 'multi-start', { format: exportFormat, platformCount: platformsToExport.length })
 
     try {
+      const failed = []
       for (let i = 0; i < platformsToExport.length; i++) {
         const platform = platformsToExport[i]
         setExportProgress({ current: i + 1, total: platformsToExport.length, name: platform.name })
 
-        onPlatformChange(platform.id)
-        await waitForPaint()
+        try {
+          onPlatformChange(platform.id)
+          await waitForPaint()
 
-        const restoreTransform = setFullScale(canvasRef.current)
-        await waitForPaint()
+          const restoreTransform = setFullScale(canvasRef.current)
+          await waitForPaint()
 
-        const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
-        restoreTransform()
+          const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
+          restoreTransform()
 
-        zip.file(`${platform.id}-${platform.width}x${platform.height}.${ext}`, blob)
+          zip.file(`${platform.id}-${platform.width}x${platform.height}.${ext}`, blob)
+        } catch (err) {
+          failed.push(platform.name)
+          debugLog('export', 'multi-platform-fail', { platform: platform.id, error: err.message }, 'warn')
+        }
       }
 
-      const content = await zip.generateAsync({ type: 'blob' })
-      const ts = getTimestamp()
-      saveAs(content, `${ts}-multi.zip`)
-      debugLog('export', 'multi-success', { platformCount: platformsToExport.length, sizeKB: Math.round(content.size / 1024) })
-      addToast(`${platformsToExport.length} platforms exported`, { type: 'success' })
+      const successCount = platformsToExport.length - failed.length
+      if (successCount > 0) {
+        const content = await zip.generateAsync({ type: 'blob' })
+        const ts = getTimestamp()
+        saveAs(content, `${ts}-multi.zip`)
+        debugLog('export', 'multi-success', { platformCount: successCount, failed: failed.length, sizeKB: Math.round(content.size / 1024) })
+      }
+
+      if (failed.length > 0) {
+        addToast(`${successCount} exported, ${failed.length} failed: ${failed.join(', ')}`, { type: 'warning', duration: 5000 })
+      } else {
+        addToast(`${platformsToExport.length} platforms exported`, { type: 'success' })
+      }
 
       onPlatformChange(originalPlatform)
       setShowMultiSelect(false)

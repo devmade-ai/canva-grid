@@ -237,6 +237,12 @@ export const platformGroupsByCategory = platformGroups.reduce((groups, pg) => {
   return groups
 }, {})
 
+// Aspect ratio for a given platform ID (used by cell grids and media previews)
+export function getAspectRatio(platformId) {
+  const p = platforms.find((pl) => pl.id === platformId) || platforms[0]
+  return p.width / p.height
+}
+
 // Lookup helpers
 export function findFormat(formatId) {
   return platforms.find((p) => p.id === formatId) || platforms[0]

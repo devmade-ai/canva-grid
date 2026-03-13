@@ -26,6 +26,15 @@ function toTransparentRgba(rgbColor) {
 //   - Canvas API overlay rendering: Rejected — would bypass html-to-image entirely,
 //     too complex for the improvement needed.
 
+// Gradient stop multipliers — tuned to minimize banding in html-to-image canvas export.
+// These values were empirically tested: 2-stop gradients produce visible banding after
+// canvas serialization + JPEG compression. 4-6 stops with these opacity curves give the
+// renderer precise anchor points for smooth interpolation.
+//
+// Linear fade: 100%→70%→40%→15%→0% opacity at positions 0→30→55→75→100%
+// Vignette:    0%→5%→20%→50%→80%→100% opacity at positions 0→30→50→70→85→100%
+// Spotlight:   100%→80%→40%→10%→0% opacity at positions 0→30%→60%→85%→100% of endPct
+
 // Build linear gradient with smooth multi-stop fade
 function linearFade(direction, c, o) {
   return `linear-gradient(${direction}, ${toRgba(c, o)} 0%, ${toRgba(c, o * 0.7)} 30%, ${toRgba(c, o * 0.4)} 55%, ${toRgba(c, o * 0.15)} 75%, transparent 100%)`
@@ -104,55 +113,3 @@ export function hexToRgb(hex) {
 export function getOverlayType(id) {
   return overlayTypes.find((o) => o.id === id) || overlayTypes[0]
 }
-
-// Image style presets combining overlay + filters
-export const imagePresets = [
-  {
-    id: 'none',
-    name: 'None',
-    overlay: { type: 'solid', color: 'primary', opacity: 0 },
-    filters: { grayscale: 0, sepia: 0, blur: 0, contrast: 100, brightness: 100 },
-  },
-  {
-    id: 'dramatic-dark',
-    name: 'Dramatic Dark',
-    overlay: { type: 'vignette', color: 'primary', opacity: 70 },
-    filters: { grayscale: 0, sepia: 0, blur: 0, contrast: 110, brightness: 90 },
-  },
-  {
-    id: 'light-airy',
-    name: 'Light & Airy',
-    overlay: { type: 'solid', color: 'secondary', opacity: 20 },
-    filters: { grayscale: 0, sepia: 0, blur: 0, contrast: 90, brightness: 110 },
-  },
-  {
-    id: 'vintage',
-    name: 'Vintage',
-    overlay: { type: 'vignette', color: 'primary', opacity: 40 },
-    filters: { grayscale: 0, sepia: 30, blur: 0, contrast: 95, brightness: 95 },
-  },
-  {
-    id: 'cinematic',
-    name: 'Cinematic',
-    overlay: { type: 'gradient-up', color: 'primary', opacity: 60 },
-    filters: { grayscale: 0, sepia: 10, blur: 0, contrast: 115, brightness: 95 },
-  },
-  {
-    id: 'soft-focus',
-    name: 'Soft Focus',
-    overlay: { type: 'solid', color: 'secondary', opacity: 15 },
-    filters: { grayscale: 0, sepia: 0, blur: 1, contrast: 90, brightness: 105 },
-  },
-  {
-    id: 'noir',
-    name: 'Noir',
-    overlay: { type: 'vignette', color: 'primary', opacity: 50 },
-    filters: { grayscale: 100, sepia: 0, blur: 0, contrast: 120, brightness: 90 },
-  },
-  {
-    id: 'warm-glow',
-    name: 'Warm Glow',
-    overlay: { type: 'gradient-down', color: 'accent', opacity: 30 },
-    filters: { grayscale: 0, sepia: 20, blur: 0, contrast: 100, brightness: 105 },
-  },
-]

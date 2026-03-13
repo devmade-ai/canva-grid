@@ -1,5 +1,5 @@
 import { memo, useRef, useMemo } from 'react'
-import { platforms } from '../config/platforms'
+import { getAspectRatio } from '../config/platforms'
 import ConfirmButton from './ConfirmButton'
 
 const FULLBLEED_STRUCTURE = [{ size: 100, subdivisions: 1, subSizes: [100] }]
@@ -20,8 +20,7 @@ function CellGrid({ layout, cellImages = {}, selectedCell, onSelectCell, platfor
       ? FULLBLEED_STRUCTURE
       : structure
 
-  const platformData = platforms.find((p) => p.id === platform) || platforms[0]
-  const aspectRatio = platformData.width / platformData.height
+  const aspectRatio = getAspectRatio(platform)
 
   const sectionCellMap = useMemo(() => {
     const grouped = new Map()
@@ -74,9 +73,13 @@ function CellGrid({ layout, cellImages = {}, selectedCell, onSelectCell, platfor
               return (
                 <div
                   key={`cell-${currentCellIndex}`}
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Cell ${currentCellIndex + 1}`}
                   className={`relative cursor-pointer transition-colors min-h-[10px] ${bgClass} flex items-center justify-center active:opacity-70`}
                   style={{ flex: `1 1 ${subSize}%` }}
                   onClick={() => onSelectCell(currentCellIndex)}
+                  onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectCell(currentCellIndex) } }}
                   title={`Cell ${currentCellIndex + 1}`}
                 >
                   <span className={`text-[9px] sm:text-[8px] font-medium leading-none ${isSelected ? 'text-white' : hasImage ? 'text-violet-700 dark:text-violet-200' : 'text-ui-text-faint'}`}>
@@ -117,6 +120,28 @@ function PageDot({ pageState, isActive, onClick, index }) {
     </button>
   )
 }
+
+// Memoize page state lookups to avoid calling getPageState() for every page on every render.
+const PageDots = memo(function PageDots({ pages, activePage, getPageState, onSetActivePage }) {
+  const pageStates = useMemo(
+    () => pages.map((_, i) => (getPageState ? getPageState(i) : null)),
+    [pages, getPageState]
+  )
+
+  return (
+    <div className="flex gap-1 py-0.5">
+      {pages.map((_, index) => (
+        <PageDot
+          key={index}
+          pageState={pageStates[index]}
+          isActive={index === activePage}
+          onClick={() => onSetActivePage(index)}
+          index={index}
+        />
+      ))}
+    </div>
+  )
+})
 
 export default memo(function ContextBar({
   // Cell
@@ -161,20 +186,12 @@ export default memo(function ContextBar({
 
           {/* Page thumbnails - scrollable */}
           <div className="flex-1 min-w-0 overflow-x-auto scrollbar-thin" ref={scrollRef}>
-            <div className="flex gap-1 py-0.5">
-              {pages.map((_, index) => {
-                const pageState = getPageState ? getPageState(index) : null
-                return (
-                  <PageDot
-                    key={index}
-                    pageState={pageState}
-                    isActive={index === activePage}
-                    onClick={() => onSetActivePage(index)}
-                    index={index}
-                  />
-                )
-              })}
-            </div>
+            <PageDots
+              pages={pages}
+              activePage={activePage}
+              getPageState={getPageState}
+              onSetActivePage={onSetActivePage}
+            />
           </div>
 
           {/* Page actions - compact */}

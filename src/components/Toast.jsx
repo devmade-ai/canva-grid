@@ -10,7 +10,9 @@ import { useState, useEffect, useCallback, createContext, useContext } from 'rea
 
 const ToastContext = createContext(null)
 
+// Wraps at Number.MAX_SAFE_INTEGER to prevent overflow in long sessions
 let toastId = 0
+const nextToastId = () => { toastId = (toastId + 1) % Number.MAX_SAFE_INTEGER; return toastId }
 
 // Requirement: Global toast access from any component without prop drilling.
 // Approach: Context provider + useToast hook. Provider manages toast queue.
@@ -18,7 +20,7 @@ export function ToastProvider({ children }) {
   const [toasts, setToasts] = useState([])
 
   const addToast = useCallback((message, { type = 'info', duration = 3000 } = {}) => {
-    const id = ++toastId
+    const id = nextToastId()
     setToasts((prev) => [...prev, { id, message, type, duration }])
     return id
   }, [])

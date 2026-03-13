@@ -868,7 +868,7 @@ export default memo(function ContentTab({
           Approach: Collapsible section after text editors, reads/writes cellAlignments via onLayoutChange
           Alternatives:
             - Keep in Structure tab: Rejected — alignment is a content concern, not a structure concern */}
-      <CollapsibleSection title="Cell Alignment" defaultExpanded={false}>
+      <CollapsibleSection title="Text Alignment" subtitle={layoutType === 'fullbleed' ? 'Global' : `Cell ${activeCell + 1}`} defaultExpanded={false}>
         <div className="flex gap-4">
           <div className="flex-1">
             <span className="text-xs text-ui-text-subtle block mb-1.5">Horizontal</span>

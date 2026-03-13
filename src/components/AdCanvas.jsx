@@ -1,6 +1,13 @@
 import { forwardRef, useMemo, memo } from 'react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
+
+// Security: whitelist only safe HTML tags for user-supplied markdown content.
+// Prevents XSS via img/iframe/script even if DOMPurify defaults change.
+const SANITIZE_CONFIG = {
+  ALLOWED_TAGS: ['p', 'strong', 'em', 'b', 'i', 'br', 'ul', 'ol', 'li', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'blockquote', 'code', 'pre', 'a', 'hr', 'del', 'sup', 'sub'],
+  ALLOWED_ATTR: ['href', 'target', 'rel'],
+}
 import { overlayTypes, hexToRgb, getOverlayType } from '../config/layouts'
 import { platforms } from '../config/platforms'
 import { fonts } from '../config/fonts'
@@ -545,7 +552,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           ...style.shadow,
         }}
         // Security: sanitize marked output to prevent XSS via user-supplied text
-        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parseInline(layer.content)) }}
+        dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(marked.parseInline(layer.content), SANITIZE_CONFIG) }}
       />
     )
   }
@@ -586,7 +593,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       const fontSize = Math.round(platform.width * 0.022 * (block.size || 1))
       const textAlign = block.textAlign || getCellTextAlign(cellIndex)
       // Security: sanitize marked output to prevent XSS via user-supplied text
-      const html = DOMPurify.sanitize(marked.parse(block.content))
+      const html = DOMPurify.sanitize(marked.parse(block.content), SANITIZE_CONFIG)
 
       content.push(
         <div

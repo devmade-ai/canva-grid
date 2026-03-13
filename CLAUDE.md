@@ -1,4 +1,15 @@
-# READ AND FOLLOW THE FUCKING PROCESS, PRINCIPLES, CODE STANDARDS, DOCUMENTATION, AI NOTES, AND PROHIBITIONS EVERY TIME
+# READ AND FOLLOW THE FUCKING PROCESS, PRINCIPLES, CODE STANDARDS, DOCUMENTATION, AI NOTES, TRIGGERS, AND PROHIBITIONS EVERY TIME
+
+## Fetching External CLAUDE.md
+
+The shared scaffolding (Process, Principles, Code Standards, Documentation, AI Notes, Triggers, Prohibitions, Suggested Implementations) is maintained in the sister project `devmade-ai/glow-props`.
+
+To fetch the latest version:
+```bash
+curl -sf "https://devmade-ai.github.io/glow-props/CLAUDE.md"
+```
+
+When fetching updates, merge changes into the shared sections while preserving canva-grid-specific content (Project Info, Architecture, State Structure, Tab Details, etc.).
 
 ## Process
 
@@ -275,6 +286,10 @@ These footers are required on every commit. No exceptions.
 - **Debug system (dev only):** `src/utils/debugLog.js` is an in-memory 200-entry circular buffer with pub/sub. `src/components/DebugPill.jsx` renders in a separate React root (survives App crashes). Only mounted in `import.meta.env.DEV`. Use `debugLog(source, event, details, severity)` to add entries.
 - **pdf-lib image handling:** pdf-lib embeds PNG directly (FlateDecode — no re-encoding). Digital PDF uses pxToPt=0.5 (144 DPI) for reasonable page sizes (~7.5" for 1080px platforms). Captures at user-selected pixelRatio (1x/2x/3x), giving integer px/pt ratios (2/4/6). Print formats use pixelRatio:1 with 72/150 conversion. History: (1) pixelRatio:2 + 72/96 → 2.667:1 ratio → gradient banding. (2) 1:1 mapping + page scaled with pixelRatio → identical quality. (3) pxToPt=1 fixed page → 15" pages too large for mobile viewers. (4) pxToPt=0.5 → reasonable page size + sharp rendering. Diagnostic image download enabled in dev mode.
 - **Design storage is IndexedDB:** `utils/designStorage.js` wraps IndexedDB with async save/load/list/delete. One-time migration from localStorage runs on first mount via `migrateFromLocalStorage()`. Never use localStorage for designs.
+- **Claude Code mobile/web — accessing sibling repos:**
+  - Use `GITHUB_ALL_REPO_TOKEN` with the GitHub API (`api.github.com/repos/devmade-ai/{repo}/contents/{path}`) to read files from other devmade-ai repos
+  - Use `$(printenv GITHUB_ALL_REPO_TOKEN)` not `$GITHUB_ALL_REPO_TOKEN` to avoid shell expansion issues
+  - Never clone sibling repos — use the API instead
 - **Sister project reference:** `devmade-ai/glow-props` shares the same CLAUDE.md scaffolding (process, principles, standards). Its `Suggested Implementations` section documents PWA patterns, debug system, and icon generation that were adopted here. Check it for future cross-pollination: `https://github.com/devmade-ai/glow-props/blob/main/CLAUDE.md`
 
 ### REMINDER: READ AND FOLLOW THE FUCKING AI NOTES EVERY TIME
@@ -291,8 +306,50 @@ Never:
 - Skip error handling "for now"
 - Remove features during "cleanup" without checking if they're documented as intentional (see AI_MISTAKES.md)
 - Proceed with assumptions when a single clarifying question would prevent a wrong commit
+- Use interactive input prompts or selection UIs — list options as numbered text instead
 
 ### REMINDER: READ AND FOLLOW THE FUCKING PROHIBITIONS EVERY TIME
+
+## Triggers
+
+Single-word commands that invoke focused analysis passes. Each trigger has a short alias. Type the word or alias to activate.
+
+| # | Trigger | Alias | What it does |
+|---|---------|-------|--------------|
+| 1 | `review` | `rev` | Code review — bugs, UI, UX, simplification |
+| 2 | `audit` | `aud` | Code quality — hacks, anti-patterns, latent bugs, race conditions |
+| 3 | `docs` | `doc` | Documentation accuracy vs actual code |
+| 4 | `mobile` | `tap` | Mobile UX — touch targets, viewport, safe areas |
+| 5 | `clean` | `cln` | Hygiene — duplication, refactor candidates, dead code |
+| 6 | `performance` | `perf` | Re-renders, expensive ops, bundle size, DB/API, memory |
+| 7 | `security` | `sec` | Injection, auth gaps, data exposure, insecure defaults, CVEs |
+| 8 | `debug` | `dbg` | Debug pill coverage — missing logs, noise |
+| 9 | `improve` | `imp` | Open-ended — architecture, DX, anything else |
+| 10 | `start` | `go` | Sequential sweep of all 9 above, one at a time |
+
+### Trigger behavior
+
+- Each trigger runs a single focused pass and reports findings.
+- Findings are listed as numbered text — never interactive prompts or selection UIs.
+- One trigger per response. Never combine multiple triggers in a single response.
+
+### `start` / `go` behavior
+
+Runs all 9 triggers in priority sequence, one at a time:
+
+`rev` → `aud` → `doc` → `tap` → `cln` → `perf` → `sec` → `dbg` → `imp`
+
+After each trigger completes and findings are presented, the user responds with one of:
+1. `fix` — apply the suggested fixes, then move to the next trigger
+2. `skip` — skip this trigger's findings and move to the next trigger
+3. `stop` — end the sweep entirely
+
+Rules:
+- Always pause after each trigger — never auto-advance to the next one.
+- Never run multiple triggers in one response.
+- Wait for the user's explicit `fix`, `skip`, or `stop` before proceeding.
+
+### REMINDER: READ AND FOLLOW THE FUCKING TRIGGERS EVERY TIME
 
 ---
 
@@ -331,8 +388,8 @@ Core features working:
   - Per-page: images, layout, text, overlays, padding, frames
   - Shared across pages: theme, fonts, platform, logo
 - **Reader mode**: Clean full-screen view with page navigation (arrow keys, buttons, dots)
-- **Freeform text mode**: Toggle on Content tab between Structured and Freeform
-  - Per-cell text editors with independent content, color, size, alignment
+- **Freeform text mode**: Toggle on Content tab between Guided and Freeform
+  - Per-cell multi-block text editors with independent content, color, size, alignment
   - Automatic markdown rendering (uses `marked` library)
 - Multi-image system: Image library with per-cell assignment
   - Upload multiple images to a shared library
@@ -341,7 +398,7 @@ Core features working:
 - Logo upload with position (corners, center) and size options
 - Frame system: Colored borders using percentage of padding
 - Flexible layout system with sub-tab organization (see Layout Tab Sub-tabs below)
-- Per-cell structured text (structured mode):
+- Per-cell structured text (guided mode):
   - Each cell has its own text elements: title, tagline, bodyHeading, bodyText, cta, footnote
   - Text elements organized in groups: Title+Tagline, Body, CTA, Footnote
 - Theme system with 12 color themes and custom colors
@@ -458,6 +515,7 @@ src/
 │   ├── useHistory.js     # Undo/redo history management (shallowEqual skips base64)
 │   ├── useDarkMode.js    # Dark mode toggle
 │   ├── useOnlineStatus.js # Online/offline detection
+│   ├── useFocusTrap.js   # Focus trap for modals (Tab/Shift+Tab boundary wrapping)
 │   ├── usePWAInstall.js  # PWA install prompt state
 │   └── usePWAUpdate.js   # PWA update detection state
 ├── utils/
@@ -481,14 +539,18 @@ activePage: 0  // Index of active page
 //   defaultImageSettings, text, layout, padding, frame, textMode, freeformText
 // Shared fields: theme, fonts, platform, exportFormat, logo, logoPosition, logoSize
 
-// Text mode: 'structured' (text groups) or 'freeform' (per-cell text)
+// Text mode: 'structured' (guided text groups) or 'freeform' (per-cell blocks)
+// UI labels this as "Guided" / "Freeform" but state value remains 'structured'
 textMode: 'structured'
 
-// Freeform text (per-cell content, active when textMode='freeform')
-// Content is always parsed as markdown via `marked` — no per-cell toggle
+// Freeform text — array of independently styled markdown blocks per cell.
+// Content is always parsed as markdown via `marked` — no per-cell toggle.
 freeformText: {
-  0: { content: 'Hello **world**', color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null },
-  1: { content: 'Plain text here', color: 'primary', size: 0.8, bold: false, italic: false, letterSpacing: 0, textAlign: null },
+  0: [  // Array of block objects per cell
+    { id: 'block-xxx', content: 'Hello **world**', color: 'secondary', size: 1, bold: false, italic: false, letterSpacing: 0, textAlign: null, spacerAbove: 0, spacerBelow: 0, lineAbove: false, lineBelow: false },
+    { id: 'block-yyy', content: 'Second block', color: 'primary', size: 0.8, bold: false, italic: false, letterSpacing: 0, textAlign: null, spacerAbove: 0, spacerBelow: 0, lineAbove: false, lineBelow: false },
+  ],
+  1: [ /* ... */ ],
 }
 
 // Image library - all uploaded images with individual settings including overlay
@@ -568,9 +630,9 @@ Collapsible sections:
 - **Logo** - Upload, position (corners/center), size
 
 ### Content Tab
-Top-level toggle: **Structured** / **Freeform**
+Top-level toggle: **Guided** / **Freeform** (state value remains `'structured'` for backwards compat)
 
-**Structured mode** - Text groups organized by purpose, each in a collapsible section:
+**Guided mode** - Text groups organized by purpose, each in a collapsible section:
 - **Title & Tagline** - Paired text elements
 - **Body** - Heading + body text
 - **Call to Action** - CTA button text
@@ -578,9 +640,9 @@ Top-level toggle: **Structured** / **Freeform**
 - Each text element has: visibility toggle, text input, alignment, color, size, bold/italic, letter spacing
 - Text alignment controls (horizontal + vertical) per cell — moved from Structure tab
 
-**Freeform mode** - Per-cell text editors:
-- One text block per cell with independent content
-- Per-cell controls: alignment, color, size
+**Freeform mode** - Per-cell multi-block text editors:
+- Multiple independently styled markdown blocks per cell (add/remove/reorder)
+- Per-block controls: alignment, color, size, bold/italic, letter spacing, spacers, line decorators
 - Automatic markdown rendering (content always parsed via `marked`)
 
 ### Structure Tab (formerly Layout)

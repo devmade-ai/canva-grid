@@ -120,6 +120,8 @@ function App() {
   const [containerWidth, setContainerWidth] = useState(600)
   const [windowHeight, setWindowHeight] = useState(window.innerHeight)
   const [isExporting, setIsExporting] = useState(false)
+  // Ref shared with ExportButtons so the Cancel button can abort in-flight exports
+  const cancelExportRef = useRef(false)
   const [showInstallModal, setShowInstallModal] = useState(false)
   const [showTutorial, setShowTutorial] = useState(false)
   const [showSaveLoadModal, setShowSaveLoadModal] = useState(false)
@@ -184,11 +186,16 @@ function App() {
     moveFreeformBlock,
   } = useAdState()
 
-  // Clamp selectedCell when layout structure changes
+  // Requirement: Clamp selectedCell synchronously so children never see an out-of-bounds index.
+  // Approach: Derive safeSelectedCell via useMemo instead of useEffect (which runs post-render).
+  // Alternatives:
+  //   - useEffect clamping: Rejected — one render frame shows stale index to children.
   const totalCells = useMemo(() => {
     const structure = state.layout.structure || [{ size: 100, subdivisions: 1, subSizes: [100] }]
     return structure.reduce((total, section) => total + (section.subdivisions || 1), 0)
   }, [state.layout.structure])
+
+  const safeSelectedCell = selectedCell >= totalCells ? 0 : selectedCell
 
   useEffect(() => {
     if (selectedCell >= totalCells) {
@@ -201,13 +208,19 @@ function App() {
   const pageCount = pages.length
   const hasMultiplePages = pageCount > 1
 
-  // Keyboard shortcuts for undo/redo and reader mode navigation
+  // Keyboard shortcuts for undo/redo and reader mode navigation.
+  // Uses refs for latest values so the listener is registered once (no churn).
+  const keyboardRef = useRef({ undo, redo, isReaderMode, activePage: state.activePage, pageCount, setActivePage, showShortcuts, setShowShortcuts, setActiveSection, setIsReaderMode })
+  keyboardRef.current = { undo, redo, isReaderMode, activePage: state.activePage, pageCount, setActivePage, showShortcuts, setShowShortcuts, setActiveSection, setIsReaderMode }
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Skip if user is typing in an input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         return
       }
+
+      const { undo, redo, isReaderMode, activePage, pageCount, setActivePage, showShortcuts, setShowShortcuts, setActiveSection, setIsReaderMode } = keyboardRef.current
 
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
         if (e.shiftKey) {
@@ -242,11 +255,11 @@ function App() {
       if (isReaderMode) {
         if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
           e.preventDefault()
-          if (state.activePage > 0) setActivePage(state.activePage - 1)
+          if (activePage > 0) setActivePage(activePage - 1)
         }
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
           e.preventDefault()
-          if (state.activePage < pageCount - 1) setActivePage(state.activePage + 1)
+          if (activePage < pageCount - 1) setActivePage(activePage + 1)
         }
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -257,7 +270,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [undo, redo, isReaderMode, state.activePage, pageCount, setActivePage, showShortcuts])
+  }, [])
 
   // Requirement: ContextBar sticky position must adapt to actual tab nav height
   // Approach: Measure tab nav via ResizeObserver, set CSS custom property
@@ -322,6 +335,7 @@ function App() {
       // Alternatives:
       //   - Keep 600px cap: Rejected — wastes space on tall screens, cuts off large canvases
       : windowHeight * 0.7
+    if (!platform.width || !platform.height) return 1
     const scaleX = maxWidth / platform.width
     const scaleY = maxHeight / platform.height
     return Math.min(scaleX, scaleY, 1)
@@ -376,8 +390,8 @@ function App() {
           <link key={font.id} rel="stylesheet" href={font.url} />
         ))}
 
-        {/* Reader header - compact */}
-        <header className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm border-b border-zinc-200/60 dark:border-zinc-700/60 px-3 py-2 shrink-0">
+        {/* Reader header - compact, with safe area for notched devices */}
+        <header className="bg-white/80 dark:bg-dark-card/80 backdrop-blur-sm border-b border-zinc-200/60 dark:border-zinc-700/60 px-3 py-2 shrink-0" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0.5rem))' }}>
           <div className="flex items-center justify-between">
             <button
               onClick={() => setIsReaderMode(false)}
@@ -423,36 +437,38 @@ function App() {
             </div>
           </div>
 
-          {/* Reader page navigation - compact */}
+          {/* Reader page navigation — safe area bottom for notched devices */}
           {hasMultiplePages && (
-            <div className="flex items-center gap-3 mt-2 shrink-0">
+            <div className="flex items-center gap-3 mt-2 shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
               <button
                 onClick={() => setActivePage(state.activePage - 1)}
                 disabled={state.activePage === 0}
-                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-dark-card border border-ui-border text-ui-text hover:bg-zinc-50 dark:hover:bg-dark-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="px-3 py-2 sm:py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-dark-card border border-ui-border text-ui-text hover:bg-zinc-50 dark:hover:bg-dark-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 Prev
               </button>
 
-              <div className="flex gap-1.5">
+              <div className="flex gap-1">
                 {pages.map((_, index) => (
                   <button
                     key={index}
                     onClick={() => setActivePage(index)}
-                    className={`w-2 h-2 rounded-full transition-all ${
+                    className={`w-8 h-8 sm:w-6 sm:h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all ${
                       index === state.activePage
-                        ? 'bg-primary scale-125'
-                        : 'bg-zinc-300 dark:bg-zinc-600 hover:bg-zinc-400'
+                        ? 'bg-primary text-white scale-110'
+                        : 'bg-zinc-200 dark:bg-zinc-600 text-zinc-500 dark:text-zinc-300 hover:bg-zinc-300 dark:hover:bg-zinc-500'
                     }`}
                     title={`Page ${index + 1}`}
-                  />
+                  >
+                    {index + 1}
+                  </button>
                 ))}
               </div>
 
               <button
                 onClick={() => setActivePage(state.activePage + 1)}
                 disabled={state.activePage === pageCount - 1}
-                className="px-3 py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-dark-card border border-ui-border text-ui-text hover:bg-zinc-50 dark:hover:bg-dark-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+                className="px-3 py-2 sm:py-1.5 text-sm font-medium rounded-lg bg-white dark:bg-dark-card border border-ui-border text-ui-text hover:bg-zinc-50 dark:hover:bg-dark-elevated disabled:opacity-30 disabled:cursor-not-allowed transition-all"
               >
                 Next
               </button>
@@ -614,7 +630,7 @@ function App() {
       <ContextBar
         layout={state.layout}
         cellImages={state.cellImages}
-        selectedCell={selectedCell}
+        selectedCell={safeSelectedCell}
         onSelectCell={setSelectedCell}
         platform={state.platform}
         undo={undo}
@@ -683,7 +699,7 @@ function App() {
                     platform={state.platform}
                     theme={state.theme}
                     // Global cell selection
-                    selectedCell={selectedCell}
+                    selectedCell={safeSelectedCell}
                     onSelectCell={setSelectedCell}
                   />
                 )}
@@ -705,7 +721,7 @@ function App() {
                     onUpdateBlock={updateFreeformBlock}
                     onRemoveBlock={removeFreeformBlock}
                     onMoveBlock={moveFreeformBlock}
-                    selectedCell={selectedCell}
+                    selectedCell={safeSelectedCell}
                     onSelectCell={setSelectedCell}
                   />
                 )}
@@ -717,7 +733,7 @@ function App() {
                     layout={state.layout}
                     onLayoutChange={setLayout}
                     platform={state.platform}
-                    selectedCell={selectedCell}
+                    selectedCell={safeSelectedCell}
                     onSelectCell={setSelectedCell}
                     cellImages={state.cellImages}
                     images={state.images}
@@ -740,7 +756,7 @@ function App() {
                     frame={state.frame}
                     onFrameChange={setFrame}
                     cellImages={state.cellImages}
-                    selectedCell={selectedCell}
+                    selectedCell={safeSelectedCell}
                     onSelectCell={setSelectedCell}
                   />
                 )}
@@ -778,7 +794,7 @@ function App() {
                   {totalCells > 1 && (
                     <CanvasCellOverlay
                       layout={state.layout}
-                      selectedCell={selectedCell}
+                      selectedCell={safeSelectedCell}
                       onSelectCell={setSelectedCell}
                     />
                   )}
@@ -802,7 +818,7 @@ function App() {
                     <div className="inline-block w-8 h-8 border-2 border-primary/30 border-t-primary rounded-full animate-spin mb-3" />
                     <p className="text-white font-medium">Exporting...</p>
                     <button
-                      onClick={() => setIsExporting(false)}
+                      onClick={() => { cancelExportRef.current = true; setIsExporting(false) }}
                       className="mt-3 px-4 py-1.5 text-sm text-white/70 hover:text-white rounded-lg hover:bg-white/10 transition-colors"
                     >
                       Cancel
@@ -814,7 +830,7 @@ function App() {
 
             {/* Quick actions bar for selected cell — shortcuts to common per-cell actions */}
             {totalCells > 1 && (
-              <QuickActionsBar selectedCell={selectedCell} onNavigate={setActiveSection} />
+              <QuickActionsBar selectedCell={safeSelectedCell} onNavigate={setActiveSection} />
             )}
 
             {/* Export Buttons */}
@@ -826,6 +842,7 @@ function App() {
                   onPlatformChange={setPlatform}
                   onExportFormatChange={setExportFormat}
                   onExportingChange={setIsExporting}
+                  cancelExportRef={cancelExportRef}
                   pageCount={pageCount}
                   onSetActivePage={setActivePage}
                 />

@@ -8,7 +8,7 @@
 import { useCallback, useRef, useState, memo, useMemo, useEffect } from 'react'
 import CollapsibleSection from './CollapsibleSection'
 import { useToast } from './Toast'
-import { platforms } from '../config/platforms'
+import { getAspectRatio } from '../config/platforms'
 import { overlayTypes } from '../config/layouts'
 import { neutralColors } from '../config/themes'
 import { SAMPLE_MANIFEST_URL } from '../config/sampleImages'
@@ -64,8 +64,7 @@ function CellGrid({ layout, cellImages, selectedCell, onSelectCell, platform, hi
       ? [{ size: 100, subdivisions: 1, subSizes: [100] }]
       : structure
 
-  const platformData = platforms.find((p) => p.id === platform) || platforms[0]
-  const aspectRatio = platformData.width / platformData.height
+  const aspectRatio = getAspectRatio(platform)
 
   let cellIndex = 0
 
