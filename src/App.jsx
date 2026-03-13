@@ -26,6 +26,7 @@ import ContextBar from './components/ContextBar'
 import { ToastProvider } from './components/Toast'
 import KeyboardShortcutsOverlay from './components/KeyboardShortcutsOverlay'
 import EmptyStateGuide from './components/EmptyStateGuide'
+import ConfirmButton from './components/ConfirmButton'
 import ZoomControls from './components/ZoomControls'
 import QuickActionsBar from './components/QuickActionsBar'
 import { useOnlineStatus } from './hooks/useOnlineStatus'
@@ -133,6 +134,7 @@ function App() {
   const isOnline = useOnlineStatus()
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [zoomLevel, setZoomLevel] = useState(null) // null = auto-fit
+  const [emptyGuideDismissed, setEmptyGuideDismissed] = useState(false)
 
   const {
     state,
@@ -355,8 +357,15 @@ function App() {
     const hasFreeform = state.freeformText && Object.values(state.freeformText).some((blocks) =>
       Array.isArray(blocks) && blocks.some((b) => b?.content && b.content.trim() !== '')
     )
-    return !hasImages && !hasText && !hasFreeform
+    const empty = !hasImages && !hasText && !hasFreeform
+    return empty
   }, [state.images, state.text, state.freeformText])
+
+  // Reset empty guide dismissed state when canvas gets content
+  // so it reappears if user clears everything later
+  useEffect(() => {
+    if (!isCanvasEmpty) setEmptyGuideDismissed(false)
+  }, [isCanvasEmpty])
 
   // Requirement: Warn users before leaving with unsaved changes
   // Approach: beforeunload event when canvas has content
@@ -548,16 +557,19 @@ function App() {
             >
               {isDark ? '☀️' : '🌙'}
             </button>
-            <button
-              onClick={() => window.location.reload()}
-              title="Refresh page"
+            {/* Requirement: Custom reload confirmation — browser's native dialog says "reload site"
+                which is confusing in PWA context. Use ConfirmButton for "Reload app?" wording. */}
+            <ConfirmButton
+              onConfirm={() => window.location.reload()}
+              confirmLabel="Reload app?"
               className="px-3 py-1.5 text-sm rounded-lg flex items-center gap-1.5 font-medium bg-zinc-100 dark:bg-dark-subtle text-ui-text hover:bg-zinc-200 dark:hover:bg-dark-elevated active:scale-95 transition-all"
+              title="Reload app"
             >
               <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
               </svg>
-              <span className="hidden sm:inline">Refresh</span>
-            </button>
+              <span className="hidden sm:inline">Reload</span>
+            </ConfirmButton>
             {canInstall && (
               <button
                 onClick={install}
@@ -766,7 +778,7 @@ function App() {
         </aside>
 
         {/* Preview Area */}
-        <main className="flex-1 p-4 lg:p-5 space-y-4">
+        <main className="flex-1 p-4 pb-8 lg:p-5 space-y-4">
           {/* Platform Selector */}
           <div className="bg-white dark:bg-dark-card rounded-xl border border-zinc-200/80 dark:border-zinc-700/50 shadow-card p-4 lg:p-5">
             <PlatformPreview selectedPlatform={state.platform} onPlatformChange={setPlatform} />
@@ -774,6 +786,13 @@ function App() {
 
           {/* Canvas Preview */}
           <div className="bg-white dark:bg-dark-card rounded-xl border border-zinc-200/80 dark:border-zinc-700/50 shadow-card p-4 lg:p-6">
+            {/* Zoom controls — above canvas so they don't block the view */}
+            {!isExporting && (
+              <div className="flex justify-end mb-2">
+                <ZoomControls zoomLevel={zoomLevel} autoScale={autoScale} onZoomChange={setZoomLevel} />
+              </div>
+            )}
+
             <div
               ref={previewContainerRef}
               className="relative bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-dark-subtle dark:to-dark-page rounded-xl overflow-hidden flex items-center justify-center border border-zinc-200/50 dark:border-zinc-700/50"
@@ -801,14 +820,9 @@ function App() {
                 </div>
               </ErrorBoundary>
 
-              {/* Empty state guidance — helps new users get started */}
-              {isCanvasEmpty && !isExporting && (
-                <EmptyStateGuide onNavigate={setActiveSection} />
-              )}
-
-              {/* Zoom controls — floating bottom-right of canvas */}
-              {!isExporting && (
-                <ZoomControls zoomLevel={zoomLevel} autoScale={autoScale} onZoomChange={setZoomLevel} />
+              {/* Empty state guidance — helps new users get started, dismissable */}
+              {isCanvasEmpty && !isExporting && !emptyGuideDismissed && (
+                <EmptyStateGuide onNavigate={setActiveSection} onDismiss={() => setEmptyGuideDismissed(true)} />
               )}
 
               {/* Export overlay with cancel option */}

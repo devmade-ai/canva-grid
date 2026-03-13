@@ -1,10 +1,10 @@
-// Requirement: Guide new users when canvas is empty.
-// Approach: Overlay with action buttons to common starting points (Presets, Media).
+// Requirement: Guide new users when canvas is empty, dismissable so it doesn't block view.
+// Approach: Overlay with action buttons + dismiss. Parent controls visibility via onDismiss.
 // Alternatives:
 //   - Auto-open tutorial: Rejected — intrusive for returning users.
 //   - Sidebar-only guidance: Rejected — users focus on the canvas area first.
 
-export default function EmptyStateGuide({ onNavigate }) {
+export default function EmptyStateGuide({ onNavigate, onDismiss }) {
   return (
     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
       <div className="text-center p-6 pointer-events-auto">
@@ -29,6 +29,12 @@ export default function EmptyStateGuide({ onNavigate }) {
             Upload Images
           </button>
         </div>
+        <button
+          onClick={onDismiss}
+          className="mt-3 text-xs text-ui-text-subtle hover:text-ui-text-muted transition-colors"
+        >
+          Dismiss
+        </button>
       </div>
     </div>
   )
