@@ -322,6 +322,7 @@ function App() {
       // Alternatives:
       //   - Keep 600px cap: Rejected — wastes space on tall screens, cuts off large canvases
       : windowHeight * 0.7
+    if (!platform.width || !platform.height) return 1
     const scaleX = maxWidth / platform.width
     const scaleY = maxHeight / platform.height
     return Math.min(scaleX, scaleY, 1)

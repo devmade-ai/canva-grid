@@ -37,7 +37,8 @@ function getTimestamp() {
   const dd = String(now.getDate()).padStart(2, '0')
   const hh = String(now.getHours()).padStart(2, '0')
   const min = String(now.getMinutes()).padStart(2, '0')
-  return `${yy}${mm}${dd}-${hh}${min}`
+  const ss = String(now.getSeconds()).padStart(2, '0')
+  return `${yy}${mm}${dd}-${hh}${min}${ss}`
 }
 
 // Wait for React re-render + browser paint to settle before canvas capture.
@@ -250,7 +251,9 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
         debugLog('export', 'all-pages-capture', { page: i + 1, total: pageCount }, 'debug')
 
         onSetActivePage(i)
-        await new Promise((resolve) => setTimeout(resolve, 300))
+        // Wait for React state update + re-render + paint to settle.
+        // 300ms fixed delay replaced with double waitForPaint for reliability on slow devices.
+        await waitForPaint()
         await waitForPaint()
 
         const restoreTransform = setFullScale(canvasRef.current)

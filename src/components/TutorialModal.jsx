@@ -76,7 +76,7 @@ const tutorialSteps = [
         <ul className="space-y-2 text-sm">
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>
-            <span><strong>Structured:</strong> Ready-made text slots — Title, Tagline, Body, Call to Action, and Footnote. Each cell has its own text elements.</span>
+            <span><strong>Guided:</strong> Ready-made text slots — Title, Tagline, Body, Call to Action, and Footnote. Each cell has its own text elements.</span>
           </li>
           <li className="flex gap-2">
             <span className="text-violet-500">•</span>

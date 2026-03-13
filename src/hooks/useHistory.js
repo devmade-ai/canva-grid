@@ -43,13 +43,14 @@ function shallowEqual(a, b) {
   if (keysA.length !== keysB.length) return false
   for (const key of keysA) {
     if (a[key] === b[key]) continue
-    // Images array: compare by length + IDs only (skip base64 src)
+    // Images array: compare by ID set + non-src fields (skip base64 src).
+    // Order-independent: detects reordering as a change so undo/redo captures it.
     if (key === 'images') {
       if (!Array.isArray(a[key]) || !Array.isArray(b[key])) return false
       if (a[key].length !== b[key].length) return false
       for (let i = 0; i < a[key].length; i++) {
+        // Compare by position — if IDs differ at same index, order changed
         if (a[key][i].id !== b[key][i].id) return false
-        // Compare non-src fields using recursive deepEqual (no JSON.stringify)
         const { src: _a, ...restA } = a[key][i]
         const { src: _b, ...restB } = b[key][i]
         if (!deepEqual(restA, restB)) return false
