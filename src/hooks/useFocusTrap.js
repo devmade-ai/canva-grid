@@ -47,10 +47,12 @@ export function useFocusTrap(containerRef, isActive = true) {
     document.addEventListener('keydown', handleKeyDown)
     return () => {
       document.removeEventListener('keydown', handleKeyDown)
-      // Restore focus to previously focused element
-      if (previouslyFocused.current && previouslyFocused.current.focus) {
-        previouslyFocused.current.focus()
-      }
+      // Restore focus to previously focused element (may have been removed from DOM)
+      try {
+        if (previouslyFocused.current && previouslyFocused.current.focus) {
+          previouslyFocused.current.focus()
+        }
+      } catch { /* element no longer in DOM */ }
     }
   }, [isActive, containerRef])
 }

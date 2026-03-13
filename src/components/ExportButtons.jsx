@@ -413,27 +413,41 @@ export default memo(function ExportButtons({ canvasRef, state, onPlatformChange,
     debugLog('export', 'multi-start', { format: exportFormat, platformCount: platformsToExport.length })
 
     try {
+      const failed = []
       for (let i = 0; i < platformsToExport.length; i++) {
         const platform = platformsToExport[i]
         setExportProgress({ current: i + 1, total: platformsToExport.length, name: platform.name })
 
-        onPlatformChange(platform.id)
-        await waitForPaint()
+        try {
+          onPlatformChange(platform.id)
+          await waitForPaint()
 
-        const restoreTransform = setFullScale(canvasRef.current)
-        await waitForPaint()
+          const restoreTransform = setFullScale(canvasRef.current)
+          await waitForPaint()
 
-        const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
-        restoreTransform()
+          const blob = await captureAsBlob(canvasRef.current, platform.width, platform.height, exportFormat)
+          restoreTransform()
 
-        zip.file(`${platform.id}-${platform.width}x${platform.height}.${ext}`, blob)
+          zip.file(`${platform.id}-${platform.width}x${platform.height}.${ext}`, blob)
+        } catch (err) {
+          failed.push(platform.name)
+          debugLog('export', 'multi-platform-fail', { platform: platform.id, error: err.message }, 'warn')
+        }
       }
 
-      const content = await zip.generateAsync({ type: 'blob' })
-      const ts = getTimestamp()
-      saveAs(content, `${ts}-multi.zip`)
-      debugLog('export', 'multi-success', { platformCount: platformsToExport.length, sizeKB: Math.round(content.size / 1024) })
-      addToast(`${platformsToExport.length} platforms exported`, { type: 'success' })
+      const successCount = platformsToExport.length - failed.length
+      if (successCount > 0) {
+        const content = await zip.generateAsync({ type: 'blob' })
+        const ts = getTimestamp()
+        saveAs(content, `${ts}-multi.zip`)
+        debugLog('export', 'multi-success', { platformCount: successCount, failed: failed.length, sizeKB: Math.round(content.size / 1024) })
+      }
+
+      if (failed.length > 0) {
+        addToast(`${successCount} exported, ${failed.length} failed: ${failed.join(', ')}`, { type: 'warning', duration: 5000 })
+      } else {
+        addToast(`${platformsToExport.length} platforms exported`, { type: 'success' })
+      }
 
       onPlatformChange(originalPlatform)
       setShowMultiSelect(false)

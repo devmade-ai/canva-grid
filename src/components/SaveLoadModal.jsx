@@ -14,18 +14,23 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
+  // Track whether modal is still open to prevent stale state updates from in-flight IDB queries
+  const activeRef = useRef(false)
+
   const refreshDesigns = useCallback(async () => {
     const list = await getSavedDesigns()
-    setDesigns(list)
+    if (activeRef.current) setDesigns(list)
   }, [getSavedDesigns])
 
   useEffect(() => {
     if (isOpen) {
+      activeRef.current = true
       refreshDesigns()
       setSaveName('')
       setSearchQuery('')
       setError(null)
     }
+    return () => { activeRef.current = false }
   }, [isOpen, refreshDesigns])
 
   const handleSave = async () => {

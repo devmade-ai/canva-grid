@@ -26,6 +26,15 @@ function toTransparentRgba(rgbColor) {
 //   - Canvas API overlay rendering: Rejected — would bypass html-to-image entirely,
 //     too complex for the improvement needed.
 
+// Gradient stop multipliers — tuned to minimize banding in html-to-image canvas export.
+// These values were empirically tested: 2-stop gradients produce visible banding after
+// canvas serialization + JPEG compression. 4-6 stops with these opacity curves give the
+// renderer precise anchor points for smooth interpolation.
+//
+// Linear fade: 100%→70%→40%→15%→0% opacity at positions 0→30→55→75→100%
+// Vignette:    0%→5%→20%→50%→80%→100% opacity at positions 0→30→50→70→85→100%
+// Spotlight:   100%→80%→40%→10%→0% opacity at positions 0→30%→60%→85%→100% of endPct
+
 // Build linear gradient with smooth multi-stop fade
 function linearFade(direction, c, o) {
   return `linear-gradient(${direction}, ${toRgba(c, o)} 0%, ${toRgba(c, o * 0.7)} 30%, ${toRgba(c, o * 0.4)} 55%, ${toRgba(c, o * 0.15)} 75%, transparent 100%)`

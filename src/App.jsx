@@ -201,13 +201,19 @@ function App() {
   const pageCount = pages.length
   const hasMultiplePages = pageCount > 1
 
-  // Keyboard shortcuts for undo/redo and reader mode navigation
+  // Keyboard shortcuts for undo/redo and reader mode navigation.
+  // Uses refs for latest values so the listener is registered once (no churn).
+  const keyboardRef = useRef({ undo, redo, isReaderMode, activePage: state.activePage, pageCount, setActivePage, showShortcuts, setShowShortcuts, setActiveSection, setIsReaderMode })
+  keyboardRef.current = { undo, redo, isReaderMode, activePage: state.activePage, pageCount, setActivePage, showShortcuts, setShowShortcuts, setActiveSection, setIsReaderMode }
+
   useEffect(() => {
     const handleKeyDown = (e) => {
       // Skip if user is typing in an input
       if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
         return
       }
+
+      const { undo, redo, isReaderMode, activePage, pageCount, setActivePage, showShortcuts, setShowShortcuts, setActiveSection, setIsReaderMode } = keyboardRef.current
 
       if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
         if (e.shiftKey) {
@@ -242,11 +248,11 @@ function App() {
       if (isReaderMode) {
         if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
           e.preventDefault()
-          if (state.activePage > 0) setActivePage(state.activePage - 1)
+          if (activePage > 0) setActivePage(activePage - 1)
         }
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
           e.preventDefault()
-          if (state.activePage < pageCount - 1) setActivePage(state.activePage + 1)
+          if (activePage < pageCount - 1) setActivePage(activePage + 1)
         }
         if (e.key === 'Escape') {
           e.preventDefault()
@@ -257,7 +263,7 @@ function App() {
 
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [undo, redo, isReaderMode, state.activePage, pageCount, setActivePage, showShortcuts])
+  }, [])
 
   // Requirement: ContextBar sticky position must adapt to actual tab nav height
   // Approach: Measure tab nav via ResizeObserver, set CSS custom property

@@ -12,7 +12,13 @@ const DB_VERSION = 1
 const STORE_NAME = 'designs'
 const LEGACY_STORAGE_KEY = 'canvagrid-designs'
 
+// Cache the IDB connection to avoid opening a new one on every operation.
+// If the connection closes unexpectedly (e.g. browser GC), re-open on next call.
+let cachedDB = null
+
 function openDB() {
+  if (cachedDB) return Promise.resolve(cachedDB)
+
   return new Promise((resolve, reject) => {
     const request = indexedDB.open(DB_NAME, DB_VERSION)
     request.onupgradeneeded = (event) => {
@@ -21,7 +27,12 @@ function openDB() {
         db.createObjectStore(STORE_NAME, { keyPath: 'id' })
       }
     }
-    request.onsuccess = () => resolve(request.result)
+    request.onsuccess = () => {
+      cachedDB = request.result
+      // Clear cache if connection closes unexpectedly
+      cachedDB.onclose = () => { cachedDB = null }
+      resolve(cachedDB)
+    }
     request.onerror = () => {
       debugLog('design-storage', 'db-open-error', { error: request.error?.message }, 'error')
       reject(request.error)

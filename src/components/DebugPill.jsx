@@ -24,6 +24,25 @@ const SEVERITY_COLORS = {
   debug: '#a78bfa',
 }
 
+// Clipboard fallback using ClipboardItem Blob (avoids deprecated execCommand).
+// Falls through to textarea+execCommand only as last resort for very old browsers.
+function fallbackCopy(text) {
+  try {
+    const blob = new Blob([text], { type: 'text/plain' })
+    navigator.clipboard.write([new ClipboardItem({ 'text/plain': blob })])
+  } catch {
+    // Last resort: deprecated but functional in all browsers
+    const ta = document.createElement('textarea')
+    ta.value = text
+    ta.style.position = 'fixed'
+    ta.style.left = '-9999px'
+    document.body.appendChild(ta)
+    ta.select()
+    document.execCommand('copy')
+    document.body.removeChild(ta)
+  }
+}
+
 function DebugPillInner() {
   const [expanded, setExpanded] = useState(false)
   const [tab, setTab] = useState('log')
@@ -60,17 +79,14 @@ function DebugPillInner() {
       logLines || '(empty)',
     ].join('\n')
 
-    navigator.clipboard.writeText(report).catch(() => {
-      // Clipboard API fallback: use a temporary textarea
-      const ta = document.createElement('textarea')
-      ta.value = report
-      ta.style.position = 'fixed'
-      ta.style.left = '-9999px'
-      document.body.appendChild(ta)
-      ta.select()
-      document.execCommand('copy')
-      document.body.removeChild(ta)
-    })
+    // Clipboard API with Blob fallback for environments where writeText is blocked
+    if (navigator.clipboard?.writeText) {
+      navigator.clipboard.writeText(report).catch(() => {
+        fallbackCopy(report)
+      })
+    } else {
+      fallbackCopy(report)
+    }
 
     debugLog('debug-pill', 'report-copied', null, 'info')
   }, [entries])

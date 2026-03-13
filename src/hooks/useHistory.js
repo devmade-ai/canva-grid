@@ -9,15 +9,20 @@ const MAX_HISTORY = 50
 // Alternatives:
 //   - JSON.stringify: Rejected — serializes entire state tree on every keystroke.
 //   - immer-style structural sharing: Rejected — requires changing state management.
-function deepEqual(a, b) {
+// Max recursion depth — prevents stack overflow on corrupted/circular state.
+// Normal state nests ~6 levels deep; 20 provides generous headroom.
+const MAX_DEPTH = 20
+
+function deepEqual(a, b, depth = 0) {
   if (a === b) return true
   if (a == null || b == null) return a === b
   if (typeof a !== typeof b) return false
+  if (depth >= MAX_DEPTH) return false
 
   if (Array.isArray(a)) {
     if (!Array.isArray(b) || a.length !== b.length) return false
     for (let i = 0; i < a.length; i++) {
-      if (!deepEqual(a[i], b[i])) return false
+      if (!deepEqual(a[i], b[i], depth + 1)) return false
     }
     return true
   }
@@ -27,7 +32,7 @@ function deepEqual(a, b) {
     const keysB = Object.keys(b)
     if (keysA.length !== keysB.length) return false
     for (const key of keysA) {
-      if (!deepEqual(a[key], b[key])) return false
+      if (!deepEqual(a[key], b[key], depth + 1)) return false
     }
     return true
   }
