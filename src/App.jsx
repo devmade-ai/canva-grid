@@ -481,7 +481,7 @@ function App() {
 
   // Normal editor mode
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
       {/* Load fonts */}
       {fonts.map((font) => (
         <link key={font.id} rel="stylesheet" href={font.url} />
@@ -653,7 +653,12 @@ function App() {
             - Sidebar first always: Rejected — on mobile, users scroll past controls to see canvas */}
       <div className="flex flex-col-reverse lg:flex-row lg:items-stretch">
         {/* Sidebar Controls */}
-        <aside className="w-full lg:w-96 p-4 lg:p-5 lg:pr-0">
+        {/* Requirement: Extra bottom spacing on mobile so sidebar content isn't flush with screen edge
+            Approach: pb-24 on mobile for comfortable scroll end, normal pb on desktop
+            Alternatives:
+              - Small padding (pb-4): Rejected — content feels cramped at bottom on phones
+              - Inline style with safe-area-inset: Rejected — overrides desktop padding too */}
+        <aside className="w-full lg:w-96 p-4 pb-24 lg:p-5 lg:pr-0 lg:pb-5">
           <div className="bg-white dark:bg-dark-card rounded-xl border border-zinc-200/80 dark:border-zinc-700/50 shadow-card p-4 lg:p-5">
             {/* Section Content */}
             <div className="space-y-5">
