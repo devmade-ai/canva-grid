@@ -785,7 +785,7 @@ function App() {
             )}
             <div
               ref={previewContainerRef}
-              className="relative bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-dark-subtle dark:to-dark-page rounded-xl overflow-hidden flex items-center justify-center border border-zinc-200/50 dark:border-zinc-700/50"
+              className="relative bg-gradient-to-br from-zinc-50 to-zinc-100 dark:from-dark-subtle dark:to-dark-page rounded-xl overflow-auto border border-zinc-200/50 dark:border-zinc-700/50"
               style={{
                 minHeight: platform.height * previewScale + 40,
               }}
@@ -796,6 +796,7 @@ function App() {
                   style={{
                     width: platform.width * previewScale,
                     height: platform.height * previewScale,
+                    margin: '0 auto',
                   }}
                 >
                   <AdCanvas ref={canvasRef} state={state} scale={previewScale} />
