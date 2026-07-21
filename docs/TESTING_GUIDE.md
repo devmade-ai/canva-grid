@@ -580,18 +580,41 @@ entries); (c) `toCanvas` in `exportHelpers.js` is being passed `fontEmbedCSS`.
 
 ## PWA Tests
 
-### PWA1: Update Banner on Tab Refocus
+### PWA1: Mid-Session Update Detection on Tab Refocus
 
-**Scenario:** When a new version is deployed, returning to the tab shows an update banner.
+**Scenario:** When a new version is deployed while the app is open, returning to the tab shows the update affordance — the app never reloads on its own mid-session.
 
 | Step | Action | Where | Expected |
 |------|--------|-------|----------|
 | 1 | Deploy a new build | Vercel / hosting | New SW generated |
 | 2 | Switch to another tab, wait a few seconds | Browser | Tab is hidden |
-| 3 | Switch back to the CanvaGrid tab | Browser | Visibility-based check triggers SW update |
-| 4 | Wait for update detection | Header / menu | "Update Available" button appears (green) |
+| 3 | Switch back to the CanvaGrid tab | Browser | Visibility-based check triggers SW update; page does NOT reload |
+| 4 | Wait for update detection | Header / menu | "Update Available" button appears (green); any in-progress design is untouched |
 | 5 | Click "Update" | Header button or menu item | Page reloads with new version |
 | 6 | Immediately reopen the tab | Browser | No update banner for ~30 seconds (suppression) |
+
+### PWA1b: Auto-Apply at Launch (fleet auto-on-launch policy)
+
+**Scenario:** An update detected mid-session but not tapped applies itself automatically at the next launch — before anything can be typed.
+
+| Step | Action | Where | Expected |
+|------|--------|-------|----------|
+| 1 | Reach PWA1 step 4 ("Update Available" visible) | Header / menu | Update is waiting |
+| 2 | Do NOT click Update; close the tab/app | Browser | Waiting worker persists |
+| 3 | Reopen the app | Browser | Single automatic reload right after load; new version running; no update banner afterwards |
+| 4 | Repeat steps 1–2, then turn **Automatic updates** OFF before closing | Burger menu (mobile) / header toggle (desktop) | Toggle switches off; menu stays open on mobile |
+| 5 | Reopen the app | Browser | No automatic reload — "Update Available" button shows instead; clicking it applies the update |
+| 6 | Turn **Automatic updates** back ON | Menu / header toggle | Preference persists across reloads (localStorage `pwaAutoUpdate`) |
+
+### PWA1c: Check for Updates Feedback
+
+**Scenario:** The manual check reports a typed result as a toast.
+
+| Step | Action | Where | Expected |
+|------|--------|-------|----------|
+| 1 | With no update pending, click "Check for Updates" | Header (desktop) / burger menu (mobile) | Spinner while checking, then toast "You're on the latest version" |
+| 2 | Deploy a new build, then click "Check for Updates" | Header / menu | Toast "Update found — use the Update button to apply it"; green Update button appears |
+| 3 | Run the check with DevTools offline | Browser | Toast "Could not check for updates" |
 
 ### PWA2: Install Prompt (Chromium Browsers)
 
@@ -655,6 +678,7 @@ Quick checks to run after any code change:
 - [ ] Burger menu: opens/closes, Escape dismisses, backdrop click dismisses, theme toggle works
 - [ ] Long-press cell context menu works on mobile (opens Media/Content/Style)
 - [ ] PWA: Install button shows on Chromium browsers (if not already installed)
-- [ ] PWA: Update banner appears after deploying a new version and switching tabs
+- [ ] PWA: Update banner appears after deploying a new version and switching tabs (no mid-session auto-reload)
+- [ ] PWA: Untapped update auto-applies on next launch; with "Automatic updates" off it waits for the Update button
 - [ ] `npm test` passes (unit tests)
 - [ ] No React warnings in console

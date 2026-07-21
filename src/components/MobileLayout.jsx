@@ -17,6 +17,7 @@ import MobileNav from './MobileNav'
 import BurgerMenu from './BurgerMenu'
 import UndoRedoButtons from './UndoRedoButtons'
 import { themeCombos } from '../config/daisyuiThemes'
+import { describeUpdateCheckResult } from '../utils/pwaHelpers'
 import { ICON_HELP, ICON_INSTALL, ICON_UPDATE, ICON_REFRESH, ICON_READER, ICON_SAVE, ICON_KEYBOARD, ICON_SUN, ICON_MOON } from '../config/menuIcons'
 import { version } from '../../package.json'
 
@@ -132,6 +133,8 @@ export default function MobileLayout({
   update,
   checkForUpdate,
   checking,
+  autoUpdateEnabled,
+  setAutoUpdate,
   isOnline,
   // Content
   tabContent,
@@ -151,18 +154,13 @@ export default function MobileLayout({
   const handleMenuClose = useCallback(() => setShowMobileMenu(false), [setShowMobileMenu])
   const { addToast } = useToast()
 
-  // Toast says "Check complete" — if an update was found during the settle delay,
-  // the update banner and menu item appear via normal hasUpdate re-render. Don't
-  // read hasUpdate in this closure — it's a stale prop captured at render time.
+  // checkForUpdate returns the fleet-canonical typed result; the shared
+  // describeUpdateCheckResult mapping (pwaHelpers) supplies identical toast copy
+  // in both layouts. 'update-available' additionally surfaces the banner + menu
+  // item via the normal hasUpdate re-render.
   const handleCheckForUpdate = useCallback(async () => {
-    const result = await checkForUpdate()
-    if (result === 'done') {
-      addToast('Check complete — you\'re on the latest version', { type: 'success' })
-    } else if (result === 'error') {
-      addToast('Could not check for updates', { type: 'warning' })
-    } else if (result === 'no-sw') {
-      addToast('Updates not available in this environment', { type: 'info' })
-    }
+    const toast = describeUpdateCheckResult(await checkForUpdate())
+    if (toast) addToast(toast.message, { type: toast.type })
   }, [checkForUpdate, addToast])
 
   return (
@@ -203,6 +201,9 @@ export default function MobileLayout({
               { label: 'Install App', icon: ICON_INSTALL, action: install, visible: canInstall, highlight: true },
               { label: 'Update Available', icon: ICON_UPDATE, action: update, visible: hasUpdate, highlight: true, highlightColor: 'text-success' },
               { label: checking ? 'Checking...' : 'Check for Updates', icon: ICON_REFRESH, action: handleCheckForUpdate, visible: !hasUpdate, disabled: checking },
+              // Fleet-standard "Automatic updates" toggle (default ON) — OFF means every
+              // update waits for an explicit tap instead of applying at next launch.
+              { label: 'Automatic updates', helper: 'Apply when the app opens', icon: ICON_UPDATE, toggle: true, checked: autoUpdateEnabled, action: setAutoUpdate },
               { label: 'Refresh', icon: ICON_REFRESH, action: () => window.location.reload(), separator: true },
               { label: 'Reader Mode', icon: ICON_READER, action: () => setIsReaderMode(true) },
               { label: 'Save / Load', icon: ICON_SAVE, action: () => setShowSaveLoadModal(true) },

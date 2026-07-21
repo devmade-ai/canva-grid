@@ -28,7 +28,8 @@ The header bar contains:
 | **Theme** | Switch between dark and light mode, and choose a theme combo (Mono or Luxe) |
 | **Refresh** | Reload the app |
 | **Install** | (When available) Install the app for offline use |
-| **Update** | (When available) Apply the latest version of the app |
+| **Update** | (When available) Apply the latest version of the app right away |
+| **Auto-update** | Toggle whether new versions apply automatically the next time you open the app (on by default) |
 
 ---
 
@@ -107,7 +108,11 @@ CanvaGrid can be installed as a Progressive Web App (PWA) for offline use and a 
 3. Tap **"Add"** to confirm
 
 ### Updates
-When a new version is available, you'll see an **Update** button in the header or menu. Click it to refresh and get the latest features. The app checks for updates automatically when you return to the tab after switching away.
+New versions install themselves the next time you open the app — you don't have to do anything. This only ever happens at startup, before you've made any changes, so an update can never interrupt work on a design.
+
+If a new version arrives **while you're using the app**, nothing reloads on its own. You'll see an **Update** button in the header (desktop) or menu (mobile) — click it to apply the update right away, or just keep working and it will apply the next time you open the app. The app checks for updates automatically when you return to the tab after switching away, and you can check on demand with **Check for Updates** — a small message tells you whether you're on the latest version.
+
+Prefer to apply every update yourself? Turn off **Automatic updates** (the toggle in the menu on mobile, or next to the update button on desktop). With it off, updates always wait for you to click **Update**.
 
 ---
 

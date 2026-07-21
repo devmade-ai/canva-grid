@@ -11,6 +11,7 @@ import EmptyStateGuide from './EmptyStateGuide'
 import QuickActionsBar from './QuickActionsBar'
 import UndoRedoButtons from './UndoRedoButtons'
 import { useToast } from './Toast'
+import { describeUpdateCheckResult } from '../utils/pwaHelpers'
 
 // Requirement: Consistent header button styling across desktop layout.
 // Approach: Extract repeated className pattern to a small component.
@@ -73,6 +74,8 @@ export default function DesktopLayout({
   update,
   checkForUpdate,
   checking,
+  autoUpdateEnabled,
+  setAutoUpdate,
   isOnline,
   // Content
   tabContent,
@@ -83,18 +86,13 @@ export default function DesktopLayout({
 }) {
   const { addToast } = useToast()
 
-  // Toast says "Check complete" — if an update was found during the settle delay,
-  // the update banner appears via normal hasUpdate re-render. Don't read hasUpdate
-  // in this closure — it's a stale prop value captured at render time, not a live ref.
+  // checkForUpdate returns the fleet-canonical typed result; the shared
+  // describeUpdateCheckResult mapping (pwaHelpers) supplies identical toast copy
+  // in both layouts. 'update-available' additionally surfaces the green Update
+  // button via the normal hasUpdate re-render.
   const handleCheckForUpdate = async () => {
-    const result = await checkForUpdate()
-    if (result === 'done') {
-      addToast('Check complete — you\'re on the latest version', { type: 'success' })
-    } else if (result === 'error') {
-      addToast('Could not check for updates', { type: 'warning' })
-    } else if (result === 'no-sw') {
-      addToast('Updates not available in this environment', { type: 'info' })
-    }
+    const toast = describeUpdateCheckResult(await checkForUpdate())
+    if (toast) addToast(toast.message, { type: toast.type })
   }
 
   return (
@@ -155,6 +153,20 @@ export default function DesktopLayout({
                 <svg className={`w-4 h-4 ${checking ? 'animate-spin' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
               </button>
             )}
+            {/* Fleet-standard "Automatic updates" toggle. Desktop has no burger menu —
+                the header button row IS its update surface (Install/Update/Check live
+                here), so the toggle sits beside them. DaisyUI toggle inside a label
+                (never nested in a button — invalid HTML). */}
+            <label className="flex items-center gap-1.5 px-1.5 min-h-8 cursor-pointer" title="Updates apply automatically when the app opens">
+              <span className="text-sm text-base-content/70 hidden sm:inline">Auto-update</span>
+              <input
+                type="checkbox"
+                className="toggle toggle-primary toggle-sm"
+                checked={autoUpdateEnabled}
+                onChange={(e) => setAutoUpdate(e.target.checked)}
+                aria-label="Automatic updates"
+              />
+            </label>
           </div>
         </div>
       </header>

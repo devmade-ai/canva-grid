@@ -65,14 +65,66 @@ function trackInstallEvent(event, browserName) {
   } catch { /* best effort */ }
 }
 
+// Shared sessionStorage key — written by markUpdateApplied(), read by wasJustUpdated().
+const UPDATE_APPLIED_KEY = 'pwa-update-applied'
+
+// Requirement: Fleet-standard "Automatic updates" preference (PWA_SYSTEM
+//   "Update Application Policy — auto-on-launch"). Default ON when absent.
+// Approach: Bare localStorage key matching repo convention (`darkMode`,
+//   `themeCombo`), value 'true' | 'false', try/catch-safe like the other
+//   storage helpers in this file (no safeStorage util in this repo).
+// Alternatives:
+//   - Default OFF: Rejected — fleet policy is default ON so stale clients
+//     converge without a tap (the GA-measurement-ID tail incident).
+//   - sessionStorage: Rejected — the preference must survive restarts.
+const AUTO_UPDATE_KEY = 'pwaAutoUpdate'
+
+function isAutoUpdateEnabled() {
+  try { return localStorage.getItem(AUTO_UPDATE_KEY) !== 'false' } catch { return true }
+}
+
+function setAutoUpdateEnabled(on) {
+  try { localStorage.setItem(AUTO_UPDATE_KEY, String(on)) } catch { /* best effort — preference just won't persist */ }
+}
+
+// Record that an update was just applied. Starts the 30s suppression window
+// below. Called by both apply paths: user tap and launch-apply.
+function markUpdateApplied() {
+  try { sessionStorage.setItem(UPDATE_APPLIED_KEY, String(Date.now())) } catch { /* sessionStorage may be unavailable in private browsing */ }
+}
+
 // 30-second suppression after applying an update — prevents false re-detection
 // when the browser's SW lifecycle hasn't fully settled after reload.
 function wasJustUpdated() {
   try {
-    const ts = sessionStorage.getItem('pwa-update-applied')
+    const ts = sessionStorage.getItem(UPDATE_APPLIED_KEY)
     if (!ts) return false
     return Date.now() - Number(ts) < 30_000
   } catch { return false }
+}
+
+// Requirement: One toast copy source for "Check for updates" results
+//   (canonical union: 'no-sw' | 'up-to-date' | 'update-available' | 'error').
+// Approach: Pure result → { message, type } mapping shared by DesktopLayout
+//   and MobileLayout, which previously duplicated identical if-chains.
+//   Returns null for results that shouldn't toast ('checking' — the
+//   concurrent-call guard; the in-flight check will toast when it settles).
+// Alternatives:
+//   - Keep per-layout if-chains: Rejected — copy drifted between layouts once
+//     already; a data map keeps wording identical and unit-testable.
+function describeUpdateCheckResult(result) {
+  switch (result) {
+    case 'up-to-date':
+      return { message: "You're on the latest version", type: 'success' }
+    case 'update-available':
+      return { message: 'Update found — use the Update button to apply it', type: 'info' }
+    case 'error':
+      return { message: 'Could not check for updates', type: 'warning' }
+    case 'no-sw':
+      return { message: 'Updates not available in this environment', type: 'info' }
+    default:
+      return null
+  }
 }
 
 export {
@@ -82,4 +134,8 @@ export {
   isStandalone,
   trackInstallEvent,
   wasJustUpdated,
+  markUpdateApplied,
+  isAutoUpdateEnabled,
+  setAutoUpdateEnabled,
+  describeUpdateCheckResult,
 }

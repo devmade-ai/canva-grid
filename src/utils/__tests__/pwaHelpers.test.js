@@ -1,5 +1,13 @@
 import { describe, test, expect, beforeEach, afterEach } from '@jest/globals'
-import { detectBrowser, trackInstallEvent, wasJustUpdated } from '../pwaHelpers.js'
+import {
+  detectBrowser,
+  trackInstallEvent,
+  wasJustUpdated,
+  markUpdateApplied,
+  isAutoUpdateEnabled,
+  setAutoUpdateEnabled,
+  describeUpdateCheckResult,
+} from '../pwaHelpers.js'
 
 // --- detectBrowser ---
 
@@ -145,6 +153,97 @@ describe('wasJustUpdated', () => {
       getItem: () => { throw new Error('SecurityError') },
     }
     expect(wasJustUpdated()).toBe(false)
+  })
+})
+
+// --- markUpdateApplied ---
+
+describe('markUpdateApplied', () => {
+  let store = {}
+
+  beforeEach(() => {
+    store = {}
+    globalThis.sessionStorage = {
+      getItem: (key) => store[key] ?? null,
+      setItem: (key, value) => { store[key] = value },
+      removeItem: (key) => { delete store[key] },
+    }
+  })
+
+  test('writes a timestamp that makes wasJustUpdated() true', () => {
+    expect(wasJustUpdated()).toBe(false)
+    markUpdateApplied()
+    expect(store['pwa-update-applied']).toBeDefined()
+    expect(wasJustUpdated()).toBe(true)
+  })
+
+  test('does not throw when sessionStorage fails', () => {
+    globalThis.sessionStorage = {
+      setItem: () => { throw new Error('SecurityError') },
+    }
+    expect(() => markUpdateApplied()).not.toThrow()
+  })
+})
+
+// --- Automatic updates preference ---
+
+describe('isAutoUpdateEnabled / setAutoUpdateEnabled', () => {
+  let store = {}
+
+  beforeEach(() => {
+    store = {}
+    globalThis.localStorage = {
+      getItem: (key) => store[key] ?? null,
+      setItem: (key, value) => { store[key] = value },
+    }
+  })
+
+  test('defaults to ON when no preference is stored', () => {
+    expect(isAutoUpdateEnabled()).toBe(true)
+  })
+
+  test('returns false only for the literal string "false"', () => {
+    store['pwaAutoUpdate'] = 'false'
+    expect(isAutoUpdateEnabled()).toBe(false)
+    store['pwaAutoUpdate'] = 'true'
+    expect(isAutoUpdateEnabled()).toBe(true)
+    store['pwaAutoUpdate'] = 'garbage'
+    expect(isAutoUpdateEnabled()).toBe(true)
+  })
+
+  test('setAutoUpdateEnabled round-trips through storage', () => {
+    setAutoUpdateEnabled(false)
+    expect(store['pwaAutoUpdate']).toBe('false')
+    expect(isAutoUpdateEnabled()).toBe(false)
+    setAutoUpdateEnabled(true)
+    expect(store['pwaAutoUpdate']).toBe('true')
+    expect(isAutoUpdateEnabled()).toBe(true)
+  })
+
+  test('defaults to ON when localStorage throws (private browsing)', () => {
+    globalThis.localStorage = {
+      getItem: () => { throw new Error('SecurityError') },
+      setItem: () => { throw new Error('SecurityError') },
+    }
+    expect(isAutoUpdateEnabled()).toBe(true)
+    expect(() => setAutoUpdateEnabled(false)).not.toThrow()
+  })
+})
+
+// --- describeUpdateCheckResult ---
+
+describe('describeUpdateCheckResult', () => {
+  test('maps every fleet-canonical result to toast copy', () => {
+    expect(describeUpdateCheckResult('up-to-date')).toEqual({ message: "You're on the latest version", type: 'success' })
+    expect(describeUpdateCheckResult('update-available')).toEqual({ message: 'Update found — use the Update button to apply it', type: 'info' })
+    expect(describeUpdateCheckResult('error')).toEqual({ message: 'Could not check for updates', type: 'warning' })
+    expect(describeUpdateCheckResult('no-sw')).toEqual({ message: 'Updates not available in this environment', type: 'info' })
+  })
+
+  test('returns null for non-surfaced results (concurrent-call guard, unknowns)', () => {
+    expect(describeUpdateCheckResult('checking')).toBeNull()
+    expect(describeUpdateCheckResult(undefined)).toBeNull()
+    expect(describeUpdateCheckResult('done')).toBeNull() // pre-upgrade value must never resurface silently
   })
 })
 

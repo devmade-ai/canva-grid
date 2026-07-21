@@ -175,7 +175,7 @@ function App() {
   const [isReaderMode, setIsReaderMode] = useState(false)
   const [selectedCell, setSelectedCell] = useState(0)
   const { canInstall, install, showManualInstructions, getInstallInstructions, isInstalled } = usePWAInstall()
-  const { hasUpdate, update, checkForUpdate, checking } = usePWAUpdate()
+  const { hasUpdate, update, checkForUpdate, checking, autoUpdateEnabled, setAutoUpdate } = usePWAUpdate()
   const isOnline = useOnlineStatus()
   const [showShortcuts, setShowShortcuts] = useState(false)
   const [allFontsLoaded, setAllFontsLoaded] = useState(false)
@@ -647,6 +647,8 @@ function App() {
         update={update}
         checkForUpdate={checkForUpdate}
         checking={checking}
+        autoUpdateEnabled={autoUpdateEnabled}
+        setAutoUpdate={setAutoUpdate}
         isOnline={isOnline}
         tabContent={tabContent}
         exportOverlay={exportOverlay}
@@ -704,6 +706,8 @@ function App() {
       update={update}
       checkForUpdate={checkForUpdate}
       checking={checking}
+      autoUpdateEnabled={autoUpdateEnabled}
+      setAutoUpdate={setAutoUpdate}
       isOnline={isOnline}
       tabContent={tabContent}
       exportOverlay={exportOverlay}

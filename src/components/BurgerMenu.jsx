@@ -35,6 +35,22 @@ export default function BurgerMenu({ items, open, onToggle, onClose, children, v
   useFocusTrap(menuRef, open)
   useEscapeKey(open, onClose)
 
+  // Toggle items (item.toggle) run immediately and keep the menu open — the
+  // keepOpen precedent set by the theme section (children never call onClose).
+  // No close-then-act delay: flipping a setting opens no modal, and closing
+  // would prevent users from seeing the switch state change.
+  const handleToggle = useCallback((item, next) => {
+    try {
+      item.action(next)
+    } catch (e) {
+      if (window.__debugPushError) {
+        window.__debugPushError(`Menu toggle "${item.label}" failed: ${e.message}`)
+      } else {
+        console.error('Menu toggle failed:', e)
+      }
+    }
+  }, [])
+
   // Close menu first, execute action after DOM settles.
   // Requirement: Per BURGER_MENU pattern — prevents visual glitches
   //   from menu close animation competing with modal/action open.
@@ -61,10 +77,12 @@ export default function BurgerMenu({ items, open, onToggle, onClose, children, v
   }, [])
 
   // Arrow key + Home/End navigation within menu items.
-  // When focus is outside the button list (idx === -1), ArrowDown goes to first,
+  // When focus is outside the control list (idx === -1), ArrowDown goes to first,
   // ArrowUp goes to last — matching Home/End behavior for consistency.
+  // Inputs included so toggle items (checkbox switches) join the arrow-key cycle;
+  // useFocusTrap's FOCUSABLE selector already covers them for Tab.
   const handleMenuKeyDown = useCallback((e) => {
-    const btns = menuRef.current?.querySelectorAll('button:not([disabled])')
+    const btns = menuRef.current?.querySelectorAll('button:not([disabled]), input:not([disabled])')
     if (!btns || btns.length === 0) return
     const idx = Array.from(btns).indexOf(document.activeElement)
 
@@ -135,32 +153,63 @@ export default function BurgerMenu({ items, open, onToggle, onClose, children, v
                     <hr className="my-1 border-base-300" />
                   )}
                   <li>
-                    <button
-                      type="button"
-                      disabled={item.disabled}
-                      onClick={() => handleItem(item)}
-                      className={`min-h-11 ${
-                        item.disabled
-                          ? 'opacity-40 cursor-not-allowed'
-                          : item.destructive
-                            ? 'text-error'
-                            : item.highlight
-                              ? item.highlightColor || 'text-primary'
-                              : ''
-                      }`}
-                    >
-                      {item.icon && (
-                        <svg className={`w-4 h-4 shrink-0 ${item.iconClass || ''}`} aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
-                        </svg>
-                      )}
-                      <span className="truncate">{item.label}</span>
-                      {item.external && (
-                        <svg className="w-3 h-3 ml-auto opacity-40 shrink-0" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
-                          <path d="M3.5 3H9v5.5M9 3L3 9" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                      )}
-                    </button>
+                    {item.toggle ? (
+                      /* Toggle item — <label> + DaisyUI toggle (checkbox) instead of a
+                         <button>: an input nested inside a button is invalid HTML
+                         (interactive content), and the label makes the whole row a
+                         tap target. Wrapping label supplies the accessible name;
+                         the input's aria-label keeps it concise (no helper text). */
+                      <label className="min-h-11 flex items-center justify-between gap-3 cursor-pointer">
+                        <span className="flex items-center gap-2 min-w-0">
+                          {item.icon && (
+                            <svg className={`w-4 h-4 shrink-0 ${item.iconClass || ''}`} aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                            </svg>
+                          )}
+                          <span className="flex flex-col min-w-0">
+                            <span className="truncate">{item.label}</span>
+                            {item.helper && (
+                              <span className="text-xs text-base-content/50 truncate">{item.helper}</span>
+                            )}
+                          </span>
+                        </span>
+                        <input
+                          type="checkbox"
+                          className="toggle toggle-primary toggle-sm shrink-0"
+                          checked={item.checked}
+                          disabled={item.disabled}
+                          onChange={(e) => handleToggle(item, e.target.checked)}
+                          aria-label={item.label}
+                        />
+                      </label>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={item.disabled}
+                        onClick={() => handleItem(item)}
+                        className={`min-h-11 ${
+                          item.disabled
+                            ? 'opacity-40 cursor-not-allowed'
+                            : item.destructive
+                              ? 'text-error'
+                              : item.highlight
+                                ? item.highlightColor || 'text-primary'
+                                : ''
+                        }`}
+                      >
+                        {item.icon && (
+                          <svg className={`w-4 h-4 shrink-0 ${item.iconClass || ''}`} aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={item.icon} />
+                          </svg>
+                        )}
+                        <span className="truncate">{item.label}</span>
+                        {item.external && (
+                          <svg className="w-3 h-3 ml-auto opacity-40 shrink-0" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth={1.5} aria-hidden="true">
+                            <path d="M3.5 3H9v5.5M9 3L3 9" strokeLinecap="round" strokeLinejoin="round" />
+                          </svg>
+                        )}
+                      </button>
+                    )}
                   </li>
                 </Fragment>
               ))}
