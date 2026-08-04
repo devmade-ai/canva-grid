@@ -82,3 +82,43 @@ including that renaming a `cacheName` is the only way to abandon poisoned entrie
 the orphaned-runtime-cache cleanup pattern with its debug-pill warning and sunset
 criterion, and the two mechanisms that made the GA tail last months (an ID inlined
 in the precached shell, plus `navigateFallback` making refresh a no-op).
+
+
+## Public visibility — 2026-08-04 fleet audit
+
+Findings from the fleet-wide public-visibility audit against
+[`DISCOVERABILITY.md`](https://devmade-ai.github.io/glow-props/patterns/discoverability/).
+**Fetch that pattern before starting any of these** — it grew substantially in
+the same pass. Every item below was verified against the deployed origin
+(`https://canva-grid.vercel.app/`) on 2026-08-04, not only read from source.
+
+This repo has **no public-visibility implementation at all**. It is a public
+tool that people are meant to find, so the posture is "indexed" and every step
+of the pattern applies.
+
+1. [ ] **No `robots.txt`, and the SPA rewrite makes that worse than absent.**
+   `GET /robots.txt` returns **200 with the app's HTML**, which is the exact trap
+   the pattern names: the file doesn't exist, so the catch-all rewrite answers
+   for it. Add a real `public/robots.txt` that **allows** the crawl and names the
+   sitemap, and exclude any path with a file extension from the rewrite so a
+   missing static file 404s instead of serving the shell.
+2. [ ] **`GET /sitemap.xml` has the same problem** — 200, HTML, no sitemap.
+3. [ ] **No Open Graph, no Twitter tags, no card image.** A pasted link renders
+   as a bare URL on every platform. Needs the full tag set plus a 1200×630 card
+   (Step 4 of the pattern; `sharp` is the fleet's usual generator).
+4. [ ] **No canonical.** The apex, the `*.vercel.app` alias and every preview
+   alias currently serve byte-identical HTML with nothing electing a winner.
+5. [ ] **Soft 404s.** `GET /this-path-does-not-exist` returns **200** with the
+   home page, so every typo'd URL is an indexable duplicate.
+6. [ ] **`<title>CanvaGrid</title>` is a brand token with no value proposition.**
+   The `<meta name="description">` already says what the tool does — the title
+   should too, within the ~60-character budget.
+7. [ ] **The served document has zero crawlable body text** (measured: 0
+   characters after stripping tags and scripts). Everything is client-rendered
+   into an empty mount point, so a crawler that doesn't execute JavaScript — and
+   every unfurler — sees nothing but the head.
+8. [ ] **No structured data.** `WebApplication` is the right node type for a
+   tool like this (Step 5).
+9. [ ] **No tripwire and no CI**, so every item above is invisible to the gate.
+   The pattern's Step 6 describes the check; several fleet repos have one to
+   copy.
