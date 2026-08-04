@@ -199,6 +199,28 @@ export default defineConfig({
             options: {
               cacheName: 'sample-manifest-cache',
               networkTimeoutSeconds: 5,
+              // Requirement: an installed user must find the manifest in cache
+              //   whatever hour they come back.
+              // Approach: match ignoring the query string.
+              // Why: the caller appends ?v=<hours since epoch>, which changes
+              //   every hour — and `ignoreURLParametersMatching` applies ONLY to
+              //   precache lookups, never to runtime routes. So each hour wrote a
+              //   NEW entry under a new key, and with maxEntries: 1 the previous
+              //   one was evicted immediately. An installed user was
+              //   offline-capable for at most ONE HOUR after their last online
+              //   visit; after that the lookup missed and the section showed
+              //   "Could not load sample images. Check your connection." while a
+              //   perfectly good copy had just been thrown away.
+              // Alternatives:
+              //   - Drop the ?v= cache-bust: rejected — it exists to get past
+              //     jsDelivr's edge cache on the @main URL, a real problem the
+              //     call site documents.
+              //   - Raise maxEntries to 24: rejected — papers over the key
+              //     explosion rather than removing it, and still fails anyone
+              //     away for more than a day.
+              matchOptions: {
+                ignoreSearch: true
+              },
               expiration: {
                 maxEntries: 1,
                 maxAgeSeconds: 60 * 60 * 24 * 7 // 7 days
