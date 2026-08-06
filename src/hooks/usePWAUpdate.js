@@ -1,5 +1,5 @@
 // Requirement: PWA update detection + the fleet-standard auto-on-launch apply policy
-//   (glow-props PWA_SYSTEM "Update Application Policy"). Launch-apply an update that was
+//   (gp-props PWA_SYSTEM "Update Application Policy"). Launch-apply an update that was
 //   ALREADY waiting when registration resolves; defer anything detected mid-session.
 // Approach: Module-level singleton so SW state survives React remounts. Checks for updates
 //   every 60 minutes and when the tab regains focus (visibilitychange). 30-second suppression

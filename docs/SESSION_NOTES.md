@@ -6,7 +6,7 @@ Compact context summary for session continuity. Rewrite at session end.
 
 ## Worked on
 
-Implemented the fleet-standard PWA update policy (glow-props `PWA_SYSTEM.md` "Update Application Policy — auto-on-launch") in canva-grid: launch-apply for waiting workers, persisted "Automatic updates" toggle, canonical "Check for Updates" result union.
+Implemented the fleet-standard PWA update policy (gp-props `PWA_SYSTEM.md` "Update Application Policy — auto-on-launch") in canva-grid: launch-apply for waiting workers, persisted "Automatic updates" toggle, canonical "Check for Updates" result union.
 
 ## Accomplished
 

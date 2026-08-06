@@ -16,7 +16,7 @@ import { SEO_LANDING_HTML } from './src/seo/landingContent'
 // Hash-derived, so URL only bumps when icon bytes change (prevents spurious
 // WebAPK regens). Workbox is told to strip the `v` param on precache lookup so
 // precache matching still works.
-// Pattern: glow-props/docs/implementations/PWA_ICON_CACHE_BUST.md.
+// Pattern: gp-props/docs/implementations/PWA_ICON_CACHE_BUST.md.
 // Alternatives:
 //   - Content-hashed filenames: Rejected — requires custom prebuild rename +
 //     stale-file cleanup; most PWA plugins don't participate in the asset graph.
@@ -132,7 +132,7 @@ export default defineConfig({
         background_color: '#000000',
         display: 'standalone',
         // Requirement: Without this, Chrome may skip beforeinstallprompt if it
-        // thinks a native app exists. Ref: glow-props Implementation Patterns.
+        // thinks a native app exists. Ref: gp-props Implementation Patterns.
         prefer_related_applications: false,
         // Requirement: Explicit id prevents Chrome from deriving identity from start_url.
         // Without this, changing start_url would break install identity for existing users.

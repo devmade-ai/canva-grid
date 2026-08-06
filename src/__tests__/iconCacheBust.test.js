@@ -4,7 +4,7 @@
 //   (1) source plugin wiring in vite.config.js,
 //   (2) literal href tags in index.html that the plugin rewrites,
 //   (3) built artifacts in dist/ (skipped if no build — keeps local `npm test` fast).
-// Pattern: glow-props/docs/implementations/PWA_ICON_CACHE_BUST.md.
+// Pattern: gp-props/docs/implementations/PWA_ICON_CACHE_BUST.md.
 // Alternatives:
 //   - End-to-end Playwright test against a running SW: Rejected — slow, flaky,
 //     doesn't catch the source-level misconfig cases (wrong plugin order, missing

@@ -11,7 +11,7 @@
 # reads as "file present" in the repo and "no robots.txt" to a crawler. The
 # rewrite in vercel.json now excludes any path carrying a file extension.
 #
-# See DISCOVERABILITY.md (glow-props) — public column.
+# See DISCOVERABILITY.md (gp-props) — public column.
 
 User-agent: *
 Allow: /

@@ -120,7 +120,7 @@ export function usePWAInstall() {
     window.addEventListener('beforeinstallprompt', handler)
     window.addEventListener('appinstalled', installedHandler)
 
-    // Timer cleanup uses array-drain shape per glow-props TIMER_LEAKS.md §1:
+    // Timer cleanup uses array-drain shape per gp-props TIMER_LEAKS.md §1:
     // scales without cleanup rewrite if nested or additional timers land here.
     const timeouts = []
 
