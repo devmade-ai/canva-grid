@@ -22,13 +22,13 @@ Future enhancements and ideas for CanvaGrid.
 ## PWA pattern audit — 2026-08-03
 
 Repo-side findings from a fleet-wide audit of every devmade-ai PWA against the
-glow-props implementation patterns. The pattern-side learnings are already folded
+gp-props implementation patterns. The pattern-side learnings are already folded
 back into those docs, so **fetch the current pattern before starting any item** —
 several of these are now described directly by it:
 
 ```bash
-curl -sf "https://devmade-ai.github.io/glow-props/patterns/PWA_SYSTEM.md"
-curl -sf "https://devmade-ai.github.io/glow-props/patterns/PWA_ICON_CACHE_BUST.md"
+curl -sf "https://gp-props.vercel.app/patterns/PWA_SYSTEM.md"
+curl -sf "https://gp-props.vercel.app/patterns/PWA_ICON_CACHE_BUST.md"
 ```
 
 Line references were accurate at audit time. Severity-ordered.
@@ -87,7 +87,7 @@ in the precached shell, plus `navigateFallback` making refresh a no-op).
 ## Public visibility — 2026-08-04 fleet audit
 
 Findings from the fleet-wide public-visibility audit against
-[`DISCOVERABILITY.md`](https://devmade-ai.github.io/glow-props/patterns/discoverability/).
+[`DISCOVERABILITY.md`](https://gp-props.vercel.app/patterns/discoverability/).
 **Fetch that pattern before starting any of these** — it grew substantially in
 the same pass. Every item below was verified against the deployed origin
 (`https://canva-grid.vercel.app/`) on 2026-08-04, not only read from source.
