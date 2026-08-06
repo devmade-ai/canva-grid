@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  CanvaGrid is a single-route tool: everything happens on / behind client-side
+  state, so there is exactly one URL worth crawling. A static file is the honest
+  representation of that, and it stays honest as long as that stays true.
+
+  If routes are ever added, GENERATE this instead of extending it by hand — and
+  delete this file when you do. A static public/sitemap.xml shadows a generated
+  one and silently freezes it, which is a documented trap in DISCOVERABILITY.md.
+  The tripwire in scripts/__tests__/seo.test.ts asserts the URL count here
+  matches what the app actually serves.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://canva-grid.vercel.app/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+</urlset>
