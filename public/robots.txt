@@ -1,0 +1,19 @@
+# CanvaGrid is a public tool people are meant to find, so the posture is
+# "indexed" and the crawl is allowed everywhere.
+#
+# Why no Disallow anywhere: a blocked crawler never fetches the page that would
+# tell it what the app is — and facebookexternalhit, Twitterbot, LinkedInBot and
+# Slack all honour robots.txt, so a Disallow would also switch off the link
+# preview card that public/og-card.png exists to produce.
+#
+# This file must be a REAL file. Before it existed, GET /robots.txt returned 200
+# with the app's HTML, because the SPA catch-all rewrite answered for it — which
+# reads as "file present" in the repo and "no robots.txt" to a crawler. The
+# rewrite in vercel.json now excludes any path carrying a file extension.
+#
+# See DISCOVERABILITY.md (glow-props) — public column.
+
+User-agent: *
+Allow: /
+
+Sitemap: https://canva-grid.vercel.app/sitemap.xml

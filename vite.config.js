@@ -6,6 +6,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
+import { SEO_LANDING_HTML } from './src/seo/landingContent'
 
 // Requirement: PWA icon cache busting across HTTP, CDN, Workbox precache, and
 // Chrome WebAPK layers. Stable filenames (`pwa-192x192.png`, `apple-touch-icon.png`,
@@ -80,11 +81,40 @@ function iconCacheBustHtml() {
   }
 }
 
+// Requirement: the served document must carry real body text (see
+//   src/seo/landingContent.ts for why — the deployed page measured ZERO
+//   crawlable characters).
+// Approach: build-only string injection INTO the existing mount point. React's
+//   first render replaces the container's children, so there is no removal step
+//   to wire and no shell that can outlive the handoff.
+// Fail-loud: the mount point literal must exist. If someone renames or
+//   reformats it the build stops, rather than silently shipping an empty
+//   document again — which is how this went unnoticed in the first place.
+// Dev is left untouched: verify against a real build (`vite preview`), which is
+//   the only view a crawler ever gets.
+function seoLandingHtml() {
+  const MOUNT = '<div id="root"></div>'
+  return {
+    name: 'seo-landing-html',
+    apply: 'build',
+    transformIndexHtml(html) {
+      if (!html.includes(MOUNT)) {
+        throw new Error(
+          `[seo-landing-html] mount point literal not found in index.html: ${MOUNT}\n` +
+          'Update MOUNT to match, or the built page ships with no crawlable body text.',
+        )
+      }
+      return html.replace(MOUNT, `<div id="root">${SEO_LANDING_HTML}</div>`)
+    },
+  }
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
     tailwindcss(),
     react(),
+    seoLandingHtml(),
     // Must run before VitePWA — locks the contract even though VitePWA only
     // injects <link rel="manifest"> today. Defensive against future plugin
     // behavior changes on either side.

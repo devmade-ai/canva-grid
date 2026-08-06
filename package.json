@@ -8,11 +8,12 @@
     "generate-icons": "node scripts/generate-icons.mjs",
     "generate-theme-meta": "node scripts/generate-theme-meta.mjs",
     "postgenerate-theme-meta": "npm run generate-icons",
-    "prebuild": "npm run generate-icons",
+    "prebuild": "npm run generate-icons && npm run generate-og",
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "node --no-warnings --experimental-vm-modules node_modules/.bin/jest"
+    "test": "node --no-warnings --experimental-vm-modules node_modules/.bin/jest",
+    "generate-og": "node scripts/generate-og-image.mjs"
   },
   "engines": {
     "node": ">=18.18.0"
