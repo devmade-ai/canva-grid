@@ -397,6 +397,12 @@ Never:
 - Mention branches, pull requests, squashing, rebasing, merging, or force-pushing unless the user raises the topic first. When the user does raise one, answer the specific question and stop — do not volunteer opinions on what they should do process-wise.
 - Decide that anything is out of scope, or frame work as "deferred as out of scope". Only the user sets scope. Work is either doable (do it) or blocked on user input (say exactly what input is needed).
 - Offer opinions on git history editing, branch strategy, PR size or shape, review flow, or commit structure. Follow instructions; don't editorialize on how the work should be organized.
+- Write non-trivial code without the decision-context comment Code Standards requires (what the requirement was, why this approach, what was rejected)
+- Add a feature without updating the documentation it invalidates, in the same commit
+- Add a workaround for an architectural problem — find the root cause and fix that. Globals, duplicate listeners and flag variables to patch over a structural issue are the shape to watch for; if a fix needs 3+ files coordinated to share state, that is the smell
+- Document or recommend a feature that has not been tested — writing it up is a claim that it works
+- Swallow an error with a silent `.catch(() => {})` — handle the specific failure, or let it surface
+- Hardcode a value that belongs in a CSS variable, a token, or config
 
 ### REMINDER: READ AND FOLLOW THE FUCKING PROHIBITIONS EVERY TIME
 
