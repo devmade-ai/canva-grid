@@ -391,11 +391,6 @@ gp-props is the source of truth, but "source of truth" does not mean "the versio
 The shared scaffolding (Process, Principles, Code Standards, Documentation, AI Notes, Triggers, Prohibitions, Implementation Patterns) is maintained in the sister project `devmade-ai/gp-props`.
 
 To fetch the latest version:
-```bash
-curl -sf "https://gp-props.vercel.app/CLAUDE.md"
-```
-
-When fetching updates, merge changes into the shared sections while preserving canva-grid-specific content (Project Info, Architecture, State Structure, Tab Details, etc.).
 
 ## Quick Reference
 
