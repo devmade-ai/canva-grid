@@ -16,7 +16,7 @@
     "generate-og": "node scripts/generate-og-image.mjs"
   },
   "engines": {
-    "node": ">=18.18.0"
+    "node": "24.x"
   },
   "dependencies": {
     "dompurify": "^3.3.3",
