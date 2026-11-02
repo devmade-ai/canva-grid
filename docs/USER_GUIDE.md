@@ -239,7 +239,7 @@ Text elements organized into collapsible groups:
 
 Each cell has its own text elements. Select a cell using the Context Bar, then edit its text.
 
-Long text shrinks automatically so it stays inside the cell, down to a small but still readable size. The download uses that same size. If there is still too much text, the field says: "Too much text to fit. It's as small as it can be. Shorten it so nothing gets cut off."
+Long text shrinks automatically so it stays inside the cell, down to a small but still readable size. The download uses that same size. If there is still too much text, the editor shows this once for that cell: "Too much text to fit. It's as small as it can be. Shorten it so nothing gets cut off."
 
 **Text Controls (for each element):**
 

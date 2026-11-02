@@ -130,9 +130,9 @@ function FreeformBlockEditor({
   onRemoveBlock,
   onMoveBlock,
   theme,
+  fitWarningId,
 }) {
   const textareaRef = useRef(null)
-  const fitWarningId = useId()
   const cellOverflows = useCellTextOverflows(cellIndex)
   const showFitWarning = !!block.content && cellOverflows
   const [showStyle, setShowStyle] = useState(false)
@@ -280,7 +280,6 @@ function FreeformBlockEditor({
           style={{ resize: 'vertical', minHeight: '3rem' }}
           aria-describedby={showFitWarning ? fitWarningId : undefined}
         />
-        <TextFitWarning id={fitWarningId} show={showFitWarning} />
       </div>
 
       {/* Collapsible style controls — uses shared TextStyleControls */}
@@ -309,6 +308,8 @@ export default function FreeformCellEditor({
   theme,
 }) {
   const blocks = cellBlocks || []
+  const fitWarningId = useId()
+  const cellOverflows = useCellTextOverflows(cellIndex)
 
   useEffect(() => {
     if (blocks.length === 0) {
@@ -319,8 +320,11 @@ export default function FreeformCellEditor({
   // Don't render until the auto-created block is available
   if (blocks.length === 0) return null
 
+  const showFitWarning = cellOverflows && blocks.some((block) => block.content)
+
   return (
     <div className="space-y-2">
+      <TextFitWarning id={fitWarningId} show={showFitWarning} />
       {blocks.map((block, i) => (
         <FreeformBlockEditor
           key={block.id}
@@ -332,6 +336,7 @@ export default function FreeformCellEditor({
           onRemoveBlock={onRemoveBlock}
           onMoveBlock={onMoveBlock}
           theme={theme}
+          fitWarningId={fitWarningId}
         />
       ))}
 

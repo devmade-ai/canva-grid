@@ -74,12 +74,13 @@ function TextElementEditor({
   cellText,
   onTextChange,
   theme,
+  fitWarningId,
 }) {
   const [showStyle, setShowStyle] = useState(false)
   const layerState = cellText?.[element.id] || defaultTextLayer
   const isVisible = layerState.visible !== false
-  const fitWarningId = useId()
   const cellOverflows = useCellTextOverflows(cellIndex)
+  // The chip is rendered once for the cell. This field only points at it.
   const showFitWarning = isVisible && !!layerState.content && cellOverflows
 
   // Auto-grow textarea rows based on content (#9)
@@ -166,7 +167,6 @@ function TextElementEditor({
           style={{ resize: 'vertical', minHeight: '2.5rem' }}
           aria-describedby={showFitWarning ? fitWarningId : undefined}
         />
-        <TextFitWarning id={fitWarningId} show={showFitWarning} />
       </div>
 
       {/* Collapsible style controls (#2) — uses shared TextStyleControls */}
@@ -215,6 +215,8 @@ export default memo(function ContentTab({
 
   const maxCell = cellInfoList.length - 1
   const activeCell = selectedCellProp < 0 || selectedCellProp > maxCell ? 0 : selectedCellProp
+  const fitWarningId = useId()
+  const cellOverflows = useCellTextOverflows(activeCell)
 
   const { type: layoutType, textAlign: globalTextAlign, textVerticalAlign: globalVerticalAlign, cellAlignments = [] } = layout
 
@@ -337,6 +339,7 @@ export default memo(function ContentTab({
 
       {textMode === 'structured' ? (
         <>
+          <TextFitWarning id={fitWarningId} show={cellOverflows} />
           {textGroups.map((group, i) => {
             const preview = getGroupPreview(group, activeCellText)
             return (
@@ -355,6 +358,7 @@ export default memo(function ContentTab({
                       cellText={activeCellText}
                       onTextChange={onTextChange}
                       theme={theme}
+                      fitWarningId={fitWarningId}
                     />
                   ))}
                 </div>

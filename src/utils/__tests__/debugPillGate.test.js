@@ -15,9 +15,17 @@ describe('shouldMountDebugPill', () => {
     expect(shouldMountDebugPill('?xdbg=1')).toBe(false)
   })
 
-  test('embed= still skips the pill even when dbg=1 is set', () => {
+  test('an embed query key skips the pill, even with dbg=1', () => {
+    expect(shouldMountDebugPill('?embed')).toBe(false)
+    expect(shouldMountDebugPill('?embed=')).toBe(false)
     expect(shouldMountDebugPill('?embed=1')).toBe(false)
     expect(shouldMountDebugPill('?dbg=1&embed=1')).toBe(false)
     expect(shouldMountDebugPill('?embed=preview&dbg=1')).toBe(false)
+    expect(shouldMountDebugPill('?dbg=1&embed')).toBe(false)
+  })
+
+  test('embed is the key name, not a substring', () => {
+    expect(shouldMountDebugPill('?dbg=1&notembed=1')).toBe(true)
+    expect(shouldMountDebugPill('?dbg=1&note=embed')).toBe(true)
   })
 })

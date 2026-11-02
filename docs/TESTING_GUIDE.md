@@ -230,7 +230,7 @@ Run these tests after making changes to ensure nothing is broken.
 | 2 | Paste about 1,000 characters into Title | Content → Title & Tagline | The title stays inside the cell. It is smaller than a short title. Nothing is cut off at the top or bottom |
 | 3 | Download the design | Export → Download | The file shows the same text, at the same size, also inside the cell |
 | 4 | Replace the title with a short word | Title field | The title returns to its normal size. No warning |
-| 5 | Paste several thousand characters | Title field | The text stops getting smaller. The field says "Too much text to fit. It's as small as it can be. Shorten it so nothing gets cut off." |
+| 5 | Paste several thousand characters | Title field | The text stops getting smaller. The editor shows "Too much text to fit. It's as small as it can be. Shorten it so nothing gets cut off." once for that cell |
 
 ---
 
