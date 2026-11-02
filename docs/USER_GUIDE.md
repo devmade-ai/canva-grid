@@ -239,6 +239,8 @@ Text elements organized into collapsible groups:
 
 Each cell has its own text elements. Select a cell using the Context Bar, then edit its text.
 
+Long text shrinks automatically so it stays inside the cell, down to a small but still readable size. The download uses that same size. If there is still too much text, the field says: "Too much text to fit. It's as small as it can be. Shorten it so nothing gets cut off."
+
 **Text Controls (for each element):**
 
 | Control | What it does |
@@ -262,6 +264,8 @@ Per-cell text editors with independent content per cell. Each cell gets its own 
 - Text content area
 - Alignment, color, and size controls
 - Markdown support (content is always parsed as markdown via `marked`)
+
+Freeform text shrinks to fit the cell the same way guided text does, and shows the same warning when it still doesn't fit.
 
 ---
 
@@ -361,7 +365,7 @@ Click **View** in the header to enter a clean full-screen view of your pages.
 Located below the preview area.
 
 ### Platform Selection
-A two-level selector organized by category → platform → format. Use the **search filter** to find platforms by name, or click categories to expand and browse. Platforms with a single format select directly; platforms with multiple formats expand to show options. Tips and file size limits are shown for each platform.
+A two-level selector organized by category → platform → format. Use the **search filter** to find platforms by name, or click categories to expand and browse. If nothing matches, the list says "No platforms match". Platforms with a single format select directly; platforms with multiple formats expand to show options. Tips and file size limits are shown for each platform.
 
 40 formats across 18 platform groups:
 

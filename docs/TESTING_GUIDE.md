@@ -220,6 +220,18 @@ Run these tests after making changes to ensure nothing is broken.
 | 4 | Change color dropdown | Title color selector | Title color changes |
 | 5 | Adjust size slider | Title size slider | Title size changes |
 
+### C6: Long Text Shrinks to Fit
+
+**Scenario:** A long title stays inside its cell. The download uses the same size. A warning appears only when the text is as small as it can be and still doesn't fit.
+
+| Step | Action | Where | Expected |
+|------|--------|-------|----------|
+| 1 | Apply the 2×2 Grid layout | Presets → Layout | Preview shows four equal cells |
+| 2 | Paste about 1,000 characters into Title | Content → Title & Tagline | The title stays inside the cell. It is smaller than a short title. Nothing is cut off at the top or bottom |
+| 3 | Download the design | Export → Download | The file shows the same text, at the same size, also inside the cell |
+| 4 | Replace the title with a short word | Title field | The title returns to its normal size. No warning |
+| 5 | Paste several thousand characters | Title field | The text stops getting smaller. The field says "Too much text to fit. It's as small as it can be. Shorten it so nothing gets cut off." |
+
 ---
 
 ## Structure Tab Tests
@@ -420,7 +432,7 @@ Run these tests after making changes to ensure nothing is broken.
 | 2 | Type "linked" in the search field | Platform search input | Only LinkedIn-related platforms shown (LinkedIn Square/Portrait/Landscape, LinkedIn Banner) |
 | 3 | Type "story" in the search field | Platform search input | All platforms with "Story" formats shown (Instagram, Facebook, Pinterest, Snapchat, WhatsApp, Threads) |
 | 4 | Clear the search field | Platform search input | All platform categories visible again |
-| 5 | Type "xyz123" (no match) | Platform search input | Empty state or "no results" message |
+| 5 | Type "xyz123" (no match) | Platform search input | The list says "No platforms match" |
 
 ### E7: Save and Load Designs
 
@@ -455,7 +467,7 @@ pre-fetches CSS + woff2 over CORS and passes them to html-to-image as
 | 6 | Format: PNG. Click Single Download | Export | File saved with timestamp prefix |
 | 7 | Open the downloaded PNG | File browser / Preview | Title text renders in the chosen Title font (not Times/Arial); body text renders in the chosen Body font |
 | 8 | Repeat for JPG and WebP | Format selector → Single Download | Same — chosen fonts visible in each format |
-| 9 | Open DebugPill → Log tab | Floating debug button | No `font-embed-warning` entries; no `console`-source errors mentioning `cssRules`, `Failed to fetch` for `fonts.googleapis.com`, or `Error inlining remote css` |
+| 9 | Reload the page with `?dbg=1` on the URL, then open DebugPill → Log tab | Floating debug button (hidden without `?dbg=1`) | No `font-embed-warning` entries; no `console`-source errors mentioning `cssRules`, `Failed to fetch` for `fonts.googleapis.com`, or `Error inlining remote css` |
 | 10 | Open DebugPill → PWA tab | Floating debug button | `SW Caches` row shows status `pass` after a full reload (F5 or close + reopen tab) following the deploy. That reload activates the new SW, which then uses the `*-v2` cache names and lets `pwaCleanup` delete the pre-rename names on the next app boot. Before the reload the row may legitimately show `warn` with stale entries — expected, not a regression. Click `Re-run` to confirm it's not transient. |
 
 **If step 7 fails (exported image uses system fonts):** the `fontEmbedCSS`

@@ -6,7 +6,7 @@
 //   - Global text with cell assignment: Rejected — indirect, confusing for non-technical users.
 //   - Single mode only: Rejected — structured is great for standard layouts, but freeform
 //     gives power users full control for custom text-heavy designs.
-import { memo, useMemo, useRef, useCallback, useState, useEffect } from 'react'
+import { memo, useMemo, useRef, useCallback, useState, useEffect, useId } from 'react'
 import CollapsibleSection from './CollapsibleSection'
 import MiniCellGrid from './MiniCellGrid'
 import TextStyleControls from './TextStyleControls'
@@ -14,6 +14,8 @@ import FreeformCellEditor from './FreeformEditor'
 import { getCellInfo, getCellPositionLabel } from '../utils/cellUtils'
 import { defaultTextLayer } from '../config/textDefaults'
 import { textAlignOptions, verticalAlignOptions } from '../config/alignment'
+import { useCellTextOverflows } from '../hooks/useCellTextOverflows'
+import TextFitWarning from './TextFitWarning'
 
 const noop = () => {}
 
@@ -76,6 +78,9 @@ function TextElementEditor({
   const [showStyle, setShowStyle] = useState(false)
   const layerState = cellText?.[element.id] || defaultTextLayer
   const isVisible = layerState.visible !== false
+  const fitWarningId = useId()
+  const cellOverflows = useCellTextOverflows(cellIndex)
+  const showFitWarning = isVisible && !!layerState.content && cellOverflows
 
   // Auto-grow textarea rows based on content (#9)
   const textareaRows = Math.min(8, Math.max(2, (layerState.content || '').split('\n').length + 1))
@@ -159,7 +164,9 @@ function TextElementEditor({
           rows={textareaRows}
           className="textarea textarea-bordered textarea-sm w-full"
           style={{ resize: 'vertical', minHeight: '2.5rem' }}
+          aria-describedby={showFitWarning ? fitWarningId : undefined}
         />
+        <TextFitWarning id={fitWarningId} show={showFitWarning} />
       </div>
 
       {/* Collapsible style controls (#2) — uses shared TextStyleControls */}

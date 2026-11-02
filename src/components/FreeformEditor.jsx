@@ -5,8 +5,10 @@
 // Alternatives:
 //   - Single block per cell: Rejected — user requested multiple appendable blocks with reordering.
 //   - Toolbar always visible: Rejected — repetitive with 3+ blocks.
-import { useRef, useCallback, useState, useEffect } from 'react'
+import { useRef, useCallback, useState, useEffect, useId } from 'react'
 import TextStyleControls from './TextStyleControls'
+import TextFitWarning from './TextFitWarning'
+import { useCellTextOverflows } from '../hooks/useCellTextOverflows'
 
 const GearIcon = ({ className = 'w-3.5 h-3.5' }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,6 +132,9 @@ function FreeformBlockEditor({
   theme,
 }) {
   const textareaRef = useRef(null)
+  const fitWarningId = useId()
+  const cellOverflows = useCellTextOverflows(cellIndex)
+  const showFitWarning = !!block.content && cellOverflows
   const [showStyle, setShowStyle] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
@@ -273,7 +278,9 @@ function FreeformBlockEditor({
           rows={textareaRows}
           className="textarea textarea-bordered textarea-sm w-full font-mono"
           style={{ resize: 'vertical', minHeight: '3rem' }}
+          aria-describedby={showFitWarning ? fitWarningId : undefined}
         />
+        <TextFitWarning id={fitWarningId} show={showFitWarning} />
       </div>
 
       {/* Collapsible style controls — uses shared TextStyleControls */}

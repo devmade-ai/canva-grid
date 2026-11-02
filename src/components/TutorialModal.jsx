@@ -93,7 +93,7 @@ const tutorialSteps = [
             <span><strong>Freeform:</strong> Write anything you want in each cell. Supports rich text formatting.</span>
           </li>
         </ul>
-        <p className="text-base-content/70 text-sm">Both modes let you change alignment, color, size, bold/italic, and letter spacing. Text alignment controls (horizontal + vertical) are here too.</p>
+        <p className="text-base-content/70 text-sm">Both modes let you change alignment, color, size, bold/italic, and letter spacing. Text alignment controls (horizontal + vertical) are here too. A long block of text shrinks to fit the cell. If it still doesn't fit, you'll see a note asking you to shorten it.</p>
       </div>
     ),
   },
