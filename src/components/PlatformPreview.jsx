@@ -10,6 +10,12 @@ import CollapsibleSection from './CollapsibleSection'
 //   - Flat list (previous): Rejected - doesn't scale, no room for tips/metadata
 //   - Modal picker: Rejected - extra interaction, breaks sidebar workflow
 
+function platformGroupMatches(group, query) {
+  if (!query) return true
+  if (group.name.toLowerCase().includes(query)) return true
+  return group.formats.some((format) => format.name.toLowerCase().includes(query))
+}
+
 function ChevronIcon({ expanded, className = '' }) {
   return (
     <svg
@@ -58,6 +64,12 @@ export default memo(function PlatformPreview({ selectedPlatform, onPlatformChang
       [platformId]: !prev[platformId],
     }))
   }
+
+  const query = searchQuery.toLowerCase().trim()
+  const noPlatformMatches = query.length > 0 && categoryOrder.every((category) => {
+    const groups = platformGroupsByCategory[category] || []
+    return !groups.some((group) => platformGroupMatches(group, query))
+  })
 
   // When selecting a format from a platform that only has one format,
   // no need to expand — just select directly
@@ -137,12 +149,8 @@ export default memo(function PlatformPreview({ selectedPlatform, onPlatformChang
             if (!categoryPlatformGroups || categoryPlatformGroups.length === 0) return null
 
             // Filter groups by search query (match group name or any format name)
-            const query = searchQuery.toLowerCase().trim()
             const filteredGroups = query
-              ? categoryPlatformGroups.filter((g) =>
-                  g.name.toLowerCase().includes(query) ||
-                  g.formats.some((f) => f.name.toLowerCase().includes(query))
-                )
+              ? categoryPlatformGroups.filter((group) => platformGroupMatches(group, query))
               : categoryPlatformGroups
             if (query && filteredGroups.length === 0) return null
 
@@ -236,6 +244,9 @@ export default memo(function PlatformPreview({ selectedPlatform, onPlatformChang
               </div>
             )
           })}
+          {noPlatformMatches && (
+            <p role="status" className="text-sm text-base-content/70 py-2">No platforms match</p>
+          )}
         </div>
       </CollapsibleSection>
     </div>

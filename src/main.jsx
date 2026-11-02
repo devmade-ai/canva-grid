@@ -15,7 +15,7 @@ createRoot(document.getElementById('root')).render(
 if (window.__debugClearLoadTimer) window.__debugClearLoadTimer()
 
 // Mount debug pill in a separate React root so it survives App crashes.
-// Available in production — alpha phase diagnostic tool.
+// Off unless the URL has ?dbg=1 (embed mode still skips it).
 mountDebugPill()
 
 // Drop pre-rename SW runtime caches (google-fonts-cache → -v2, etc.).

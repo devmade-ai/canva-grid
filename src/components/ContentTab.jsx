@@ -6,7 +6,7 @@
 //   - Global text with cell assignment: Rejected — indirect, confusing for non-technical users.
 //   - Single mode only: Rejected — structured is great for standard layouts, but freeform
 //     gives power users full control for custom text-heavy designs.
-import { memo, useMemo, useRef, useCallback, useState, useEffect } from 'react'
+import { memo, useMemo, useRef, useCallback, useState, useEffect, useId } from 'react'
 import CollapsibleSection from './CollapsibleSection'
 import MiniCellGrid from './MiniCellGrid'
 import TextStyleControls from './TextStyleControls'
@@ -14,6 +14,8 @@ import FreeformCellEditor from './FreeformEditor'
 import { getCellInfo, getCellPositionLabel } from '../utils/cellUtils'
 import { defaultTextLayer } from '../config/textDefaults'
 import { textAlignOptions, verticalAlignOptions } from '../config/alignment'
+import { useCellTextOverflows } from '../hooks/useCellTextOverflows'
+import TextFitWarning from './TextFitWarning'
 
 const noop = () => {}
 
@@ -72,10 +74,14 @@ function TextElementEditor({
   cellText,
   onTextChange,
   theme,
+  fitWarningId,
 }) {
   const [showStyle, setShowStyle] = useState(false)
   const layerState = cellText?.[element.id] || defaultTextLayer
   const isVisible = layerState.visible !== false
+  const cellOverflows = useCellTextOverflows(cellIndex)
+  // The chip is rendered once for the cell. This field only points at it.
+  const showFitWarning = isVisible && !!layerState.content && cellOverflows
 
   // Auto-grow textarea rows based on content (#9)
   const textareaRows = Math.min(8, Math.max(2, (layerState.content || '').split('\n').length + 1))
@@ -159,6 +165,7 @@ function TextElementEditor({
           rows={textareaRows}
           className="textarea textarea-bordered textarea-sm w-full"
           style={{ resize: 'vertical', minHeight: '2.5rem' }}
+          aria-describedby={showFitWarning ? fitWarningId : undefined}
         />
       </div>
 
@@ -208,6 +215,8 @@ export default memo(function ContentTab({
 
   const maxCell = cellInfoList.length - 1
   const activeCell = selectedCellProp < 0 || selectedCellProp > maxCell ? 0 : selectedCellProp
+  const fitWarningId = useId()
+  const cellOverflows = useCellTextOverflows(activeCell)
 
   const { type: layoutType, textAlign: globalTextAlign, textVerticalAlign: globalVerticalAlign, cellAlignments = [] } = layout
 
@@ -330,6 +339,7 @@ export default memo(function ContentTab({
 
       {textMode === 'structured' ? (
         <>
+          <TextFitWarning id={fitWarningId} show={cellOverflows} />
           {textGroups.map((group, i) => {
             const preview = getGroupPreview(group, activeCellText)
             return (
@@ -348,6 +358,7 @@ export default memo(function ContentTab({
                       cellText={activeCellText}
                       onTextChange={onTextChange}
                       theme={theme}
+                      fitWarningId={fitWarningId}
                     />
                   ))}
                 </div>

@@ -400,7 +400,7 @@ FRAMEWORK=React 18
 BUNDLER=Vite
 STYLING=Tailwind CSS 4 + DaisyUI 5 (utility classes in JSX, 2 theme combos: Mono + Luxe)
 LINTER=ESLint 9 (flat config) + eslint-plugin-react-hooks 7.x + eslint-plugin-react-refresh
-TEST_RUNNER=Jest (164 unit tests) + Manual (see docs/TESTING_GUIDE.md)
+TEST_RUNNER=Jest (215 tests) + Manual (see docs/TESTING_GUIDE.md)
 PACKAGE_MANAGER=npm
 DEPLOY=Vercel (auto-deploy on push to main)
 NAMING=camelCase (variables/functions), PascalCase (components)
@@ -431,6 +431,7 @@ Core features working:
 - **Freeform text mode**: Toggle on Content tab between Guided and Freeform
   - Per-cell multi-block text editors with independent content, color, size, alignment
   - Automatic markdown rendering (uses `marked` library)
+- **Text fit**: Guided and freeform text shrinks together per cell until it fits, down to 12px. If it still doesn't fit, the editor shows a plain warning. The download captures that same canvas, so the file matches the preview.
 - Multi-image system: Image library with per-cell assignment
   - Upload multiple images to a shared library
   - Assign different images to different cells (1 per cell)
@@ -470,7 +471,7 @@ Core features working:
   - Dedicated 1024px maskable icon with separated icon purposes
   - Updates auto-apply at launch (waiting worker → single reload before anything is typed); mid-session detections only arm the Update button/banner — never a forced reload over unsaved designs
   - Persisted "Automatic updates" toggle (default ON, localStorage `pwaAutoUpdate`) in the mobile burger menu + desktop header; "Check for Updates" reports a typed result via toast
-- **Debug system (alpha, all envs)**: In-memory event log with floating DebugPill (separate React root), console interception, PWA diagnostics, pre-React inline pill
+- **Debug system (alpha)**: In-memory event log with floating DebugPill (separate React root, mounted only when the URL has `?dbg=1`; a query key named `embed` still skips it), console interception, PWA diagnostics, pre-React error capture
 - **Toast notifications**: Non-blocking feedback for exports, saves, deletes, warnings
 - **Inline confirmations**: ConfirmButton replaces browser confirm() for destructive actions
 - **Export progressive disclosure**: Secondary options collapse into "More export options"
@@ -577,7 +578,8 @@ src/
 │   ├── ReaderMode.jsx         # Full-screen reader view with page navigation (useEscapeKey + arrow key handler)
 │   ├── MobileLayout.jsx       # Mobile-specific layout container (header, canvas, sheet, nav)
 │   ├── DesktopLayout.jsx      # Desktop-specific layout container (header, sidebar, main)
-│   └── DebugPill.jsx          # Floating debug panel (separate React root, 3 tabs: Log/Env/PWA)
+│   ├── DebugPill.jsx          # Floating debug panel (separate React root, 3 tabs: Log/Env/PWA, ?dbg=1 only)
+│   └── TextFitWarning.jsx     # Plain warning when cell text is at the 12px floor and still overflows
 ├── config/         # Configuration
 │   ├── layouts.js        # 26 overlay types (solid, gradients, radial, effects, blends, textures)
 │   ├── layoutPresets.js  # 27 layouts with SVG icons and categories
@@ -602,17 +604,22 @@ src/
 │   ├── useTheme.js       # ThemeContext wrapping useDarkMode (eliminates prop drilling)
 │   ├── useDialogSync.js  # Shared <dialog> open/close sync for DaisyUI modals (4 consumers)
 │   ├── useDisclosureFocus.js # Shared focus management for disclosure-pattern components
-│   └── useEscapeKey.js   # Reusable Escape key handler for disclosure components
+│   ├── useEscapeKey.js   # Reusable Escape key handler for disclosure components
+│   ├── useFitCellText.js # Measures canvas text and shrinks each cell to fit (floor 12px)
+│   └── useCellTextOverflows.js # Editor subscription to the per-cell overflow flag
 ├── utils/
 │   ├── cellUtils.js      # Cell counting, shifting, swapping, cleanup utilities
 │   ├── designStorage.js  # IndexedDB wrapper for design persistence
 │   ├── debugLog.js       # In-memory debug event store (circular buffer, console interception, report generation)
+│   ├── debugPillGate.js  # Debug pill mounts only for ?dbg=1, and never when the query has an embed key
 │   ├── exportHelpers.js  # Export capture utilities (captureAsBlob, captureForPdf, waitForPaint)
 │   ├── canvasRenderers.js # Canvas rendering helpers (buildFilterStyle, getAlignItems, isDuotoneOverlay)
 │   ├── fontEmbed.js      # Pre-fetches Google Fonts CSS + woff2 as data URLs for html-to-image's fontEmbedCSS option (CORS-safe, cached, per-weight failure tolerant)
 │   ├── pwaHelpers.js     # Pure PWA utilities (detectBrowser, wasJustUpdated, trackInstallEvent, CHROMIUM_BROWSERS)
 │   ├── pwaCleanup.js     # One-shot caches.delete for pre-rename SW runtime caches (sunset target: ~Oct 2026 — see TODO.md)
-│   └── layoutHelpers.ts  # Layout-structure geometry (cellToSection, getFirstCellOfSection, Section interface)
+│   ├── layoutHelpers.ts  # Layout-structure geometry (cellToSection, getFirstCellOfSection, Section interface)
+│   ├── fitText.js        # Binary-search font size so a cell's text fits, floor 12px
+│   └── textFitStatus.js  # Per-cell overflow flag shared by the canvas and the text editors
 ├── App.jsx               # State orchestrator, delegates rendering to ReaderMode/MobileLayout/DesktopLayout
 └── main.jsx
 ```
@@ -790,7 +797,7 @@ before the sync.
 - AI Notes :: - **PWA update policy — fleet-standard auto-on-launch** (gp-props `PWA_SYSTEM.md` "Update Application Policy"): `registerType` stays `'prompt'` (the mechanism); the behavior on top is (1) **launch-apply** — in `onRegistered`, a worker ALREADY in `registration.waiting` when registration first resolves is applied immediately (set the `_userClickedUpdate` reload latch, `markUpdateApplied()` 30s suppression, `postMessage({type:'SKIP_WAITING'})` → single reload via the existing `controllerchange` guard). Launch is the only safe apply window — canva-grid holds unsaved in-memory designs, so NEVER auto-apply mid-session; (2) **mid-session** detections (hourly poll, visibilitychange) only arm the Update button/banner, and an untapped update applies at the next launch; (3) **"Automatic updates" toggle** — persisted in bare localStorage key `pwaAutoUpdate` (`'true' | 'false'`, absent = ON) via try/catch helpers in `pwaHelpers.js`; OFF restores tap-only behavior. Surfaced as a BurgerMenu toggle item (mobile) and a header `toggle toggle-primary toggle-sm` label (desktop, next to the update buttons); (4) **"Check for Updates"** returns the fleet-canonical union `'no-sw' | 'up-to-date' | 'update-available' | 'error'` (plus internal `'checking'` for the concurrent-call guard, never toasted) — both layouts toast via the shared `describeUpdateCheckResult` mapping in `pwaHelpers.js`.
 - AI Notes :: - **PWA iOS browser detection:** iOS Chrome uses `CriOS`, Firefox uses `FxiOS`, Edge uses `EdgiOS` in UA strings — not `Chrome`/`Firefox`/`Edg`. These are detected before the Safari fallback in `detectBrowser()`. Without this, all iOS non-Safari browsers are misdetected as `'safari'`, breaking the iOS cross-redirect install instructions.
 - AI Notes :: - **PWA icon purposes:** Never combine `"any maskable"` in a single icon entry. Use separate entries with individual `purpose` values. Dedicated 1024px maskable icon at `pwa-maskable-1024.png`.
-- AI Notes :: - **Debug system (alpha, all environments):** `src/utils/debugLog.js` is an in-memory 200-entry circular buffer with pub/sub, console interception (`console.error`/`console.warn` patched at module load), and `debugGenerateReport()` for clipboard reports with URL redaction. Consecutive identical messages (same source+event+severity) are deduplicated with a `count` field. Error handlers capture `Error.stack` from Error objects (`console.error` interceptor) and `e.error?.stack` (global error listener) — stack traces appear in debug report details for diagnosing minified crashes. Module-level listeners (console patches + window error/rejection) are guarded by `window.__debugConsolePatched` / `window.__debugLogListenersAttached` flags AND paired with an `import.meta.hot.dispose()` block that restores originals and clears the flags on HMR — without dispose, the new module's guards short-circuit re-patching while the old patches stay alive (TIMER_LEAKS pattern variant 5). `src/components/DebugPill.jsx` renders in static `#debug-root` div (separate React root, survives App crashes). Three tabs: Log, Env, PWA Diagnostics. Pre-React inline pill in `index.html` captures errors before bundle loads with 20s loading timeout. Skipped in embed mode (`?embed=`). Subscribers receive existing entries immediately on subscribe. Use `debugLog(source, event, details, severity)` to add entries (severity: info/success/warn/error).
+- AI Notes :: - **Debug system (alpha, all environments):** `src/utils/debugLog.js` is an in-memory 200-entry circular buffer with pub/sub, console interception (`console.error`/`console.warn` patched at module load), and `debugGenerateReport()` for clipboard reports with URL redaction. Consecutive identical messages (same source+event+severity) are deduplicated with a `count` field. Error handlers capture `Error.stack` from Error objects (`console.error` interceptor) and `e.error?.stack` (global error listener) — stack traces appear in debug report details for diagnosing minified crashes. Module-level listeners (console patches + window error/rejection) are guarded by `window.__debugConsolePatched` / `window.__debugLogListenersAttached` flags AND paired with an `import.meta.hot.dispose()` block that restores originals and clears the flags on HMR — without dispose, the new module's guards short-circuit re-patching while the old patches stay alive (TIMER_LEAKS pattern variant 5). `src/components/DebugPill.jsx` renders in static `#debug-root` div (separate React root, survives App crashes). Three tabs: Log, Env, PWA Diagnostics. Pre-React script in `index.html` captures errors before bundle loads with a 20s loading timeout; it does not draw the pill. The pill mounts only when the URL has `?dbg=1`, and a query key named `embed` still skips it. Subscribers receive existing entries immediately on subscribe. Use `debugLog(source, event, details, severity)` to add entries (severity: info/success/warn/error).
 - AI Notes :: - **pdf-lib image handling:** pdf-lib embeds PNG directly (FlateDecode — no re-encoding). Digital PDF uses pxToPt=1 (1:1 pixel-to-point mapping). Captures at user-selected pixelRatio (1x/2x/3x), giving integer px/pt ratios (1:1/2:1/3:1). Print formats use pixelRatio:1 with 72/150 DPI conversion for correct physical page size. History: (1) pixelRatio:2 + 72/96 → 2.667:1 ratio → gradient banding. (2) 1:1 mapping + page scaled with pixelRatio → identical quality. (3) pxToPt=1 fixed page + variable pixelRatio → current approach. Diagnostic image download enabled in dev mode.
 - AI Notes :: - **Font embedding for export — `utils/fontEmbed.js`:** html-to-image's built-in font embedder (and its exported `getFontEmbedCSS`) walks `document.styleSheets` and reads `cssRules`, which throws SecurityError on cross-origin sheets without `crossorigin`. Even with `crossorigin="anonymous"` on the `<link>` tags, the SW runtime cache historically held opaque (status 0) responses that failed the new CORS-mode requests. Solution: pre-fetch each Google Fonts CSS URL ourselves via `getEmbeddedFontCSS(fontIds, { onWarning })`, inline every woff2 `url(...)` as a data URL (using `Promise.allSettled` so one bad weight doesn't drop the whole font), pass the result to `toCanvas` as `fontEmbedCSS`. With that option set, html-to-image short-circuits the broken stylesheet walker (verified at `embed-webfonts.js:188-192`). Cache is per-CSS-URL, lifetime = page session, with inflight dedup. Failures call `onWarning` so `exportHelpers.js` can surface partial degradation via `debugLog('export', 'font-embed-warning', ...)`. Companion changes: `crossorigin="anonymous"` on every Google Fonts `<link>` (index.html + 3 layouts) for any other CSSOM consumer; SW caches renamed `*-cache` → `*-cache-v2` with `cacheableResponse.statuses: [200]` to abandon opaque entries; `utils/pwaCleanup.js` drops the old cache names on app load.
 - AI Notes :: - **Design storage is IndexedDB:** `utils/designStorage.js` wraps IndexedDB with async save/load/list/delete. One-time migration from localStorage runs on first mount via `migrateFromLocalStorage()`. Never use localStorage for designs.

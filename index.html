@@ -161,7 +161,11 @@
           if (root) {
             var warning = document.createElement('p');
             warning.style.cssText = 'color:#eab308;font-size:14px;margin-top:12px;text-align:center;font-family:system-ui,sans-serif';
-            warning.textContent = 'This is taking longer than usual. Check the debug pill for errors, or try reloading.';
+            var params = new URLSearchParams(window.location.search);
+            var showPill = params.get('dbg') === '1' && !params.has('embed');
+            warning.textContent = showPill
+              ? 'This is taking longer than usual. Check the debug pill for errors, or try reloading.'
+              : 'This is taking longer than usual. Try reloading.';
             root.appendChild(warning);
           }
         }

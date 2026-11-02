@@ -1,4 +1,4 @@
-import { forwardRef, useMemo, memo } from 'react'
+import { forwardRef, useMemo, memo, useRef, useCallback } from 'react'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 
@@ -14,6 +14,18 @@ import { platforms } from '../config/platforms'
 import { fonts } from '../config/fonts'
 import { getNeutralColor } from '../config/themes'
 import { defaultTextLayer, spacerSizeMap } from '../config/textDefaults'
+import { fontSizeAtScale, trackingAtScale } from '../utils/fitText'
+import { useFitCellText } from '../hooks/useFitCellText'
+
+// Fraction of platform width for each structured text role at size M (1).
+const TEXT_SIZE_FACTOR = {
+  title: 0.05,
+  tagline: 0.028,
+  bodyHeading: 0.026,
+  bodyText: 0.022,
+  cta: 0.028,
+  footnote: 0.015,
+}
 
 marked.setOptions({
   breaks: true,
@@ -59,6 +71,31 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   const frameConfig = state.frame || { outer: { percent: 0, color: 'primary' }, cellFrames: {} }
   const images = state.images || []
   const cellImages = state.cellImages || {}
+
+  // The forwarded ref is the node export captures. Keep our own handle so text
+  // fitting can measure that same node — the download then matches the preview.
+  const rootRef = useRef(null)
+  const setRoot = useCallback((node) => {
+    rootRef.current = node
+    if (typeof ref === 'function') ref(node)
+    else if (ref) ref.current = node
+  }, [ref])
+
+  const fitKey = useMemo(() => JSON.stringify({
+    textMode: state.textMode,
+    text: state.text,
+    freeformText: state.freeformText,
+    fonts: state.fonts,
+    width: platform.width,
+    padding: state.padding,
+    layout: state.layout,
+  }), [state.textMode, state.text, state.freeformText, state.fonts, platform.width, state.padding, state.layout])
+
+  const fitScales = useFitCellText(rootRef, fitKey)
+  const fitScaleFor = (cellIndex) => {
+    const scale = fitScales[String(cellIndex)]
+    return scale == null ? 1 : scale
+  }
 
   const getCellPaddingValue = (cellIndex) => {
     const override = paddingConfig.cellOverrides?.[cellIndex]
@@ -429,7 +466,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
     const elementStyles = {
       title: {
         tag: 'h1',
-        fontSize: Math.round(platform.width * 0.05 * (layer.size || 1)),
+        fontSize: Math.round(platform.width * TEXT_SIZE_FACTOR.title * (layer.size || 1)),
         fontWeight: layer.bold !== false ? 700 : 400,
         fontFamily: titleFont.family,
         margin: 0,
@@ -439,7 +476,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       },
       tagline: {
         tag: 'p',
-        fontSize: Math.round(platform.width * 0.028 * (layer.size || 1)),
+        fontSize: Math.round(platform.width * TEXT_SIZE_FACTOR.tagline * (layer.size || 1)),
         fontWeight: layer.bold ? 700 : 500,
         fontFamily: bodyFont.family,
         margin: '0.4em 0 0 0',
@@ -449,7 +486,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       },
       bodyHeading: {
         tag: 'p',
-        fontSize: Math.round(platform.width * 0.026 * (layer.size || 1)),
+        fontSize: Math.round(platform.width * TEXT_SIZE_FACTOR.bodyHeading * (layer.size || 1)),
         fontWeight: layer.bold !== false ? 600 : 400,
         fontFamily: bodyFont.family,
         margin: '0.8em 0 0 0',
@@ -459,7 +496,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       },
       bodyText: {
         tag: 'p',
-        fontSize: Math.round(platform.width * 0.022 * (layer.size || 1)),
+        fontSize: Math.round(platform.width * TEXT_SIZE_FACTOR.bodyText * (layer.size || 1)),
         fontWeight: layer.bold ? 700 : 400,
         fontFamily: bodyFont.family,
         margin: '0.4em 0 0 0',
@@ -469,7 +506,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       },
       cta: {
         tag: 'p',
-        fontSize: Math.round(platform.width * 0.028 * (layer.size || 1)),
+        fontSize: Math.round(platform.width * TEXT_SIZE_FACTOR.cta * (layer.size || 1)),
         fontWeight: layer.bold !== false ? 600 : 400,
         fontFamily: bodyFont.family,
         margin: '0.8em 0 0 0',
@@ -479,7 +516,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
       },
       footnote: {
         tag: 'p',
-        fontSize: Math.round(platform.width * 0.015 * (layer.size || 1)),
+        fontSize: Math.round(platform.width * TEXT_SIZE_FACTOR.footnote * (layer.size || 1)),
         fontWeight: layer.bold ? 700 : 400,
         fontFamily: bodyFont.family,
         margin: '1em 0 0 0',
@@ -492,15 +529,18 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
 
     const style = elementStyles[elementId] || elementStyles.bodyText
     const Tag = style.tag
+    const fitScale = fitScaleFor(cellIndex)
 
     return (
       <Tag
         key={elementId}
+        data-fit-base={style.fontSize}
+        data-fit-tracking={layer.letterSpacing || 0}
         style={{
-          fontSize: style.fontSize,
+          fontSize: fontSizeAtScale(style.fontSize, fitScale),
           fontWeight: style.fontWeight,
           fontStyle: layer.italic ? 'italic' : 'normal',
-          letterSpacing: `${layer.letterSpacing || 0}px`,
+          letterSpacing: `${trackingAtScale(layer.letterSpacing || 0, fitScale)}px`,
           fontFamily: style.fontFamily,
           color: getTextColor(layer.color),
           margin: style.margin,
@@ -509,6 +549,10 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
           whiteSpace: style.whiteSpace,
           wordWrap: 'break-word',
           overflowWrap: 'break-word',
+          // Keep the line box inside the cell so a long string wraps instead of
+          // painting one clipped line that the fitter would measure as "fits".
+          maxWidth: '100%',
+          minWidth: 0,
           textAlign: elementAlign,
           alignSelf: getAlignItems(elementAlign),
           ...style.shadow,
@@ -552,7 +596,9 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
 
       // Block content
       const textColor = getTextColor(block.color || 'secondary')
-      const fontSize = Math.round(platform.width * 0.022 * (block.size || 1))
+      const baseFontSize = Math.round(platform.width * TEXT_SIZE_FACTOR.bodyText * (block.size || 1))
+      const fitScale = fitScaleFor(cellIndex)
+      const fontSize = fontSizeAtScale(baseFontSize, fitScale)
       const textAlign = block.textAlign || getCellTextAlign(cellIndex)
       // Security: sanitize marked output to prevent XSS via user-supplied text
       const html = DOMPurify.sanitize(marked.parse(block.content), SANITIZE_CONFIG)
@@ -561,6 +607,8 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
         <div
           key={block.id}
           className="freeform-markdown"
+          data-fit-base={baseFontSize}
+          data-fit-tracking={block.letterSpacing || 0}
           style={{
             fontSize,
             fontWeight: block.bold ? 700 : 400,
@@ -568,11 +616,13 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
             fontFamily: bodyFont.family,
             color: textColor,
             lineHeight: 1.6,
-            letterSpacing: `${block.letterSpacing || 0}px`,
+            letterSpacing: `${trackingAtScale(block.letterSpacing || 0, fitScale)}px`,
             textAlign,
             whiteSpace: 'normal',
             wordWrap: 'break-word',
             overflowWrap: 'break-word',
+            maxWidth: '100%',
+            minWidth: 0,
             ...(withShadow ? { textShadow: '0 1px 2px rgba(0,0,0,0.3)' } : {}),
           }}
           dangerouslySetInnerHTML={{ __html: html }}
@@ -592,6 +642,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
 
     return (
       <div
+        data-fit-frame={cellIndex}
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -632,6 +683,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
 
     return (
       <div
+        data-fit-frame={cellIndex}
         style={{
           display: 'flex',
           flexDirection: 'column',
@@ -814,7 +866,7 @@ const AdCanvas = forwardRef(function AdCanvas({ state, scale = 1 }, ref) {
   }
 
   return (
-    <div ref={ref} style={containerStyle}>
+    <div ref={setRoot} style={containerStyle}>
       <SvgFilters />
       {renderLayout()}
       {renderLogo()}

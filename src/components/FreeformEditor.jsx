@@ -5,8 +5,10 @@
 // Alternatives:
 //   - Single block per cell: Rejected — user requested multiple appendable blocks with reordering.
 //   - Toolbar always visible: Rejected — repetitive with 3+ blocks.
-import { useRef, useCallback, useState, useEffect } from 'react'
+import { useRef, useCallback, useState, useEffect, useId } from 'react'
 import TextStyleControls from './TextStyleControls'
+import TextFitWarning from './TextFitWarning'
+import { useCellTextOverflows } from '../hooks/useCellTextOverflows'
 
 const GearIcon = ({ className = 'w-3.5 h-3.5' }) => (
   <svg className={className} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -128,8 +130,11 @@ function FreeformBlockEditor({
   onRemoveBlock,
   onMoveBlock,
   theme,
+  fitWarningId,
 }) {
   const textareaRef = useRef(null)
+  const cellOverflows = useCellTextOverflows(cellIndex)
+  const showFitWarning = !!block.content && cellOverflows
   const [showStyle, setShowStyle] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [isFocused, setIsFocused] = useState(false)
@@ -273,6 +278,7 @@ function FreeformBlockEditor({
           rows={textareaRows}
           className="textarea textarea-bordered textarea-sm w-full font-mono"
           style={{ resize: 'vertical', minHeight: '3rem' }}
+          aria-describedby={showFitWarning ? fitWarningId : undefined}
         />
       </div>
 
@@ -302,6 +308,8 @@ export default function FreeformCellEditor({
   theme,
 }) {
   const blocks = cellBlocks || []
+  const fitWarningId = useId()
+  const cellOverflows = useCellTextOverflows(cellIndex)
 
   useEffect(() => {
     if (blocks.length === 0) {
@@ -312,8 +320,11 @@ export default function FreeformCellEditor({
   // Don't render until the auto-created block is available
   if (blocks.length === 0) return null
 
+  const showFitWarning = cellOverflows && blocks.some((block) => block.content)
+
   return (
     <div className="space-y-2">
+      <TextFitWarning id={fitWarningId} show={showFitWarning} />
       {blocks.map((block, i) => (
         <FreeformBlockEditor
           key={block.id}
@@ -325,6 +336,7 @@ export default function FreeformCellEditor({
           onRemoveBlock={onRemoveBlock}
           onMoveBlock={onMoveBlock}
           theme={theme}
+          fitWarningId={fitWarningId}
         />
       ))}
 

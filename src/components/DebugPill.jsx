@@ -1,7 +1,7 @@
 /* eslint-disable react-refresh/only-export-components -- mountDebugPill initializer exported alongside internal component */
 // Requirement: Floating debug pill for production diagnostics (alpha phase).
 // Approach: Separate React root in #debug-root (survives App crashes), inline styles (survives
-//   stylesheet failures), 3 tabs (Log, Env, PWA), embed mode skip, report generation via module.
+//   stylesheet failures), 3 tabs (Log, Env, PWA), ?dbg=1 gate (embed= still skips), report generation via module.
 // Alternatives:
 //   - Render inside App tree: Rejected - crashes in App would kill the debug UI too.
 //   - Browser devtools only: Rejected - not available on mobile or for non-technical users reporting bugs.
@@ -10,6 +10,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createRoot } from 'react-dom/client'
 import { clearEntries, subscribe, debugLog, debugGenerateReport, formatTime } from '../utils/debugLog'
 import { OLD_CACHES } from '../utils/pwaCleanup'
+import { shouldMountDebugPill } from '../utils/debugPillGate'
 
 const SEVERITY_COLORS = {
   info: '#60a5fa',
@@ -482,8 +483,8 @@ function PWADiagnosticsTab() {
 // Mount into #debug-root — a static div in index.html, separate from App's #root.
 // This ensures the pill survives App crashes.
 export function mountDebugPill() {
-  // Skip pill in embed mode
-  if (window.location.search.includes('embed=')) return
+  // Hidden unless ?dbg=1. embed= still skips it, including when both are set.
+  if (!shouldMountDebugPill(window.location.search)) return
 
   const container = document.getElementById('debug-root')
   if (!container) return
