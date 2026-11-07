@@ -8,6 +8,14 @@ const CHROME = process.env.CHROME_PATH || '/usr/bin/google-chrome'
 const PORT = 4173
 const BASE = `http://127.0.0.1:${PORT}`
 const MIN = 44
+// getBoundingClientRect can report 43.999984 for a used size of 44.
+// 0.01px covers that float noise. A control that is actually short of the
+// target, such as 43.5, still fails.
+const HIT_EPSILON = 0.01
+function atLeastMin(px) {
+  return typeof px === 'number' && px >= MIN - HIT_EPSILON
+}
+const FIT_WARNING = "Too much text to fit. It's as small as it can be. Shorten it so nothing gets cut off."
 
 const results = []
 function check(name, ok, detail) {
@@ -137,8 +145,8 @@ function assertHeader(tag, data, { coarse, mobile }) {
   check(`${tag} pointer coarse=${coarse}`, data.coarse === coarse, { coarse: data.coarse, fine: data.fine })
   check(`${tag} document does not overflow`, data.overflow === 0, data.overflow)
   if (coarse) {
-    check(`${tag} undo box >= 44`, data.undo.width >= MIN && data.undo.height >= MIN, data.undo)
-    check(`${tag} redo box >= 44`, data.redo.width >= MIN && data.redo.height >= MIN, data.redo)
+    check(`${tag} undo box >= 44`, atLeastMin(data.undo.width) && atLeastMin(data.undo.height), data.undo)
+    check(`${tag} redo box >= 44`, atLeastMin(data.redo.width) && atLeastMin(data.redo.height), data.redo)
     check(`${tag} undo glyph stays small`, data.glyphH != null && data.glyphH < 32, data.glyphH)
   }
   check(`${tag} undo/redo gap and no overlap`, data.redo.left - data.undo.right >= 1 && !overlaps(data.undo, data.redo), {
@@ -147,7 +155,7 @@ function assertHeader(tag, data, { coarse, mobile }) {
   if (mobile) {
     check(`${tag} menu present`, !!data.menu, data.menu)
     if (coarse) {
-      check(`${tag} menu box >= 44`, data.menu.width >= MIN && data.menu.height >= MIN, data.menu)
+      check(`${tag} menu box >= 44`, atLeastMin(data.menu.width) && atLeastMin(data.menu.height), data.menu)
       check(`${tag} menu glyph stays ~20`, data.svg && data.svg.width <= 22 && data.svg.width >= 16 && data.svg.height <= 22, data.svg)
       check(`${tag} header stays compact`, data.headerH <= 58, data.headerH)
     } else {
@@ -161,9 +169,9 @@ function assertHeader(tag, data, { coarse, mobile }) {
   } else {
     check(`${tag} desktop has no dock`, data.dock === false, data.dock)
     if (coarse) {
-      check(`${tag} auto-update row >= 44`, data.autoH >= MIN, data.autoH)
+      check(`${tag} auto-update row >= 44`, atLeastMin(data.autoH), data.autoH)
       check(`${tag} toggle glyph stays small`, data.toggleH != null && data.toggleH < 28, data.toggleH)
-      check(`${tag} view control >= 44`, data.viewH >= MIN, data.viewH)
+      check(`${tag} view control >= 44`, atLeastMin(data.viewH), data.viewH)
     } else {
       check(`${tag} undo stays btn-xs`, data.undo.width <= 28 && data.undo.height <= 28, data.undo)
       check(`${tag} view stays compact`, data.viewH != null && data.viewH <= 36, data.viewH)
@@ -208,7 +216,7 @@ async function assertEnabledUndo(page, tag) {
       height: b.height,
     }
   })
-  check(`${tag} enabled undo padding hits the button`, hit.disabled === false && hit.label === 'Undo' && hit.width >= MIN && hit.height >= MIN, hit)
+  check(`${tag} enabled undo padding hits the button`, hit.disabled === false && hit.label === 'Undo' && atLeastMin(hit.width) && atLeastMin(hit.height), hit)
 }
 
 async function assertHandle(page, tag) {
@@ -219,7 +227,7 @@ async function assertHandle(page, tag) {
     const pill = el.querySelector('div')?.getBoundingClientRect()
     return { height: r.height, width: r.width, pillH: pill?.height ?? null, pillW: pill?.width ?? null }
   })
-  check(`${tag} sheet handle >= 44`, !!handle && handle.height >= MIN && handle.width >= MIN, handle)
+  check(`${tag} sheet handle >= 44`, !!handle && atLeastMin(handle.height) && atLeastMin(handle.width), handle)
   check(`${tag} handle pill stays thin`, !!handle && handle.pillH <= 8 && handle.pillH >= 2, handle)
 }
 
@@ -238,7 +246,7 @@ async function assertMinimap(page, tag) {
     return { clientH: bar.clientHeight, scrollH: bar.scrollHeight, cells }
   })
   check(`${tag} minimap has 4 cells`, mini.cells.length === 4, mini.cells.length)
-  check(`${tag} minimap cells >= 44`, mini.cells.every((c) => c.width >= MIN && c.height >= MIN), mini.cells)
+  check(`${tag} minimap cells >= 44`, mini.cells.every((c) => atLeastMin(c.width) && atLeastMin(c.height)), mini.cells)
   check(`${tag} minimap cap stays short`, mini.clientH <= 96, mini.clientH)
   check(`${tag} minimap scrolls extra rows`, mini.scrollH > mini.clientH + 4, mini)
   const reached = await page.evaluate(() => {
@@ -272,13 +280,13 @@ async function assertSheetScroll(page, tag) {
     })
   })
   await delay(100)
-  const scrolled = await page.evaluate(() => {
+  const scrolled = await page.evaluate((minPx) => {
     const scroller = document.querySelector('[aria-label="Tab controls"] .overflow-y-auto')
     const before = scroller.scrollHeight > scroller.clientHeight + 4
     scroller.scrollTop = scroller.scrollHeight
     const buttons = [...scroller.querySelectorAll('button')].filter((el) => {
       const r = el.getBoundingClientRect()
-      return r.width >= 44 && r.height >= 44
+      return r.width >= minPx && r.height >= minPx
     })
     const view = scroller.getBoundingClientRect()
     const visible = buttons.some((el) => {
@@ -286,7 +294,7 @@ async function assertSheetScroll(page, tag) {
       return r.top >= view.top - 1 && r.bottom <= view.bottom + 2 && r.top > view.top + 20
     })
     return { before, visible, sh: scroller.scrollHeight, ch: scroller.clientHeight, n: buttons.length }
-  })
+  }, MIN - HIT_EPSILON)
   check(`${tag} sheet content scrolls`, scrolled.before === true, scrolled)
   check(`${tag} scrolled sheet control is >= 44`, scrolled.visible === true, scrolled)
 }
@@ -299,7 +307,7 @@ async function assertDownloadAndCheckbox(page, tag) {
     const r = el.getBoundingClientRect()
     return { width: r.width, height: r.height }
   })
-  check(`${tag} download >= 44 tall`, download.height >= MIN && download.width >= MIN, download)
+  check(`${tag} download >= 44 tall`, atLeastMin(download.height) && atLeastMin(download.width), download)
 
   await clickControl(page, 'Style')
   await page.waitForFunction(() => [...document.querySelectorAll('.collapse-title')].some((el) => el.textContent.includes('Background')))
@@ -314,7 +322,7 @@ async function assertDownloadAndCheckbox(page, tag) {
     label.querySelector('span').click()
     return { height: lr.height, width: lr.width, inputH: ir.height, before, after: input.checked }
   })
-  check(`${tag} checkbox row >= 44`, box.height >= MIN && box.width >= MIN, box)
+  check(`${tag} checkbox row >= 44`, atLeastMin(box.height) && atLeastMin(box.width), box)
   check(`${tag} checkbox glyph stays small`, box.inputH < 30 && box.inputH > 8, box.inputH)
   check(`${tag} checkbox label toggles`, box.after !== box.before, box)
   const discs = await page.evaluate(() => {
@@ -324,7 +332,7 @@ async function assertDownloadAndCheckbox(page, tag) {
       return { bw: button.width, bh: button.height, dw: disc?.width ?? 0, dh: disc?.height ?? 0 }
     })
   })
-  check(`${tag} color discs keep their paint size`, discs.length >= 2 && discs.every((d) => d.bw >= MIN && d.bh >= MIN && d.dw <= 24 && d.dh <= 24 && d.dw >= 16), discs)
+  check(`${tag} color discs keep their paint size`, discs.length >= 2 && discs.every((d) => atLeastMin(d.bw) && atLeastMin(d.bh) && d.dw <= 24 && d.dh <= 24 && d.dw >= 16), discs)
 }
 
 async function assertReader(page, tag) {
@@ -351,11 +359,91 @@ async function assertReader(page, tag) {
       clientW: scroller?.clientWidth ?? 0,
     }
   })
-  check(`${tag} reader page dots >= 44`, reader.dots.length >= 12 && reader.dots.every((d) => d.width >= MIN && d.height >= MIN), {
+  check(`${tag} reader page dots >= 44`, reader.dots.length >= 12 && reader.dots.every((d) => atLeastMin(d.width) && atLeastMin(d.height)), {
     n: reader.dots.length,
     sample: reader.dots[0],
   })
   check(`${tag} reader page row scrolls inside the page`, reader.scrollW > reader.clientW && reader.overflow === 0, reader)
+}
+
+async function readCellTitle(page) {
+  return page.evaluate((warning) => {
+    const frame = document.querySelector('[data-fit-frame="1"]')
+    const title = frame?.querySelector('h1[data-fit-base]')
+    const warnings = [...document.querySelectorAll('[role="status"]')].filter((el) => el.textContent.trim() === warning)
+    const field = document.querySelector('textarea[placeholder="Enter title..."]')
+    const describedId = field?.getAttribute('aria-describedby')
+    const described = describedId ? document.getElementById(describedId) : null
+    return {
+      font: title ? parseFloat(getComputedStyle(title).fontSize) : null,
+      base: title ? Number(title.getAttribute('data-fit-base')) : null,
+      warningCount: warnings.length,
+      described: described?.textContent.trim() ?? null,
+      overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    }
+  }, FIT_WARNING)
+}
+
+async function setTitle(page, value) {
+  const wrote = await page.evaluate((next) => {
+    const el = document.querySelector('textarea[placeholder="Enter title..."]')
+    if (!el) return false
+    const desc = Object.getOwnPropertyDescriptor(Object.getPrototypeOf(el), 'value')
+    desc.set.call(el, next)
+    el.dispatchEvent(new Event('input', { bubbles: true }))
+    return true
+  }, value)
+  if (!wrote) throw new Error('title field missing')
+}
+
+async function assertLongTitle(browser, spec) {
+  const page = await openPage(browser, spec)
+  const tag = spec.tag
+  try {
+    await clickControl(page, 'Content')
+    await page.waitForSelector('textarea[placeholder="Enter title..."]')
+    await page.evaluate(() => {
+      const cell = [...document.querySelectorAll('[aria-label="Cell 2"]')].find((el) => el.getBoundingClientRect().width > 0)
+      if (!cell) throw new Error('Cell 2 missing')
+      cell.click()
+    })
+    await page.waitForFunction(() => document.querySelector('textarea[placeholder="Enter title..."]')?.value === 'Your Title Here')
+
+    const initial = await readCellTitle(page)
+    check(`${tag} default title stays at its full size`, initial.base > 12 && initial.font != null && Math.abs(initial.font - initial.base) < 0.01, initial)
+    check(`${tag} default title has no fit warning`, initial.warningCount === 0, initial)
+    check(`${tag} default title does not widen the page`, initial.overflow === 0, initial.overflow)
+
+    const fitting = Array.from({ length: 15 }, (_, i) => `Line ${i + 1} still readable`).join('\n')
+    await setTitle(page, fitting)
+    await page.waitForFunction((base) => {
+      const title = document.querySelector('[data-fit-frame="1"] h1[data-fit-base]')
+      if (!title) return false
+      return parseFloat(getComputedStyle(title).fontSize) < base - 1
+    }, {}, initial.base)
+    const shrunk = await readCellTitle(page)
+    check(`${tag} long title shrinks below the requested size`, shrunk.font < shrunk.base && shrunk.font > 12, shrunk)
+    check(`${tag} a title that still fits has no warning`, shrunk.warningCount === 0, shrunk)
+    check(`${tag} a fitted title does not widen the page`, shrunk.overflow === 0, shrunk.overflow)
+
+    const overflowing = Array.from({ length: 200 }, (_, i) => `Overflow line ${i + 1}`).join('\n')
+    await setTitle(page, overflowing)
+    await page.waitForFunction((warning) => [...document.querySelectorAll('[role="status"]')].some((el) => el.textContent.trim() === warning), {}, FIT_WARNING)
+    const floored = await readCellTitle(page)
+    check(`${tag} overflow title shows the fit warning once`, floored.warningCount === 1, floored)
+    check(`${tag} overflow title stops at the 12px floor`, floored.font != null && Math.abs(floored.font - 12) < 0.01, floored)
+    check(`${tag} title field points at the fit warning`, floored.described === FIT_WARNING, floored.described)
+    check(`${tag} an overflowing title does not widen the page`, floored.overflow === 0, floored.overflow)
+
+    await setTitle(page, 'Your Title Here')
+    await page.waitForFunction(() => ![...document.querySelectorAll('[role="status"]')].some((el) => el.textContent.includes('Too much text to fit')))
+    const restored = await readCellTitle(page)
+    check(`${tag} shortening the title clears the warning`, restored.warningCount === 0 && restored.described == null, restored)
+    check(`${tag} shortening the title restores the full size`, restored.base > 12 && Math.abs(restored.font - restored.base) < 0.01, restored)
+    check(`${tag} restored title does not widen the page`, restored.overflow === 0, restored.overflow)
+  } finally {
+    await page.close()
+  }
 }
 
 async function assertPlatformStatus(page) {
@@ -458,6 +546,8 @@ async function run() {
     await assertPlatformStatus(statusPage)
     await statusPage.close()
     await assertDebug(browser)
+    await assertLongTitle(browser, { tag: 'desktop fine', width: 1280, height: 800, coarse: false })
+    await assertLongTitle(browser, { tag: 'coarse 390', width: 390, height: 844, coarse: true })
   } finally {
     if (browser) await browser.close()
     preview.kill('SIGTERM')
