@@ -157,7 +157,7 @@ export default function DesktopLayout({
                 the header button row IS its update surface (Install/Update/Check live
                 here), so the toggle sits beside them. DaisyUI toggle inside a label
                 (never nested in a button — invalid HTML). */}
-            <label className="flex items-center gap-1.5 px-1.5 min-h-8 cursor-pointer" title="Updates apply automatically when the app opens">
+            <label className="coarse-target-block flex items-center gap-1.5 px-1.5 min-h-8 cursor-pointer" title="Updates apply automatically when the app opens">
               <span className="text-sm text-base-content/70 hidden sm:inline">Auto-update</span>
               <input
                 type="checkbox"

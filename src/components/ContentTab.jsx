@@ -281,7 +281,7 @@ export default memo(function ContentTab({
         <div className="flex bg-base-200 rounded-lg p-0.5">
           <button
             onClick={() => onTextModeChange?.('structured')}
-            className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+            className={`inline-flex items-center justify-center px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
               textMode === 'structured'
                 ? 'bg-base-100 text-base-content shadow-sm'
                 : 'text-base-content/70 hover:text-base-content'
@@ -291,7 +291,7 @@ export default memo(function ContentTab({
           </button>
           <button
             onClick={() => onTextModeChange?.('freeform')}
-            className={`px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
+            className={`inline-flex items-center justify-center px-2.5 py-1 text-[11px] font-medium rounded-md transition-all ${
               textMode === 'freeform'
                 ? 'bg-base-100 text-base-content shadow-sm'
                 : 'text-base-content/70 hover:text-base-content'

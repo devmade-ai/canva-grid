@@ -173,12 +173,12 @@ export default function MobileLayout({
           z-50 when menu open so the header stacking context layers above the
           backdrop (z-40 inside BurgerMenu) and MobileNav (z-40 at page level). */}
       <header className={`bg-base-100/90 backdrop-blur-sm border-b border-base-300/60 shrink-0 relative ${showMobileMenu ? 'z-50' : ''}`} style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
-        <div className="flex items-center justify-between px-3 py-2">
-          <div className="flex items-center gap-2">
+        <div className="coarse-header-row flex items-center justify-between px-3 py-2">
+          <div className="flex items-center gap-2 min-w-0 shrink">
             {/* Inline header icon — 2x3 grid pattern using currentColor.
                 Derived from icon.svg but without the purple background/gradients
                 so it adapts to any DaisyUI theme via text color inheritance. */}
-            <svg className="w-6 h-6 text-base-content" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <svg className="w-6 h-6 shrink-0 text-base-content" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
               <rect x="2" y="2" width="9" height="5.5" rx="1" opacity="0.9"/>
               <rect x="13" y="2" width="9" height="5.5" rx="1" opacity="0.4"/>
               <rect x="2" y="9.25" width="9" height="5.5" rx="1" opacity="0.35"/>
@@ -186,8 +186,8 @@ export default function MobileLayout({
               <rect x="2" y="16.5" width="9" height="5.5" rx="1" opacity="0.6"/>
               <rect x="13" y="16.5" width="9" height="5.5" rx="1" opacity="0.25"/>
             </svg>
-            <h1 className="text-base font-display font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">CanvaGrid</h1>
-            <span className="px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide bg-base-200 text-warning rounded">Preview</span>
+            <h1 className="text-base font-display font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent truncate min-w-0">CanvaGrid</h1>
+            <span className="px-1 py-0.5 text-[8px] font-semibold uppercase tracking-wide bg-base-200 text-warning rounded shrink-0">Preview</span>
           </div>
           {/* Undo/Redo — moved to header for constant visibility */}
           <UndoRedoButtons undo={undo} redo={redo} canUndo={canUndo} canRedo={canRedo} size="md" />

@@ -22,7 +22,7 @@ const ColorInput = memo(function ColorInput({ label, value, onChange }) {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         aria-label={label}
-        className="w-10 h-10 rounded-lg cursor-pointer border-2 border-base-300 shadow-sm"
+        className="coarse-target w-10 h-10 rounded-lg cursor-pointer border-2 border-base-300 shadow-sm"
       />
       <div className="flex-1">
         <label className="text-xs text-base-content/60 mb-0.5 block">{label}</label>

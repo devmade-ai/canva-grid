@@ -107,7 +107,7 @@ export default function BurgerMenu({ items, open, onToggle, onClose, children, v
   }, [])
 
   return (
-    <div className="relative no-print">
+    <div className="relative no-print shrink-0">
       <button
         ref={triggerRef}
         type="button"
@@ -116,7 +116,7 @@ export default function BurgerMenu({ items, open, onToggle, onClose, children, v
         aria-label="Menu"
         aria-expanded={open}
         aria-controls={menuId}
-        className="p-2 rounded-lg text-base-content hover:bg-base-200 transition-colors"
+        className="inline-flex items-center justify-center p-2 rounded-lg text-base-content hover:bg-base-200 transition-colors"
       >
         <svg className="w-5 h-5" aria-hidden="true" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />

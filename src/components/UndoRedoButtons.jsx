@@ -1,9 +1,11 @@
 // Requirement: Shared undo/redo buttons used in both mobile and desktop headers.
-// Approach: Single component with size prop to handle styling differences.
-//   Mobile uses larger touch targets (btn-sm), desktop uses compact (btn-xs).
+// Approach: Single component with size prop for the fine-pointer look.
+//   size="sm" is btn-xs (desktop), otherwise btn-sm (mobile). Glyphs stay
+//   text-sm / text-base. On a coarse pointer, index.css raises the border box
+//   to 44px without changing this size mapping.
 // Alternatives:
 //   - Inline in each layout: Rejected — duplicated identical logic in two places.
-//   - Single size for both: Rejected — mobile needs 44px+ touch targets, desktop can be compact.
+//   - Always render 44px: Rejected — fine-pointer desktops stay compact.
 import { memo } from 'react'
 
 export default memo(function UndoRedoButtons({ undo, redo, canUndo, canRedo, size = 'md' }) {
@@ -14,7 +16,7 @@ export default memo(function UndoRedoButtons({ undo, redo, canUndo, canRedo, siz
   const redoTitle = size === 'sm' ? 'Redo (Ctrl+Y)' : 'Redo'
 
   return (
-    <div className="flex items-center gap-0.5">
+    <div className="flex items-center gap-0.5 shrink-0">
       <button
         onClick={undo}
         disabled={!canUndo}

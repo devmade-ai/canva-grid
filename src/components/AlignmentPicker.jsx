@@ -45,7 +45,7 @@ const textAlignOptions = [
 
 export default memo(function AlignmentPicker({ value, onChange }) {
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center gap-1 flex-wrap">
       {textAlignOptions.map((align) => {
         const isActive = value === align.id
         return (

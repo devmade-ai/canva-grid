@@ -11,6 +11,23 @@ import { countCells } from '../utils/cellUtils'
 import { fonts } from '../config/fonts'
 import { overlayTypesByCategory } from '../config/layouts'
 
+// Checkbox plus its text, so the row is the associated hit target. The
+// checkbox-sm glyph stays; coarse-target-block grows the row on a coarse pointer.
+function CheckField({ id, checked, onChange, className = 'text-xs text-base-content/60', children }) {
+  return (
+    <label htmlFor={id} className="coarse-target-block flex items-center gap-2 w-full cursor-pointer">
+      <input
+        type="checkbox"
+        id={id}
+        checked={checked}
+        onChange={onChange}
+        className="checkbox checkbox-primary checkbox-sm shrink-0"
+      />
+      <span className={className}>{children}</span>
+    </label>
+  )
+}
+
 // Reusable overlay type button — extracted from 4 repeated instances
 function OverlayTypeButton({ type, isActive, onClick }) {
   return (
@@ -132,21 +149,13 @@ export default memo(function StyleTab({
           </div>
 
           <div className="p-3 bg-base-200 rounded-lg space-y-2">
-            <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                id={`bg-custom-${clampedCell}`}
-                checked={layout.cellBackgrounds?.[clampedCell] !== undefined}
-                onChange={(e) => updateCellBackground(clampedCell, e.target.checked ? 'secondary' : null)}
-                className="checkbox checkbox-primary checkbox-sm"
-              />
-              <label
-                htmlFor={`bg-custom-${clampedCell}`}
-                className="text-xs text-base-content/60"
-              >
-                Override theme color
-              </label>
-            </div>
+            <CheckField
+              id={`bg-custom-${clampedCell}`}
+              checked={layout.cellBackgrounds?.[clampedCell] !== undefined}
+              onChange={(e) => updateCellBackground(clampedCell, e.target.checked ? 'secondary' : null)}
+            >
+              Override theme color
+            </CheckField>
 
             {layout.cellBackgrounds?.[clampedCell] !== undefined && (
               <div className="pl-6">
@@ -175,60 +184,45 @@ export default memo(function StyleTab({
           {/* Cell Overlay Controls */}
           <div className="space-y-3 p-3 bg-base-200 rounded-lg">
               {/* Enable/Disable */}
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`overlay-enabled-${clampedCell}`}
-                  checked={isCellOverlayEnabled(clampedCell)}
-                  onChange={(e) => updateCellOverlay(clampedCell, { enabled: e.target.checked })}
-                  className="checkbox checkbox-primary checkbox-sm"
-                />
-                <label
-                  htmlFor={`overlay-enabled-${clampedCell}`}
-                  className="text-xs font-medium text-base-content/70"
-                >
-                  Enable Color Tint
-                </label>
-              </div>
+              <CheckField
+                id={`overlay-enabled-${clampedCell}`}
+                checked={isCellOverlayEnabled(clampedCell)}
+                onChange={(e) => updateCellOverlay(clampedCell, { enabled: e.target.checked })}
+                className="text-xs font-medium text-base-content/70"
+              >
+                Enable Color Tint
+              </CheckField>
 
               {isCellOverlayEnabled(clampedCell) && (
                 <>
                   {/* Custom settings toggle */}
-                  <div className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      id={`overlay-custom-${clampedCell}`}
-                      checked={getCellOverlayConfig(clampedCell)?.type !== undefined}
-                      // Requirement: Toggle custom overlay settings on/off per cell.
-                      // Approach: When disabling, keep only `enabled: true` — removing type/color/opacity
-                      //   keys entirely instead of setting them to undefined.
-                      // Alternatives:
-                      //   - Set to undefined: Rejected — leaves keys present with undefined values,
-                      //     creating confusing state that passes truthiness checks differently.
-                      onChange={(e) => {
-                        if (e.target.checked) {
-                          updateCellOverlay(clampedCell, {
-                            enabled: true,
-                            type: 'solid',
-                            color: 'primary',
-                            opacity: 50,
-                          })
-                        } else {
-                          // Replace entire config with just `enabled: true` to clear custom settings
-                          const newCellOverlays = { ...cellOverlays }
-                          newCellOverlays[clampedCell] = { enabled: true }
-                          onLayoutChange({ cellOverlays: newCellOverlays })
-                        }
-                      }}
-                      className="checkbox checkbox-primary checkbox-sm"
-                    />
-                    <label
-                      htmlFor={`overlay-custom-${clampedCell}`}
-                      className="text-xs text-base-content/60"
-                    >
-                      Custom settings
-                    </label>
-                  </div>
+                  <CheckField
+                    id={`overlay-custom-${clampedCell}`}
+                    checked={getCellOverlayConfig(clampedCell)?.type !== undefined}
+                    // Requirement: Toggle custom overlay settings on/off per cell.
+                    // Approach: When disabling, keep only `enabled: true` — removing type/color/opacity
+                    //   keys entirely instead of setting them to undefined.
+                    // Alternatives:
+                    //   - Set to undefined: Rejected — leaves keys present with undefined values,
+                    //     creating confusing state that passes truthiness checks differently.
+                    onChange={(e) => {
+                      if (e.target.checked) {
+                        updateCellOverlay(clampedCell, {
+                          enabled: true,
+                          type: 'solid',
+                          color: 'primary',
+                          opacity: 50,
+                        })
+                      } else {
+                        // Replace entire config with just `enabled: true` to clear custom settings
+                        const newCellOverlays = { ...cellOverlays }
+                        newCellOverlays[clampedCell] = { enabled: true }
+                        onLayoutChange({ cellOverlays: newCellOverlays })
+                      }
+                    }}
+                  >
+                    Custom settings
+                  </CheckField>
 
                   {/* Custom overlay settings */}
                   {getCellOverlayConfig(clampedCell)?.type !== undefined && (
@@ -364,26 +358,18 @@ export default memo(function StyleTab({
             </div>
 
             <div className="p-3 bg-base-200 rounded-lg space-y-2">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`frame-custom-${clampedCell}`}
-                  checked={frame.cellFrames?.[clampedCell] !== undefined}
-                  onChange={(e) =>
-                    updateCellFrame(
-                      clampedCell,
-                      e.target.checked ? { percent: 50, color: 'primary' } : null,
-                    )
-                  }
-                  className="checkbox checkbox-primary checkbox-sm"
-                />
-                <label
-                  htmlFor={`frame-custom-${clampedCell}`}
-                  className="text-xs text-base-content/60"
-                >
-                  Custom frame
-                </label>
-              </div>
+              <CheckField
+                id={`frame-custom-${clampedCell}`}
+                checked={frame.cellFrames?.[clampedCell] !== undefined}
+                onChange={(e) =>
+                  updateCellFrame(
+                    clampedCell,
+                    e.target.checked ? { percent: 50, color: 'primary' } : null,
+                  )
+                }
+              >
+                Custom frame
+              </CheckField>
 
               {frame.cellFrames?.[clampedCell] !== undefined && (
                 <div className="space-y-2 pl-6">
@@ -457,27 +443,19 @@ export default memo(function StyleTab({
             </div>
 
             <div className="p-3 bg-base-200 rounded-lg space-y-2">
-              <div className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  id={`padding-custom-${clampedCell}`}
-                  checked={padding.cellOverrides?.[clampedCell] !== undefined}
-                  onChange={(e) => {
-                    if (e.target.checked) {
-                      updateCellPadding(clampedCell, padding.global)
-                    } else {
-                      updateCellPadding(clampedCell, null)
-                    }
-                  }}
-                  className="checkbox checkbox-primary checkbox-sm"
-                />
-                <label
-                  htmlFor={`padding-custom-${clampedCell}`}
-                  className="text-xs text-base-content/60"
-                >
-                  Custom spacing
-                </label>
-              </div>
+            <CheckField
+              id={`padding-custom-${clampedCell}`}
+              checked={padding.cellOverrides?.[clampedCell] !== undefined}
+              onChange={(e) => {
+                if (e.target.checked) {
+                  updateCellPadding(clampedCell, padding.global)
+                } else {
+                  updateCellPadding(clampedCell, null)
+                }
+              }}
+            >
+              Custom spacing
+            </CheckField>
 
               {padding.cellOverrides?.[clampedCell] !== undefined && (
                 <div className="space-y-1 pl-6">

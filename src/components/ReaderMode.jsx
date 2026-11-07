@@ -54,7 +54,7 @@ export default function ReaderMode({
     <div className="h-[100dvh] flex flex-col bg-base-200">
       {/* crossOrigin makes cssRules JS-readable — see CLAUDE.md "Font embedding for export". */}
       {fontsToLoad.map((font) => <link key={font.id} rel="stylesheet" href={font.url} crossOrigin="anonymous" />)}
-      <header className="bg-base-100/80 backdrop-blur-sm border-b border-base-300/60 px-3 py-2 shrink-0" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0.5rem))' }}>
+      <header className="coarse-header-bar bg-base-100/80 backdrop-blur-sm border-b border-base-300/60 px-3 py-2 shrink-0" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0.5rem))' }}>
         <div className="flex items-center justify-between">
           <button onClick={() => setIsReaderMode(false)} aria-label="Back to Editor" className="btn btn-ghost btn-sm gap-1.5">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
@@ -73,14 +73,14 @@ export default function ReaderMode({
           </div>
         </div>
         {hasMultiplePages && (
-          <div className="flex items-center gap-3 mt-2 shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
-            <button onClick={() => setActivePage(state.activePage - 1)} disabled={state.activePage === 0} className="btn btn-outline btn-sm">Prev</button>
-            <div className="flex gap-1">
+          <div className="flex items-center gap-2 mt-2 w-full max-w-full min-w-0 px-2 shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+            <button onClick={() => setActivePage(state.activePage - 1)} disabled={state.activePage === 0} className="btn btn-outline btn-sm shrink-0">Prev</button>
+            <div className="flex gap-1 min-w-0 flex-1 overflow-x-auto">
               {pages.map((_, index) => (
-                <button key={index} onClick={() => setActivePage(index)} className={`btn btn-circle btn-xs ${index === state.activePage ? 'btn-primary' : 'btn-ghost'}`} title={`Page ${index + 1}`}>{index + 1}</button>
+                <button key={index} onClick={() => setActivePage(index)} className={`btn btn-circle btn-xs shrink-0 ${index === state.activePage ? 'btn-primary' : 'btn-ghost'}`} title={`Page ${index + 1}`}>{index + 1}</button>
               ))}
             </div>
-            <button onClick={() => setActivePage(state.activePage + 1)} disabled={state.activePage === pageCount - 1} className="btn btn-outline btn-sm">Next</button>
+            <button onClick={() => setActivePage(state.activePage + 1)} disabled={state.activePage === pageCount - 1} className="btn btn-outline btn-sm shrink-0">Next</button>
           </div>
         )}
       </main>
