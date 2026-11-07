@@ -239,9 +239,11 @@ export default function BottomSheet({ isOpen, onClose, children, snapPoint, onSn
       onTouchEnd={finishTouch}
       onTouchCancel={finishTouch}
     >
-      {/* Drag handle — py-4 for 44px+ touch zone (handle itself is 4px tall) */}
+      {/* Drag handle. The pill stays 4px; coarse-target-block grows the hit
+          row to 44px. py-4 alone was 36px, which the old comment overstated. */}
       <div
-        className="flex justify-center py-4 cursor-grab active:cursor-grabbing shrink-0 touch-none"
+        data-sheet-handle
+        className="coarse-target-block flex items-center justify-center py-4 cursor-grab active:cursor-grabbing shrink-0 touch-none"
       >
         <div className="w-10 h-1 bg-base-300 rounded-full" />
       </div>

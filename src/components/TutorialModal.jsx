@@ -260,18 +260,25 @@ export default memo(function TutorialModal({ isOpen, onClose }) {
         {/* Footer */}
         <div className="modal-action justify-between items-center">
           {/* Step indicators */}
-          <div className="flex gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
             {tutorialSteps.map((_, index) => (
               <button
                 key={index}
+                type="button"
                 onClick={() => setCurrentStep(index)}
-                className={`w-2 h-2 rounded-full transition-colors ${
-                  index === currentStep
-                    ? 'bg-primary'
-                    : 'bg-base-300 hover:bg-base-content/40'
-                }`}
+                className="inline-flex items-center justify-center w-2 h-2 p-0 bg-transparent"
                 title={tutorialSteps[index].title}
-              />
+                aria-label={tutorialSteps[index].title}
+              >
+                <span
+                  aria-hidden="true"
+                  className={`w-2 h-2 rounded-full ${
+                    index === currentStep
+                      ? 'bg-primary'
+                      : 'bg-base-300'
+                  }`}
+                />
+              </button>
             ))}
           </div>
 

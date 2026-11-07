@@ -13,6 +13,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "node --no-warnings --experimental-vm-modules node_modules/.bin/jest",
+    "test:rendered": "node scripts/check-touch-targets.mjs",
     "generate-og": "node scripts/generate-og-image.mjs"
   },
   "engines": {
@@ -39,6 +40,7 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "globals": "^17.5.0",
     "jest": "^30.3.0",
+    "puppeteer-core": "^24.15.0",
     "sharp": "^0.34.5",
     "tailwindcss": "^4.2.2",
     "vite": "^5.0.0",

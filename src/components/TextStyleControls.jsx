@@ -25,7 +25,7 @@ export default function TextStyleControls({ value, onChange, theme }) {
   return (
     <div className="space-y-2 p-2 bg-base-200/50 rounded-lg">
       {/* Alignment */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[10px] text-base-content/60 w-10 shrink-0">Align</span>
         <AlignmentPicker
           value={value.textAlign}
@@ -36,17 +36,19 @@ export default function TextStyleControls({ value, onChange, theme }) {
       {/* Color */}
       <div className="flex items-center gap-2">
         <span className="text-[10px] text-base-content/60 w-10 shrink-0">Color</span>
-        <ColorPicker
-          value={value.color}
-          onChange={(id) => onChange({ color: id })}
-          theme={theme}
-        />
+        <div className="min-w-0 flex-1">
+          <ColorPicker
+            value={value.color}
+            onChange={(id) => onChange({ color: id })}
+            theme={theme}
+          />
+        </div>
       </div>
 
       {/* Size + Bold/Italic */}
       <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[10px] text-base-content/60 w-10 shrink-0">Size</span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           {sizeOptions.map((size) => (
             <button
               key={size.id}
@@ -90,9 +92,9 @@ export default function TextStyleControls({ value, onChange, theme }) {
       </div>
 
       {/* Letter spacing */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[10px] text-base-content/60 w-10 shrink-0">Spacing</span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           {letterSpacingOptions.map((opt) => (
             <button
               key={opt.id}
@@ -111,9 +113,9 @@ export default function TextStyleControls({ value, onChange, theme }) {
       </div>
 
       {/* Spacer/line above */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[10px] text-base-content/60 w-10 shrink-0">Above</span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           <button
             onClick={() => onChange({ spacerAbove: ((value.spacerAbove || 0) + 1) % 3 })}
             title={`Spacer above: ${['None', 'Small', 'Large'][value.spacerAbove || 0]}`}
@@ -140,9 +142,9 @@ export default function TextStyleControls({ value, onChange, theme }) {
       </div>
 
       {/* Spacer/line below */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-wrap">
         <span className="text-[10px] text-base-content/60 w-10 shrink-0">Below</span>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-1 flex-wrap">
           <button
             onClick={() => onChange({ spacerBelow: ((value.spacerBelow || 0) + 1) % 3 })}
             title={`Spacer below: ${['None', 'Small', 'Large'][value.spacerBelow || 0]}`}

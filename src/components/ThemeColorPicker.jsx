@@ -20,7 +20,7 @@ export default memo(function ThemeColorPicker({ value, onChange, theme }) {
           <button
             key={c.id}
             onClick={() => onChange(c.id)}
-            className={`flex-1 px-2 py-1.5 text-[10px] rounded ${
+            className={`flex-1 inline-flex items-center justify-center px-2 py-1.5 text-[10px] rounded ${
               value === c.id
                 ? 'ring-2 ring-primary ring-offset-1'
                 : ''
@@ -33,20 +33,27 @@ export default memo(function ThemeColorPicker({ value, onChange, theme }) {
           </button>
         ))}
       </div>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 flex-wrap">
         <span className="text-[10px] text-base-content/60">Neutrals:</span>
         {neutralColors.map((c) => (
           <button
             key={c.id}
+            type="button"
             onClick={() => onChange(c.id)}
             title={c.name}
-            className={`w-5 h-5 rounded-full border transition-transform hover:scale-110 ${
-              value === c.id
-                ? 'ring-2 ring-primary ring-offset-1 border-transparent'
-                : 'border-base-300'
-            }`}
-            style={{ backgroundColor: c.hex }}
-          />
+            aria-label={c.name}
+            className="inline-flex items-center justify-center p-0 bg-transparent"
+          >
+            <span
+              aria-hidden="true"
+              className={`w-5 h-5 rounded-full border pointer-events-none ${
+                value === c.id
+                  ? 'ring-2 ring-primary ring-offset-1 border-transparent'
+                  : 'border-base-300'
+              }`}
+              style={{ backgroundColor: c.hex }}
+            />
+          </button>
         ))}
       </div>
     </div>

@@ -180,3 +180,52 @@ textarea:not(.textarea):focus-visible {
     transition-duration: 0.01ms !important;
   }
 }
+
+/* Requirement: 44px hit targets on coarse pointers (WCAG 2.5.5), including a
+   touchscreen on the desktop layout. Fine pointers keep DaisyUI's compact sizes.
+   Approach: Unlayered min-width/min-height so it wins over layered utilities.
+   The border box grows; glyphs stay their own size (icons, discs, the handle
+   pill). No outside ::before slop, so adjacent controls cannot overlap.
+   Not applied to input/textarea/select/label or [role=button]: text fields stay
+   as they are, and canvas "Select cell" overlays keep their geometric size.
+   .coarse-target is for non-button controls (color wells). .coarse-target-block
+   is height-only for full-width rows (checkbox labels, the sheet handle).
+   Alternatives:
+     - max-width: 1023px gate: Rejected — a coarse pointer on the desktop layout
+       would keep 24px undo buttons.
+     - Blanket label/input rules: Rejected — grows text fields and unlabeled
+       wrappers that are not the hit target. */
+@media (pointer: coarse) {
+  button,
+  .coarse-target {
+    min-width: 2.75rem;
+    min-height: 2.75rem;
+  }
+
+  .coarse-target-block,
+  .collapse > .collapse-title {
+    min-height: 2.75rem;
+  }
+
+  /* 44px controls with py-2 made the bar taller. py-1 + 44px keeps ~53px. */
+  .coarse-header-row {
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+  }
+
+  /* Reader header sets padding-top inline for the safe area. Only the bottom
+     padding is reduced here so that inline value still wins. */
+  .coarse-header-bar {
+    padding-bottom: 0.25rem;
+  }
+}
+
+/* 320px: brand + two 44px undo buttons + a 44px menu needs the side padding
+   back, or the row overflows. 375px and up still fits px-3. */
+@media (pointer: coarse) and (max-width: 359px) {
+  .coarse-header-row,
+  .coarse-header-bar {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+}

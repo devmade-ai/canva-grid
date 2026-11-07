@@ -8,6 +8,11 @@
 import { useMemo, memo } from 'react'
 import { getAspectRatio } from '../config/platforms'
 import { normalizeStructure } from '../utils/cellUtils'
+import { useCoarsePointer } from '../hooks/useCoarsePointer'
+
+// Two 44px rows. A fourth row scrolls inside this instead of eating a short landscape.
+const COARSE_CELL = 44
+const COARSE_BAR_CAP = 88
 
 // Requirement: Fixed-height sizing mode for horizontal contexts (ContextBar).
 // Approach: fixedHeight prop caps the grid height (s=44px, m=64px, l=88px) and derives
@@ -34,6 +39,7 @@ export default memo(function MiniCellGrid({
   fixedHeight = null,    // 's' | 'm' | 'l' — fixed-height mode (width from aspect ratio)
   mode = 'default',      // 'default' (StyleTab-style) | 'content' (ContentTab-style)
 }) {
+  const coarse = useCoarsePointer()
   const { type, structure } = layout
   const isFullbleed = type === 'fullbleed'
   const isRows = type === 'rows'
@@ -128,14 +134,30 @@ export default memo(function MiniCellGrid({
     }
   }
 
+  // Fine pointers keep the locked box. Coarse pointers give every cell a 44px
+  // minimum and scroll. The context bar (fixedHeight) also caps at two rows so
+  // four structure rows cannot consume a 320px-tall landscape. In-sheet grids
+  // are not capped; the sheet itself scrolls.
+  const containerStyle = {
+    width: `${gridWidth}px`,
+    flexDirection: isRows || isFullbleed ? 'column' : 'row',
+  }
+  if (coarse && isFixedHeight) {
+    containerStyle.maxHeight = `${COARSE_BAR_CAP}px`
+    containerStyle.overflow = 'auto'
+  } else if (coarse) {
+    containerStyle.height = `${gridWidth / aspectRatio}px`
+    containerStyle.overflow = 'auto'
+  } else {
+    containerStyle.height = isFixedHeight ? `${gridHeight}px` : `${gridWidth / aspectRatio}px`
+    containerStyle.overflow = 'hidden'
+  }
+
   return (
     <div
-      className="flex overflow-hidden border border-base-300 rounded"
-      style={{
-        width: `${gridWidth}px`,
-        height: isFixedHeight ? `${gridHeight}px` : `${gridWidth / aspectRatio}px`,
-        flexDirection: isRows || isFullbleed ? 'column' : 'row',
-      }}
+      data-minimap={isFixedHeight ? 'bar' : 'panel'}
+      className="flex border border-base-300 rounded"
+      style={containerStyle}
     >
       {normalizedStructure.map((section, sectionIndex) => {
         const sectionSize = section.size || 100 / normalizedStructure.length
@@ -145,7 +167,9 @@ export default memo(function MiniCellGrid({
           <div
             key={`section-${sectionIndex}`}
             className={`flex ${isRows || isFullbleed ? 'flex-row' : 'flex-col'}`}
-            style={{ flex: `1 1 ${sectionSize}%` }}
+            style={coarse
+              ? { flex: '0 0 auto', alignSelf: 'stretch' }
+              : { flex: `1 1 ${sectionSize}%` }}
           >
             {sectionCells.map(({ cellIndex: currentCellIndex, subSize }) => {
               const { bgClass, content } = getCellAppearance(currentCellIndex)
@@ -157,7 +181,9 @@ export default memo(function MiniCellGrid({
                   tabIndex={0}
                   aria-label={`Cell ${currentCellIndex + 1}`}
                   className={`relative cursor-pointer transition-colors ${minCellH} ${bgClass} flex items-center justify-center active:opacity-70`}
-                  style={{ flex: `1 1 ${subSize}%` }}
+                  style={coarse
+                    ? { flex: '1 0 auto', minWidth: COARSE_CELL, minHeight: COARSE_CELL }
+                    : { flex: `1 1 ${subSize}%` }}
                   onClick={() => onSelectCell(currentCellIndex)}
                   onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSelectCell(currentCellIndex) } }}
                 >
