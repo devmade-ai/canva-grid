@@ -57,7 +57,8 @@ export default function ReaderMode({
       {fontsToLoad.map((font) => <link key={font.id} rel="stylesheet" href={font.url} crossOrigin="anonymous" />)}
       {/* Top band is outside the button row. The old padding-top max(0.5rem, env)
           replaced the row's own top padding whenever the notch was taller. */}
-      <header className="bg-base-100/80 backdrop-blur-sm border-b border-base-300/60 shrink-0">
+      {/* Opaque on purpose. backdrop-filter on this bar blurred its own glyphs on iOS. See the MobileLayout header. */}
+      <header className="bg-base-100 border-b border-base-300/60 shrink-0">
         <InsetBand edge="top" />
         <div className="coarse-header-bar flex items-center justify-between px-3 py-2">
           <button onClick={() => setIsReaderMode(false)} aria-label="Back to Editor" className="btn btn-ghost btn-sm gap-1.5">

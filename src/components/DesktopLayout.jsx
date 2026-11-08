@@ -106,7 +106,8 @@ export default function DesktopLayout({
       <InsetBand edge="top" className="sticky top-0 z-30 bg-base-100" />
 
       {/* Header */}
-      <header className="bg-base-100/80 backdrop-blur-sm border-b border-base-300/60 px-4 py-3">
+      {/* Opaque on purpose. backdrop-filter on this bar blurred its own glyphs on iOS. See the MobileLayout header. */}
+      <header className="bg-base-100 border-b border-base-300/60 px-4 py-3">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center justify-center sm:justify-start gap-2">
             <h1 className="text-lg font-display font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">CanvaGrid</h1>
@@ -183,7 +184,8 @@ export default function DesktopLayout({
       )}
 
       {/* Tab nav bar — desktop only */}
-      <nav ref={tabNavRef} className="bg-base-100/90 backdrop-blur-sm border-b border-base-300/60 sticky z-20" style={{ top: 'var(--safe-top)' }}>
+      {/* Opaque on purpose. A frost blur on this sticky bar is the same backdrop-filter layer as the header bug. */}
+      <nav ref={tabNavRef} className="bg-base-100 border-b border-base-300/60 sticky z-20" style={{ top: 'var(--safe-top)' }}>
         <div className="flex items-center">
           <div className="flex overflow-x-auto scrollbar-thin">
             {sections.map((section) => (

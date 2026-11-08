@@ -28,8 +28,9 @@ export default memo(function ContextBar({
     return structure.reduce((total, section) => total + (section.subdivisions || 1), 0)
   }, [layout.structure])
 
+  // Opaque on purpose. backdrop-filter here blurred the minimap the same way the header blurred its controls.
   return (
-    <div className="bg-base-100/90 backdrop-blur-sm border-b border-base-300/60 px-3 sm:px-4 py-1.5 sticky z-20" style={{ top: 'var(--tab-nav-height, 41px)' }}>
+    <div className="bg-base-100 border-b border-base-300/60 px-3 sm:px-4 py-1.5 sticky z-20" style={{ top: 'var(--tab-nav-height, 41px)' }}>
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Page selector — only shown when multiple pages exist */}
         {hasMultiplePages && (
