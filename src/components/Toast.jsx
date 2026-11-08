@@ -120,18 +120,25 @@ function ToastItem({ toast, onRemove }) {
   )
 }
 
-// Requirement: Toast must clear iOS safe area (home indicator).
-// Approach: DaisyUI toast container with toast-center + toast-bottom positioning,
-//   plus env(safe-area-inset-bottom) for notched device clearance.
+// Requirement: Toast must clear the home indicator and landscape notches.
+// Approach: The toast is position:fixed, so it is outside the frame's bands
+//   and owns its own edges. max(1rem, inset) keeps today's 1rem offset when
+//   the inset is 0 (px-4 is 1rem).
 // Alternatives:
 //   - Fixed bottom-4 only: Rejected — toast hidden behind home indicator on notched iPhones.
+//   - Also add the dock height: Rejected — the toast already paints above the
+//     dock (z-70) and that overlap is the existing placement.
 function ToastContainer({ toasts, onRemove }) {
   if (toasts.length === 0) return null
 
   return (
     <div
       className="toast toast-center toast-bottom z-[70] max-w-sm w-full px-4"
-      style={{ bottom: 'max(1rem, env(safe-area-inset-bottom, 1rem))' }}
+      style={{
+        bottom: 'max(1rem, var(--safe-bottom))',
+        paddingLeft: 'max(1rem, var(--safe-left))',
+        paddingRight: 'max(1rem, var(--safe-right))',
+      }}
     >
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} onRemove={onRemove} />

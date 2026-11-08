@@ -142,7 +142,7 @@ export default function BurgerMenu({ items, open, onToggle, onClose, children, v
             className="absolute right-0 top-full mt-1 z-50
                        bg-base-100 rounded-xl shadow-lg
                        border border-base-300
-                       max-w-[calc(100vw-2rem)] max-h-[calc(100dvh-4rem)]
+                       max-w-[calc(100vw-2rem-var(--safe-left)-var(--safe-right))] max-h-[calc(100dvh-4rem-var(--safe-top)-var(--safe-bottom))]
                        overflow-y-auto overscroll-contain"
             onKeyDown={handleMenuKeyDown}
           >

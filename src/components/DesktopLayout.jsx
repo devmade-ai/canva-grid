@@ -12,6 +12,7 @@ import QuickActionsBar from './QuickActionsBar'
 import UndoRedoButtons from './UndoRedoButtons'
 import { useToast } from './Toast'
 import { describeUpdateCheckResult } from '../utils/pwaHelpers'
+import ViewportFrame, { InsetBand } from './ViewportFrame'
 
 // Requirement: Consistent header button styling across desktop layout.
 // Approach: Extract repeated className pattern to a small component.
@@ -96,9 +97,13 @@ export default function DesktopLayout({
   }
 
   return (
-    <div className="min-h-screen" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+    <ViewportFrame className="min-h-screen">
       {/* crossOrigin makes cssRules JS-readable — see CLAUDE.md "Font embedding for export". */}
       {fontsToLoad.map((font) => <link key={font.id} rel="stylesheet" href={font.url} crossOrigin="anonymous" />)}
+
+      {/* Top band is a sibling of the header so it can stay stuck when the
+          header scrolls away. Height 0 when the inset is 0. */}
+      <InsetBand edge="top" className="sticky top-0 z-30 bg-base-100" />
 
       {/* Header */}
       <header className="bg-base-100/80 backdrop-blur-sm border-b border-base-300/60 px-4 py-3">
@@ -178,7 +183,7 @@ export default function DesktopLayout({
       )}
 
       {/* Tab nav bar — desktop only */}
-      <nav ref={tabNavRef} className="bg-base-100/90 backdrop-blur-sm border-b border-base-300/60 sticky top-0 z-20">
+      <nav ref={tabNavRef} className="bg-base-100/90 backdrop-blur-sm border-b border-base-300/60 sticky z-20" style={{ top: 'var(--safe-top)' }}>
         <div className="flex items-center">
           <div className="flex overflow-x-auto scrollbar-thin">
             {sections.map((section) => (
@@ -238,6 +243,6 @@ export default function DesktopLayout({
       </div>
 
       {modals}
-    </div>
+    </ViewportFrame>
   )
 }

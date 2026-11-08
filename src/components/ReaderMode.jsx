@@ -9,6 +9,7 @@ import AdCanvas from './AdCanvas'
 import ThemeSelector from './ThemeSelector'
 import { useEscapeKey } from '../hooks/useEscapeKey'
 import { debugLog } from '../utils/debugLog'
+import ViewportFrame, { InsetBand } from './ViewportFrame'
 
 export default function ReaderMode({
   canvasRef,
@@ -51,11 +52,14 @@ export default function ReaderMode({
   }, [hasMultiplePages, state.activePage, pageCount, setActivePage])
 
   return (
-    <div className="h-[100dvh] flex flex-col bg-base-200">
+    <ViewportFrame className="h-[100dvh] overflow-hidden bg-base-200" bottomClassName="bg-base-200">
       {/* crossOrigin makes cssRules JS-readable — see CLAUDE.md "Font embedding for export". */}
       {fontsToLoad.map((font) => <link key={font.id} rel="stylesheet" href={font.url} crossOrigin="anonymous" />)}
-      <header className="coarse-header-bar bg-base-100/80 backdrop-blur-sm border-b border-base-300/60 px-3 py-2 shrink-0" style={{ paddingTop: 'max(0.5rem, env(safe-area-inset-top, 0.5rem))' }}>
-        <div className="flex items-center justify-between">
+      {/* Top band is outside the button row. The old padding-top max(0.5rem, env)
+          replaced the row's own top padding whenever the notch was taller. */}
+      <header className="bg-base-100/80 backdrop-blur-sm border-b border-base-300/60 shrink-0">
+        <InsetBand edge="top" />
+        <div className="coarse-header-bar flex items-center justify-between px-3 py-2">
           <button onClick={() => setIsReaderMode(false)} aria-label="Back to Editor" className="btn btn-ghost btn-sm gap-1.5">
             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             <span className="hidden sm:inline">Back to Editor</span>
@@ -73,7 +77,7 @@ export default function ReaderMode({
           </div>
         </div>
         {hasMultiplePages && (
-          <div className="flex items-center gap-2 mt-2 w-full max-w-full min-w-0 px-2 shrink-0" style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
+          <div className="flex items-center gap-2 mt-2 w-full max-w-full min-w-0 px-2 shrink-0">
             <button onClick={() => setActivePage(state.activePage - 1)} disabled={state.activePage === 0} className="btn btn-outline btn-sm shrink-0">Prev</button>
             <div className="flex gap-1 min-w-0 flex-1 overflow-x-auto">
               {pages.map((_, index) => (
@@ -84,6 +88,6 @@ export default function ReaderMode({
           </div>
         )}
       </main>
-    </div>
+    </ViewportFrame>
   )
 }
