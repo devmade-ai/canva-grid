@@ -9,7 +9,7 @@
 //   - role="menu" pattern: Rejected — wrong ARIA semantics for navigation.
 //   - DaisyUI dropdown: Rejected — doesn't support children slot or disclosure pattern.
 //   - Backdrop in parent: Rejected — menu should own its backdrop per BURGER_MENU pattern.
-//     Parent header still needs z-50 when open (backdrop-blur-sm stacking context).
+//     Parent header still needs z-50 when open so its stacking context sits above this backdrop.
 import { Fragment, useRef, useEffect, useCallback, useId } from 'react'
 import { debugLog } from '../utils/debugLog'
 import { useDisclosureFocus } from '../hooks/useDisclosureFocus'

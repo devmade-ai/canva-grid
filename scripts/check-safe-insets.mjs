@@ -91,8 +91,54 @@ async function readShell(page) {
       const prev = bands[edge]
       bands[edge] = prev ? { ...current, count: (prev.count || 1) + 1 } : { ...current, count: 1 }
     })
+    const paint = (el) => {
+      const cs = getComputedStyle(el)
+      const before = getComputedStyle(el, '::before')
+      const after = getComputedStyle(el, '::after')
+      return {
+        filter: cs.filter,
+        backdrop: cs.backdropFilter,
+        mask: cs.maskImage,
+        beforeFilter: before.filter,
+        beforeBackdrop: before.backdropFilter,
+        beforeContent: before.content,
+        afterFilter: after.filter,
+        afterBackdrop: after.backdropFilter,
+        afterContent: after.content,
+        bg: cs.backgroundColor,
+        clip: cs.backgroundClip,
+        opacity: cs.opacity,
+        transform: cs.transform,
+        willChange: cs.willChange,
+        isolation: cs.isolation,
+      }
+    }
     const header = document.querySelector('header')
     const row = header?.querySelector('.coarse-header-row, .coarse-header-bar') || header
+    const sharpNodes = []
+    const addSharp = (name, el, bar) => {
+      if (!el) return
+      sharpNodes.push({ name, bar: !!bar, ...paint(el) })
+    }
+    addSharp('header', header, true)
+    addSharp('row', row, false)
+    addSharp('h1', header?.querySelector('h1'), false)
+    addSharp('logo', header?.querySelector('svg'), false)
+    addSharp('undo', document.querySelector('button[aria-label="Undo"]'), false)
+    addSharp('menu', document.querySelector('button[aria-label="Menu"]'), false)
+    addSharp('back', document.querySelector('button[aria-label="Back to Editor"]'), false)
+    const tab = [...document.querySelectorAll('nav')].find((el) => !el.classList.contains('dock'))
+    addSharp('tabnav', tab, true)
+    let context = document.querySelector('[data-minimap="bar"]')?.parentElement
+    while (context && context !== document.body && !context.classList?.contains('border-b')) context = context.parentElement
+    if (context && context !== document.body) addSharp('context', context, true)
+    const ancestors = []
+    for (let el = header?.parentElement; el; el = el.parentElement) {
+      const cs = getComputedStyle(el)
+      if ((cs.backdropFilter && cs.backdropFilter !== 'none') || (cs.filter && cs.filter !== 'none') || (cs.transform && cs.transform !== 'none')) {
+        ancestors.push({ tag: el.tagName, backdrop: cs.backdropFilter, filter: cs.filter, transform: cs.transform, overflow: cs.overflow })
+      }
+    }
     const dock = document.querySelector('nav.dock')
     const btn = dock?.querySelector('button')
     const main = document.querySelector('main')
@@ -124,8 +170,42 @@ async function readShell(page) {
       none: matchMedia('(pointer: none)').matches,
       touch: navigator.maxTouchPoints,
       mobileMq: matchMedia('(max-width: 1023px)').matches,
+      sharp: { nodes: sharpNodes, ancestors },
     }
   })
+}
+
+function hasBlur(node) {
+  return [node.filter, node.backdrop, node.mask, node.beforeFilter, node.beforeBackdrop, node.afterFilter, node.afterBackdrop]
+    .some((value) => /blur\(/i.test(value || ''))
+}
+
+function alphaOf(color) {
+  const slash = String(color).match(/\/\s*([0-9.]+%?)\s*\)/)
+  if (slash) return slash[1].endsWith('%') ? parseFloat(slash[1]) / 100 : parseFloat(slash[1])
+  const rgba = String(color).match(/^rgba?\(([^)]+)\)/)
+  if (rgba) {
+    const parts = rgba[1].split(',').map((part) => part.trim())
+    if (parts.length === 4) return parseFloat(parts[3])
+  }
+  return 1
+}
+
+// Chrome applies backdrop-filter to the backdrop, not the glyphs, so a sharp
+// Chrome screenshot is not evidence that iOS stopped blurring this layer.
+// These checks record the computed filter, mask, and pseudo effects and
+// require that none of them is a blur on the elements that paint the chrome.
+function assertSharp(tag, data) {
+  const nodes = data.sharp?.nodes || []
+  const blurred = nodes.filter(hasBlur)
+  check(`${tag} chrome glyphs have no blur`, blurred.length === 0 && nodes.some((node) => node.name === 'header'), blurred.length ? blurred : nodes.map((node) => node.name))
+  const translucent = nodes.filter((node) => node.bar && alphaOf(node.bg) < 0.99)
+  check(`${tag} chrome bar background is opaque`, translucent.length === 0, translucent.map((node) => ({ name: node.name, bg: node.bg })))
+  const h1 = nodes.find((node) => node.name === 'h1')
+  if (h1) check(`${tag} wordmark still clips to text`, h1.clip === 'text', h1.clip)
+  check(`${tag} no ancestor blur or transform`, (data.sharp?.ancestors || []).length === 0, data.sharp?.ancestors)
+  const summary = nodes.map((node) => `${node.name}:backdrop=${node.backdrop}|filter=${node.filter}|mask=${node.mask}|before=${node.beforeBackdrop}|bgA=${alphaOf(node.bg)}|clip=${node.clip}`).join(' ')
+  console.log(`computed ${tag} ${summary}`)
 }
 
 function assertEdges(tag, data, insets, { mobile, zeroRow }) {
@@ -165,6 +245,7 @@ function assertEdges(tag, data, insets, { mobile, zeroRow }) {
     check(`${tag} header box is below the top band`, near(data.header.top, top), data.header)
     check(`${tag} header height is independent of the top inset`, zeroRow == null || near(data.header.height, zeroRow), { header: data.header?.height, zeroRow })
   }
+  assertSharp(tag, data)
 }
 
 async function closeSheet(page) {
@@ -339,6 +420,7 @@ async function assertReader(page, tag, insets) {
   await page.evaluate(() => [...document.querySelectorAll('button')].find((b) => b.textContent.includes('Reader Mode')).click())
   await page.waitForSelector('button[aria-label="Back to Editor"]')
   const shell = await readShell(page)
+  assertSharp(`${tag} reader`, shell)
   check(`${tag} reader row padding is not the inset`, shell.row.padTop < 20 && shell.row.padTop > 0, shell.row)
   const dots = await page.evaluate(() => {
     const scroller = document.querySelector('main .overflow-x-auto')
