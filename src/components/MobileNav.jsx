@@ -1,10 +1,11 @@
 // Requirement: Bottom tab navigation for mobile, replacing top tab nav bar.
-// Approach: DaisyUI dock for the button row only. It is in-flow (see index.css)
-//   so the canvas ends above it and the frame's side bands inset it. The
-//   home-indicator band is the frame's bottom band, not dock padding.
+// Approach: DaisyUI dock for CanvaGrid's own tabs. index.css anchors it
+//   fixed to the viewport bottom. The button row is --nav-height. The
+//   home-indicator padding is --safe-bottom under that row. The scrolling
+//   canvas pads by the same sum so the last content clears the bar.
 // Alternatives:
-//   - DaisyUI's fixed dock plus its built-in safe-area padding: Rejected —
-//     the bar covered the canvas, and left/right 0 ignored landscape notches.
+//   - In-flow dock: Rejected — the deployed bar did not stay on the bottom
+//     edge once the column was taller than the visible viewport.
 //   - Top tab bar: Rejected — wastes vertical space, hard to reach on large phones.
 //   - Hamburger menu: Rejected — hides navigation, requires extra tap.
 //   - 5 tabs only (no Export): Rejected — export hidden below canvas when sheet is open.

@@ -82,6 +82,9 @@ async function readShell(page) {
         width: r.width, height: r.height,
         padBottom: parseFloat(cs.paddingBottom),
         padTop: parseFloat(cs.paddingTop),
+        padLeft: parseFloat(cs.paddingLeft),
+        padRight: parseFloat(cs.paddingRight),
+        position: cs.position,
       }
     }
     const bands = {}
@@ -145,12 +148,23 @@ async function readShell(page) {
     const canvas = main?.querySelector('.relative') || main?.querySelector('[style*="height"]')
     const menu = document.querySelector('button[aria-label="Menu"]')
     const undo = document.querySelector('button[aria-label="Undo"]')
+    const back = document.querySelector('button[aria-label="Back to Editor"]')
     const doc = document.documentElement
     const rootStyle = getComputedStyle(document.documentElement)
+    const bodyCs = getComputedStyle(document.body)
+    const scroller = document.querySelector('.shell-canvas')
     return {
       innerW: window.innerWidth,
       innerH: window.innerHeight,
-      bodyPad: getComputedStyle(document.body).padding,
+      screenH: window.screen.height,
+      appHeight: rootStyle.getPropertyValue('--app-height').trim(),
+      shellH: document.querySelector('[data-viewport-frame]')?.getBoundingClientRect().height ?? null,
+      scrollPad: scroller ? parseFloat(getComputedStyle(scroller).paddingBottom) : null,
+      bodyPad: bodyCs.padding,
+      bodyPadTop: parseFloat(bodyCs.paddingTop),
+      bodyPadRight: parseFloat(bodyCs.paddingRight),
+      bodyPadBottom: parseFloat(bodyCs.paddingBottom),
+      bodyPadLeft: parseFloat(bodyCs.paddingLeft),
       safeTop: rootStyle.getPropertyValue('--safe-top').trim(),
       safeBottom: rootStyle.getPropertyValue('--safe-bottom').trim(),
       safeLeft: rootStyle.getPropertyValue('--safe-left').trim(),
@@ -164,6 +178,7 @@ async function readShell(page) {
       canvas: box(canvas),
       menu: box(menu),
       undo: box(undo),
+      back: box(back),
       overflowX: doc.scrollWidth - doc.clientWidth,
       coarse: matchMedia('(pointer: coarse)').matches,
       fine: matchMedia('(pointer: fine)').matches,
@@ -208,35 +223,72 @@ function assertSharp(tag, data) {
   console.log(`computed ${tag} ${summary}`)
 }
 
-function assertEdges(tag, data, insets, { mobile, zeroRow }) {
+// The first control sits one row-padding below the top band. A top inset
+// grows the band and leaves that gap unchanged. Shared measurements do not
+// pick a larger clearance, so this does not require one:
+//   Sancio: 48px row, first 44px control about 2px below the env band
+//   Knowless: 56px row, 36px control about 10px below the band
+//   Graphiki: 56px row, about 6px
+//   Borderline 405211c: opaque band height env(top), then a 48px row at
+//     top env(top), no extra padding. Formerly one fixed header at top 0.
+//   CanvaGrid after the filter removal: about 4px
+// None of these is a measured iOS compositor cause. Chrome geometry is not
+// a physical WebKit result.
+function assertControlBelowBand(tag, data, zeroGap) {
+  const control = data.undo || data.back
+  if (!control || !data.bands?.top) return
+  const gap = control.top - data.bands.top.bottom
+  const slack = gap - data.row.padTop
+  const name = data.undo ? 'undo' : 'back'
+  check(`${tag} first control is below the top band`, control.top + 1 >= data.bands.top.bottom, {
+    name, controlTop: control.top, bandBottom: data.bands.top.bottom, gap,
+  })
+  // Slack is items-center around a control shorter than the row. Measured
+  // here: coarse undo 0, compact undo about 2, desktop fine undo about 10
+  // (24px control in a py-3 row). A second inset or a guessed extra pad
+  // is well past 12.
+  check(`${tag} first control gap is row padding plus centering`, slack >= -1 && slack <= 12, {
+    name, gap, rowPad: data.row.padTop, slack, controlH: control.height,
+  })
+  if (zeroGap != null) {
+    check(`${tag} top inset does not add a second control offset`, near(gap, zeroGap, 1), { gap, zeroGap })
+  }
+  console.log(`bounds ${tag} ${name} belowBand=${gap.toFixed(2)} rowPad=${data.row.padTop} controlH=${control.height.toFixed(2)} bandH=${data.bands.top.height.toFixed(2)}`)
+}
+
+// A bottom inset the screen already excludes is published as 0. A viewport
+// taller than the screen keeps the injected value. 0.5px covers float noise.
+function effectiveBottom(data, bottom) {
+  if (bottom > 0 && data.screenH - data.innerH >= bottom - 0.5) return 0
+  return bottom
+}
+
+function assertEdges(tag, data, insets, { mobile, zeroRow, zeroGap }) {
   const { top, right, bottom, left } = insets
-  check(`${tag} body padding stays 0`, data.bodyPad === '0px', data.bodyPad)
-  check(`${tag} one band per edge`, ['top', 'bottom', 'left', 'right'].every((edge) => data.bands[edge]?.count === 1), data.bands)
+  const bottomOwned = effectiveBottom(data, bottom)
+  check(`${tag} body vertical padding stays 0`, data.bodyPadTop === 0 && data.bodyPadBottom === 0, data.bodyPad)
+  check(`${tag} body owns each side inset once`, near(data.bodyPadLeft, left) && near(data.bodyPadRight, right), data.bodyPad)
+  check(`${tag} one top band and no other bands`, data.bands.top?.count === 1 && !data.bands.left && !data.bands.right && !data.bands.bottom, data.bands)
   check(`${tag} top band is ${top} not doubled`, near(data.bands.top.height, top), data.bands.top)
-  check(`${tag} bottom band is ${bottom} not doubled`, near(data.bands.bottom.height, bottom), data.bands.bottom)
-  check(`${tag} left band is ${left} not doubled`, near(data.bands.left.width, left), data.bands.left)
-  check(`${tag} right band is ${right} not doubled`, near(data.bands.right.width, right), data.bands.right)
-  check(`${tag} variables match the injected insets`, data.safeTop === `${top}px` && data.safeBottom === `${bottom}px` && data.safeLeft === `${left}px` && data.safeRight === `${right}px`, data)
+  check(`${tag} top and side tokens match the inset`, data.safeTop === `${top}px` && data.safeLeft === `${left}px` && data.safeRight === `${right}px`, data)
+  check(`${tag} bottom token is the owned inset`, data.safeBottom === `${bottomOwned}px`, { safeBottom: data.safeBottom, bottomOwned, screenH: data.screenH, innerH: data.innerH })
+  check(`${tag} shell height is the measured viewport`, near(parseFloat(data.appHeight), data.innerH) && near(data.shellH, data.innerH, 2), data)
   check(`${tag} no horizontal overflow`, data.overflowX === 0, data.overflowX)
   if (zeroRow != null) {
     check(`${tag} visible row stays ${zeroRow}px`, near(data.row.height, zeroRow), { row: data.row.height, zeroRow })
   }
   check(`${tag} row starts at the top band`, near(data.row.top, data.bands.top.bottom) || near(data.row.top, top), { row: data.row.top, band: data.bands.top.bottom, top })
-  // innerWidth is an integer; the layout width is fractional (~0.9px past it).
-  // A doubled side inset is 94px, so 2px of slack does not hide that.
-  check(`${tag} row is inside the side bands`, data.row.left >= left - 2 && data.row.right <= data.innerW - right + 2, data.row)
+  check(`${tag} row is inside the side padding`, data.row.left >= left - 2 && data.row.right <= data.innerW - right + 2, data.row)
 
   if (mobile) {
-    check(`${tag} dock does not add its own bottom inset`, near(data.dock.padBottom, 0), data.dock)
-    check(`${tag} dock stays 3.5rem`, near(data.dock.height, 56), data.dock)
+    const navBox = 56 + bottomOwned
+    check(`${tag} dock is fixed to the viewport bottom`, data.dock.position === 'fixed' && near(data.dock.bottom, data.innerH) && near(data.dock.left, 0, 2) && near(data.dock.right, data.innerW, 2), data.dock)
+    check(`${tag} dock safe area sits under the 3.5rem row`, near(data.dock.padBottom, bottomOwned) && near(data.dock.height, navBox), data.dock)
     check(`${tag} dock button height matches the zero inset`, near(data.btn.height, 47, 2), data.btn)
-    check(`${tag} dock sits on the bottom band`, near(data.dock.bottom, data.bands.bottom.top), { dock: data.dock.bottom, band: data.bands.bottom.top })
-    check(`${tag} bottom band reaches the viewport`, near(data.bands.bottom.bottom, data.innerH), data.bands.bottom)
-    // The platform strip sits between the canvas and the dock. The dock check
-    // above is what proves the bar is on the band; this proves the canvas is not under it.
+    check(`${tag} header stays above the dock`, data.header.bottom <= data.dock.top + 1, { header: data.header.bottom, dock: data.dock.top })
     check(`${tag} main stays above the dock`, data.main.bottom <= data.dock.top + 1, { main: data.main.bottom, dock: data.dock.top })
-    check(`${tag} dock buttons clear the side bands`, data.btn.left >= left - 2 && data.btn.right <= data.innerW - right + 2, data.btn)
-    check(`${tag} menu clears the right band`, !data.menu || data.menu.right <= data.innerW - right + 2, data.menu)
+    check(`${tag} canvas pad is the nav plus the owned bottom`, near(data.scrollPad, navBox), { scrollPad: data.scrollPad, navBox })
+    check(`${tag} menu clears the right inset`, !data.menu || data.menu.right <= data.innerW - right + 2, data.menu)
     if (data.canvas && data.canvas.height > 2) {
       check(`${tag} canvas stays above the dock`, data.canvas.bottom <= data.dock.top + 1, { canvas: data.canvas.bottom, dock: data.dock.top })
     }
@@ -244,8 +296,10 @@ function assertEdges(tag, data, insets, { mobile, zeroRow }) {
     check(`${tag} desktop has no dock`, data.dock == null, data.dock)
     check(`${tag} header box is below the top band`, near(data.header.top, top), data.header)
     check(`${tag} header height is independent of the top inset`, zeroRow == null || near(data.header.height, zeroRow), { header: data.header?.height, zeroRow })
+    check(`${tag} desktop canvas pad is the owned bottom`, near(data.scrollPad, bottomOwned), { scrollPad: data.scrollPad, bottomOwned })
   }
   assertSharp(tag, data)
+  assertControlBelowBand(tag, data, zeroGap)
 }
 
 async function closeSheet(page) {
@@ -421,6 +475,7 @@ async function assertReader(page, tag, insets) {
   await page.waitForSelector('button[aria-label="Back to Editor"]')
   const shell = await readShell(page)
   assertSharp(`${tag} reader`, shell)
+  assertControlBelowBand(`${tag} reader`, shell)
   check(`${tag} reader row padding is not the inset`, shell.row.padTop < 20 && shell.row.padTop > 0, shell.row)
   const dots = await page.evaluate(() => {
     const scroller = document.querySelector('main .overflow-x-auto')
@@ -439,9 +494,13 @@ async function assertReader(page, tag, insets) {
   check(`${tag} reader page dots stay at least 44`, dots.n >= 12 && dots.sample && dots.sample.width >= 43.9 && dots.sample.height >= 43.9, dots)
   check(`${tag} reader page row scrolls inside the page`, dots.scrollW > dots.clientW && dots.overflow === 0, dots)
   check(`${tag} reader top band is ${insets.top}`, near(shell.bands.top.height, insets.top), shell.bands.top)
-  check(`${tag} reader bottom band is ${insets.bottom}`, near(shell.bands.bottom.height, insets.bottom), shell.bands.bottom)
-  check(`${tag} reader canvas stays above the bottom band`, !shell.canvas || shell.canvas.bottom <= shell.bands.bottom.top + 1, { canvas: shell.canvas, band: shell.bands.bottom })
+  check(`${tag} reader pad is the owned bottom and not a nav`, near(shell.scrollPad, effectiveBottom(shell, insets.bottom)), shell.scrollPad)
   check(`${tag} reader has no page overflow`, shell.overflowX === 0, shell.overflowX)
+  const beforePage = await page.$eval('header', (el) => el.textContent)
+  await page.keyboard.press('ArrowLeft')
+  await delay(50)
+  const afterPage = await page.$eval('header', (el) => el.textContent)
+  check(`${tag} reader arrow key moves the page`, beforePage !== afterPage, { beforePage, afterPage })
   const back = await page.$('button[aria-label="Back to Editor"]')
   const backBox = await back.boundingBox()
   const tap = await trustedTap(page, true, backBox.x + 8, backBox.y + backBox.height / 2)
@@ -529,6 +588,8 @@ async function run() {
         if (spec.mobile) await closeSheet(page)
         const data = await readShell(page)
         baselines[spec.tag] = spec.mobile ? data.row.height : data.header.height
+        const zeroControl = data.undo || data.back
+        baselines[`${spec.tag}:gap`] = zeroControl.top - data.bands.top.bottom
         check(`${spec.tag} matchMedia coarse=${spec.coarse}`, data.coarse === spec.coarse && data.mobileMq === spec.mobile, data)
         check(`${spec.tag} touch follows pointer`, spec.coarse ? data.touch > 0 : data.touch === 0, data.touch)
         assertEdges(spec.tag, data, ZERO, { mobile: spec.mobile, zeroRow: null })
@@ -540,6 +601,12 @@ async function run() {
         }
         if (spec.tag === 'zero 390 coarse') {
           check('390 coarse undo is at least 44', data.undo.width >= 43.9 && data.undo.height >= 43.9, data.undo)
+          const held = await page.evaluate(() => {
+            document.documentElement.style.setProperty('--app-height', '111px')
+            window.dispatchEvent(new Event('resize'))
+            return getComputedStyle(document.documentElement).getPropertyValue('--app-height').trim()
+          })
+          check('coarse resize does not move the shell', held === '111px', held)
         }
       } finally {
         await page.close()
@@ -548,6 +615,7 @@ async function run() {
     check('width is not the pointer', baselines['zero 390 coarse'] != null && baselines['zero 390 compact'] != null, baselines)
 
     const injected = [
+      { tag: 'real bottom 390', width: 390, height: 2000, coarse: true, mobile: true, insets: { top: 47, right: 0, bottom: 34, left: 0 }, zero: 'zero 390 coarse' },
       { tag: 'top47 390', width: 390, height: 844, coarse: true, mobile: true, insets: { top: 47, right: 0, bottom: 34, left: 0 }, zero: 'zero 390 coarse', interact: true },
       { tag: 'top59 390', width: 390, height: 844, coarse: true, mobile: true, insets: { top: 59, right: 0, bottom: 34, left: 0 }, zero: 'zero 390 coarse' },
       { tag: 'top47 375', width: 375, height: 667, coarse: true, mobile: true, insets: { top: 47, right: 0, bottom: 34, left: 0 }, zero: 'zero 375 coarse' },
@@ -563,7 +631,11 @@ async function run() {
       try {
         if (spec.mobile) await closeSheet(page)
         const data = await readShell(page)
-        assertEdges(spec.tag, data, spec.insets, { mobile: spec.mobile, zeroRow: baselines[spec.zero] })
+        assertEdges(spec.tag, data, spec.insets, {
+          mobile: spec.mobile,
+          zeroRow: baselines[spec.zero],
+          zeroGap: baselines[`${spec.zero}:gap`],
+        })
         if (spec.interact) await assertInteractions(page, spec.tag, spec.coarse)
         if (spec.tag === 'top47 390') await assertDialog(page, spec.tag, spec.insets)
         if (spec.tag === 'sides 844x390') await assertReader(page, spec.tag, spec.insets)
@@ -576,7 +648,8 @@ async function run() {
           })
           await delay(100)
           const turned = await readShell(page)
-          check('orientation retargets bands without a reload', near(turned.bands.top.height, 0) && near(turned.bands.left.width, 47) && near(turned.bands.bottom.height, 34) && near(turned.row.height, baselines['zero 390 coarse']), turned.bands)
+          const turnedBottom = effectiveBottom(turned, 34)
+          check('orientation retargets the shell without a reload', near(turned.bands.top.height, 0) && near(turned.bodyPadLeft, 47) && near(turned.bodyPadRight, 47) && near(turned.dock.padBottom, turnedBottom) && near(turned.dock.bottom, turned.innerH) && near(turned.row.height, baselines['zero 390 coarse']), turned)
           check('orientation keeps the row inside the new sides', turned.row.left >= 47 - 2 && turned.row.right <= turned.innerW - 47 + 2, turned.row)
         }
       } finally {

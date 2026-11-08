@@ -15,7 +15,7 @@ import EmptyStateGuide from './EmptyStateGuide'
 import BottomSheet from './BottomSheet'
 import MobileNav from './MobileNav'
 import BurgerMenu from './BurgerMenu'
-import ViewportFrame, { InsetBand } from './ViewportFrame'
+import ViewportFrame from './ViewportFrame'
 import UndoRedoButtons from './UndoRedoButtons'
 import { themeCombos } from '../config/daisyuiThemes'
 import { describeUpdateCheckResult } from '../utils/pwaHelpers'
@@ -165,7 +165,7 @@ export default function MobileLayout({
   }, [checkForUpdate, addToast])
 
   return (
-    <ViewportFrame className="h-[100dvh] overflow-hidden bg-base-200" bottomClassName="bg-base-100">
+    <ViewportFrame nav className="bg-base-200">
       {/* crossOrigin makes cssRules JS-readable — see CLAUDE.md "Font embedding for export". */}
       {fontsToLoad.map((font) => <link key={font.id} rel="stylesheet" href={font.url} crossOrigin="anonymous" />)}
 
@@ -173,26 +173,17 @@ export default function MobileLayout({
           Backdrop is now owned by BurgerMenu (rendered inside its component).
           z-50 when menu open so the header stacking context layers above the
           backdrop (z-40 inside BurgerMenu) and MobileNav (z-40 at page level).
-          The top band is outside the button row so a notch grows the header
-          without changing that row. Side insets are the frame's bands.
-          Requirement: the logo, title, badge, and controls stay sharp on iOS.
-          Approach: this element used to be backdrop-blur-sm, which computes to
-          backdrop-filter: blur(8px), on the same box that paints those glyphs.
-          The glyphs themselves have filter: none, no mask, and no layer of
-          their own, and the background is only 90% opaque. iOS composites that
-          backdrop layer with the glyphs in it, so the row looks blurred while
-          the status bar (UIKit, outside the layer) stays sharp. The bar is
-          opaque base-100 instead. Nothing scrolls under this pinned header,
-          and the opaque fill still paints the notch band.
-          The wordmark keeps background-clip: text. That affects only the title.
-          Alternatives:
-            - backdrop-filter on a ::before behind the glyphs: Rejected — this
-              header sits in an overflow:hidden frame, and iOS still softens
-              contents that share a backdrop-filter tile with that ancestor.
-            - translateZ(0) on the glyphs: Rejected — they would still be
-              descendants of the filtered element. */}
-      <header className={`bg-base-100 border-b border-base-300/60 shrink-0 relative ${showMobileMenu ? 'z-50' : ''}`}>
-        <InsetBand edge="top" />
+          The top band is the shell's direct env() strip above this row.
+          Side insets are body padding. The nav is fixed.
+          The bar is opaque. It used to carry backdrop-filter: blur(8px) on the
+          same box as the glyphs. Chrome computed that filter; removing it did
+          not clear a later physical iPhone report, so the device compositor
+          is still unproven and this comment does not name it as the cause.
+          The top band is height env(top) and the control row starts at the
+          band. Shared shells put the first control about 2px to 10px below
+          that band and do not agree on any larger clearance, so none is added.
+          The wordmark keeps background-clip: text. */}
+      <header className={`shell-header bg-base-100 border-b border-base-300/60 relative ${showMobileMenu ? 'z-50' : 'z-20'}`}>
         <div className="coarse-header-row flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-2 min-w-0 shrink">
             {/* Inline header icon — 2x3 grid pattern using currentColor.
@@ -235,19 +226,11 @@ export default function MobileLayout({
         </div>
       </header>
 
-      {/* Requirement: the dock stays on the bottom band even when the header,
-          context bar, and platform strip are taller than a short landscape
-          viewport (568×320 with a notch and a home indicator).
-          Approach: header and dock stay pinned. Everything between them is one
-          scroll region, so the extra chrome scrolls instead of pushing the
-          dock into the band. When it fits, the region does not scroll and the
-          canvas still fills the leftover height.
-          Alternatives:
-            - Shrink the minimap: Rejected — the 88px cap is the coarse-pointer
-              contract, and the overflow on that viewport is the strip, not the map.
-            - Let the column overflow: Rejected — measured dock bottom 302 against
-              a band that starts at 286, so the bar sits in the home indicator. */}
-      <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto flex flex-col">
+      {/* The fixed nav covers the bottom of this scroller. Its padding is
+          that cover (nav row + bottom token), so a short landscape viewport
+          scrolls the context bar and the strip instead of pushing the nav
+          past the screen. */}
+      <div className="shell-canvas flex flex-col">
       {!isOnline && (
         <div className="bg-base-200 border-b border-base-300 px-3 py-1.5 text-center text-xs text-warning shrink-0">
           Offline — work saved locally
