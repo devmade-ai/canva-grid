@@ -15,6 +15,7 @@ import EmptyStateGuide from './EmptyStateGuide'
 import BottomSheet from './BottomSheet'
 import MobileNav from './MobileNav'
 import BurgerMenu from './BurgerMenu'
+import ViewportFrame, { InsetBand } from './ViewportFrame'
 import UndoRedoButtons from './UndoRedoButtons'
 import { themeCombos } from '../config/daisyuiThemes'
 import { describeUpdateCheckResult } from '../utils/pwaHelpers'
@@ -164,15 +165,18 @@ export default function MobileLayout({
   }, [checkForUpdate, addToast])
 
   return (
-    <div className="h-[100dvh] flex flex-col overflow-hidden bg-base-200">
+    <ViewportFrame className="h-[100dvh] overflow-hidden bg-base-200" bottomClassName="bg-base-100">
       {/* crossOrigin makes cssRules JS-readable — see CLAUDE.md "Font embedding for export". */}
       {fontsToLoad.map((font) => <link key={font.id} rel="stylesheet" href={font.url} crossOrigin="anonymous" />)}
 
       {/* Mobile header — compact with app name + burger menu only.
           Backdrop is now owned by BurgerMenu (rendered inside its component).
           z-50 when menu open so the header stacking context layers above the
-          backdrop (z-40 inside BurgerMenu) and MobileNav (z-40 at page level). */}
-      <header className={`bg-base-100/90 backdrop-blur-sm border-b border-base-300/60 shrink-0 relative ${showMobileMenu ? 'z-50' : ''}`} style={{ paddingTop: 'env(safe-area-inset-top, 0px)' }}>
+          backdrop (z-40 inside BurgerMenu) and MobileNav (z-40 at page level).
+          The top band is outside the button row so a notch grows the header
+          without changing that row. Side insets are the frame's bands. */}
+      <header className={`bg-base-100/90 backdrop-blur-sm border-b border-base-300/60 shrink-0 relative ${showMobileMenu ? 'z-50' : ''}`}>
+        <InsetBand edge="top" />
         <div className="coarse-header-row flex items-center justify-between px-3 py-2">
           <div className="flex items-center gap-2 min-w-0 shrink">
             {/* Inline header icon — 2x3 grid pattern using currentColor.
@@ -215,6 +219,19 @@ export default function MobileLayout({
         </div>
       </header>
 
+      {/* Requirement: the dock stays on the bottom band even when the header,
+          context bar, and platform strip are taller than a short landscape
+          viewport (568×320 with a notch and a home indicator).
+          Approach: header and dock stay pinned. Everything between them is one
+          scroll region, so the extra chrome scrolls instead of pushing the
+          dock into the band. When it fits, the region does not scroll and the
+          canvas still fills the leftover height.
+          Alternatives:
+            - Shrink the minimap: Rejected — the 88px cap is the coarse-pointer
+              contract, and the overflow on that viewport is the strip, not the map.
+            - Let the column overflow: Rejected — measured dock bottom 302 against
+              a band that starts at 286, so the bar sits in the home indicator. */}
+      <div className="flex-1 min-h-0 overflow-x-hidden overflow-y-auto flex flex-col">
       {!isOnline && (
         <div className="bg-base-200 border-b border-base-300 px-3 py-1.5 text-center text-xs text-warning shrink-0">
           Offline — work saved locally
@@ -281,6 +298,7 @@ export default function MobileLayout({
           )}
         </div>
       )}
+      </div>
 
       {/* Bottom sheet — tab content slides up from bottom */}
       <BottomSheet isOpen={mobileSheetOpen} onClose={closeMobileSheet} snapPoint={sheetSnap} onSnapChange={setSheetSnap}>
@@ -296,6 +314,6 @@ export default function MobileLayout({
       <MobileNav activeTab={activeSection} sheetOpen={mobileSheetOpen} onTabChange={handleMobileTabChange} />
 
       {modals}
-    </div>
+    </ViewportFrame>
   )
 }

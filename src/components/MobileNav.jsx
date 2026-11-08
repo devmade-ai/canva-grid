@@ -1,10 +1,10 @@
 // Requirement: Bottom tab navigation for mobile, replacing top tab nav bar.
-// Approach: DaisyUI dock component for fixed bottom navigation.
-//   Dock handles safe area insets natively (env(safe-area-inset-bottom)),
-//   provides consistent sizing, hover states, and active indicator underline.
+// Approach: DaisyUI dock for the button row only. It is in-flow (see index.css)
+//   so the canvas ends above it and the frame's side bands inset it. The
+//   home-indicator band is the frame's bottom band, not dock padding.
 // Alternatives:
-//   - Hand-rolled fixed nav with custom safe area: Replaced — DaisyUI dock gives
-//     fixed positioning, safe area padding, and active state indicator out of the box.
+//   - DaisyUI's fixed dock plus its built-in safe-area padding: Rejected —
+//     the bar covered the canvas, and left/right 0 ignored landscape notches.
 //   - Top tab bar: Rejected — wastes vertical space, hard to reach on large phones.
 //   - Hamburger menu: Rejected — hides navigation, requires extra tap.
 //   - 5 tabs only (no Export): Rejected — export hidden below canvas when sheet is open.
@@ -70,7 +70,7 @@ const tabs = [
 
 export default memo(function MobileNav({ activeTab, sheetOpen, onTabChange }) {
   return (
-    <nav aria-label="Main navigation" className="dock dock-sm z-40">
+    <nav aria-label="Main navigation" className="dock dock-sm z-40 shrink-0">
       {tabs.map((tab) => {
         // Only highlight tab when sheet is expanded — otherwise no tab appears active.
         const isActive = activeTab === tab.id && sheetOpen

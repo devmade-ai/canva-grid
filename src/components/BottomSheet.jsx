@@ -45,7 +45,16 @@ function prefersReducedMotion() {
 // Alternatives:
 //   - Clip via overflow:hidden on outer div: Rejected — clips to container bounds (85vh), not viewport.
 //   - Dynamically resize sheet height: Rejected — changing height triggers layout reflow, defeats translateY perf.
-const HANDLE_AND_NAV_REM = 6 // ~2.5rem drag handle + 3.5rem nav padding
+// 2.75rem is the coarse handle row (py-4 alone is 36px; the 44px minimum
+// wins). 2.5rem left the scroller 4px under the dock. The bottom inset is
+// subtracted in the max-height because this padding sits at the tail of the
+// translated sheet, below the visible half snap.
+const HANDLE_AND_NAV_REM = 6.25 // 2.75rem handle + 3.5rem dock
+// The sheet itself is capped at 100dvh - 6rem. On a short landscape viewport
+// that cap is shorter than 80vh, so a half snap reveals less than 45vh.
+// The scroller has to use the same cap or it runs under the dock (measured
+// 18px on 844×390).
+const SHEET_CAP_REM = 6
 
 export default function BottomSheet({ isOpen, onClose, children, snapPoint, onSnapChange }) {
   const sheetRef = useRef(null)
@@ -229,8 +238,15 @@ export default function BottomSheet({ isOpen, onClose, children, snapPoint, onSn
       className="fixed bottom-0 left-0 right-0 z-30 bg-base-100 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.12)] flex flex-col will-change-transform"
       style={{
         height: `${SNAP_FULL}vh`,
-        maxHeight: 'calc(100dvh - 6rem)',
-        paddingBottom: 'calc(3.5rem + env(safe-area-inset-bottom, 0px))',
+        maxHeight: `calc(100dvh - ${SHEET_CAP_REM}rem)`,
+        // At a full snap the sheet bottom is the viewport bottom, so this
+        // padding keeps that tail above the dock and the band. At a half snap
+        // the same padding is translated below the viewport; the scroller
+        // max-height is what keeps content above the dock there.
+        // One copy of the inset. Sides match the column.
+        paddingBottom: 'calc(3.5rem + var(--safe-bottom))',
+        left: 'var(--safe-left)',
+        right: 'var(--safe-right)',
         // Start off-screen; useEffect will animate in
         transform: `translateY(${SNAP_FULL}vh)`,
       }}
@@ -252,7 +268,7 @@ export default function BottomSheet({ isOpen, onClose, children, snapPoint, onSn
         ref={contentRef}
         className="overflow-y-auto overscroll-contain px-4 pb-4"
         style={{
-          maxHeight: `calc(${effectiveSnap}vh - ${HANDLE_AND_NAV_REM}rem)`,
+          maxHeight: `max(0px, calc(min(${SNAP_FULL}vh, 100dvh - ${SHEET_CAP_REM}rem) - ${SNAP_FULL - effectiveSnap}vh - ${HANDLE_AND_NAV_REM}rem - var(--safe-bottom)))`,
         }}
       >
         {children}

@@ -19,11 +19,19 @@ const SEVERITY_COLORS = {
   error: '#f87171',
 }
 
-// MobileNav dock height + safe area — pill must sit above this on mobile.
-// Matches MobileNav's ~56px height + 12px breathing room.
+// MobileNav dock height + breathing room. The frame's bottom band is added
+// at paint time so a zero inset keeps 72 / 12 and a home indicator lifts the
+// pill by exactly that inset (the dock itself no longer includes it).
 const MOBILE_BOTTOM = 72
 const DESKTOP_BOTTOM = 12
 const MOBILE_MQ = '(max-width: 1023px)'
+
+function pillOffsets(bottom) {
+  return {
+    bottom: `calc(${bottom}px + var(--safe-bottom, 0px))`,
+    right: 'max(12px, var(--safe-right, 0px))',
+  }
+}
 
 function getBottom() {
   return window.matchMedia(MOBILE_MQ).matches ? MOBILE_BOTTOM : DESKTOP_BOTTOM
@@ -108,8 +116,7 @@ function DebugPillInner() {
         onClick={() => setExpanded(true)}
         style={{
           position: 'fixed',
-          bottom,
-          right: 12,
+          ...pillOffsets(bottom),
           zIndex: 80,
           background: '#27272a',
           color: '#a1a1aa',
@@ -156,11 +163,10 @@ function DebugPillInner() {
   return (
     <div style={{
       position: 'fixed',
-      bottom,
-      right: 12,
+      ...pillOffsets(bottom),
       zIndex: 80,
       width: 380,
-      maxWidth: 'calc(100vw - 24px)',
+      maxWidth: 'calc(100vw - 24px - var(--safe-left, 0px) - var(--safe-right, 0px))',
       maxHeight: 'min(420px, 60vh)',
       background: '#18181b',
       color: '#e4e4e7',

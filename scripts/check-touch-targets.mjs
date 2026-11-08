@@ -47,13 +47,17 @@ async function openPage(browser, { width, height, coarse, path = '/' }) {
     deviceScaleFactor: 1,
     mobile: width < 1024,
   })
-  await client.send('Emulation.setTouchEmulationEnabled', {
-    enabled: !!coarse,
-    maxTouchPoints: 1,
-  })
+  // Touch emulation is what makes (pointer: coarse) match. CDP's
+  // setEmulatedMedia accepts a pointer feature and Blink ignores it, so a
+  // fine pointer cannot be forced. Leave touch off for the compact path.
+  if (coarse) {
+    await client.send('Emulation.setTouchEmulationEnabled', {
+      enabled: true,
+      maxTouchPoints: 1,
+    })
+  }
   await client.send('Emulation.setEmulatedMedia', {
     features: [
-      { name: 'pointer', value: coarse ? 'coarse' : 'fine' },
       { name: 'hover', value: coarse ? 'none' : 'hover' },
     ],
   })
@@ -97,6 +101,8 @@ async function readChrome(page) {
     return {
       coarse: window.matchMedia('(pointer: coarse)').matches,
       fine: window.matchMedia('(pointer: fine)').matches,
+      none: window.matchMedia('(pointer: none)').matches,
+      touch: navigator.maxTouchPoints,
       undo: rect(undo),
       undoDisabled: undo?.disabled ?? null,
       redo: rect(redo),
@@ -139,10 +145,13 @@ async function expandCollapse(page, title) {
 }
 
 function assertHeader(tag, data, { coarse, mobile }) {
-  // Headless Chrome reports pointer:none for a fine mouse. It never matches
-  // (pointer: fine). Coarse emulation does match. Compact sizes below prove
-  // the fine path did not pick up the coarse rules.
-  check(`${tag} pointer coarse=${coarse}`, data.coarse === coarse, { coarse: data.coarse, fine: data.fine })
+  // Coarse is matchMedia('(pointer: coarse)') from touch emulation, not the
+  // viewport width: 390px is tested both ways, and 1280px is tested coarse.
+  // CDP setEmulatedMedia cannot force (pointer: fine). With touch off this
+  // VM reports (pointer: none); a host with a mouse reports fine. Either
+  // way the compact sizes are the not-coarse path.
+  check(`${tag} pointer coarse=${coarse}`, data.coarse === coarse && (coarse ? data.fine === false : data.coarse === false), { coarse: data.coarse, fine: data.fine, none: data.none })
+  check(`${tag} touch points follow the pointer`, coarse ? data.touch > 0 : data.touch === 0, data.touch)
   check(`${tag} document does not overflow`, data.overflow === 0, data.overflow)
   if (coarse) {
     check(`${tag} undo box >= 44`, atLeastMin(data.undo.width) && atLeastMin(data.undo.height), data.undo)
@@ -488,7 +497,9 @@ async function run() {
     await waitForPreview()
     browser = await puppeteer.launch({
       executablePath: CHROME,
-      headless: true,
+      // Headed so a display exists. pointer:fine still does not match here;
+      // see assertHeader.
+      headless: false,
       args: ['--no-sandbox', '--disable-dev-shm-usage'],
     })
 

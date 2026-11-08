@@ -396,15 +396,21 @@ function App() {
     // Desktop: use container width + 70% viewport height.
     // Requirement: Canvas auto-scales to fit visible area above bottom sheet
     //   so it's never hidden behind the sheet and doesn't need scrolling.
+    // The old 200px floor is gone: on a 568×320 screen with a notch band the
+    // visible main was 130px and the floor drew a 200px canvas through the
+    // dock (canvas bottom 300, dock top 230). A 1px floor only avoids a
+    // zero or negative denominator.
     // Alternatives:
     //   - overflow-y-auto + paddingBottom on canvas container: Rejected — ResizeObserver
     //     picks up the padding change, recalculates scale, causes dimension flicker,
     //     and scroll only worked on initial load (not on subsequent sheet opens).
+    //   - Keep the 200px floor: Rejected — it is what painted the canvas under the dock.
     const maxWidth = isMobile
       ? Math.max(containerWidth - 8, 200)
       : Math.max(containerWidth - 32, 200)
+    const visibleHeight = containerHeight - (mobileSheetOpen ? (sheetSnap / 100) * windowHeight : 0) - 8
     const maxHeight = isMobile
-      ? Math.max(containerHeight - (mobileSheetOpen ? (sheetSnap / 100) * windowHeight : 0) - 8, 200)
+      ? Math.max(visibleHeight, 1)
       : windowHeight * 0.7
     if (!platform.width || !platform.height) return 1
     return Math.min(maxWidth / platform.width, maxHeight / platform.height, 1)

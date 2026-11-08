@@ -496,7 +496,7 @@ Sidebar (tab content) | Main (platform selector + canvas + export)
 
 ### Mobile layout (< 1024px, detected by `useIsMobile` hook)
 
-Fixed viewport with edge-to-edge canvas. Tab content lives in a touch-draggable BottomSheet with three snap points (closed/half/full). Navigation via fixed MobileNav bar at bottom.
+Fixed viewport with edge-to-edge canvas. Tab content lives in a touch-draggable BottomSheet with three snap points (closed/half/full). Navigation is the in-flow MobileNav dock at the bottom of the safe-area column. The header and dock stay pinned; the context bar, canvas, and platform strip scroll between them when a short landscape viewport cannot fit that chrome above the home-indicator band.
 
 ```
 Compact Header (grid icon + app name [gradient] + undo/redo + burger menu: Help, Install, Update, Refresh, Reader, Save, Shortcuts + dark/light toggle + theme list)
@@ -504,7 +504,7 @@ Platform Info Strip (current format name + dimensions)
 Canvas (edge-to-edge, swipe left/right for page navigation)
 ContextBar (page thumbnails + cell grid — consolidated single row)
 BottomSheet (active tab content, drag to resize — Presets opens by default on load)
-MobileNav (fixed bottom: Presets, Media, Content, Structure, Style, Export)
+MobileNav (in-flow dock: Presets, Media, Content, Structure, Style, Export; home-indicator band below it)
 ```
 
 Export is a dedicated tab on mobile (vs. sidebar section on desktop) containing only download controls — platform selection lives in the Presets tab. Tapping the active tab toggles the bottom sheet open/closed. Presets bottom sheet opens by default on load so users see it's active.
@@ -574,7 +574,7 @@ src/
 │   ├── UndoRedoButtons.jsx    # Shared undo/redo buttons (used in both mobile + desktop headers)
 │   ├── BurgerMenu.jsx         # Disclosure-pattern dropdown (WAI-ARIA, DaisyUI menu, own backdrop, close-then-act, MenuItem interface, version footer)
 │   ├── BottomSheet.jsx        # Touch-draggable bottom sheet for mobile tab content (3 snap points, reduced-motion support)
-│   ├── MobileNav.jsx          # DaisyUI dock bottom navigation (6 tabs incl. Export, safe area insets)
+│   ├── MobileNav.jsx          # DaisyUI dock bottom navigation (6 tabs incl. Export; in-flow, safe area is the frame band)
 │   ├── ReaderMode.jsx         # Full-screen reader view with page navigation (useEscapeKey + arrow key handler)
 │   ├── MobileLayout.jsx       # Mobile-specific layout container (header, canvas, sheet, nav)
 │   ├── DesktopLayout.jsx      # Desktop-specific layout container (header, sidebar, main)
