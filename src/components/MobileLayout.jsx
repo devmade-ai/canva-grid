@@ -175,22 +175,14 @@ export default function MobileLayout({
           backdrop (z-40 inside BurgerMenu) and MobileNav (z-40 at page level).
           The top band is outside the button row so a notch grows the header
           without changing that row. Side insets are the frame's bands.
-          Requirement: the logo, title, badge, and controls stay sharp on iOS.
-          Approach: this element used to be backdrop-blur-sm, which computes to
-          backdrop-filter: blur(8px), on the same box that paints those glyphs.
-          The glyphs themselves have filter: none, no mask, and no layer of
-          their own, and the background is only 90% opaque. iOS composites that
-          backdrop layer with the glyphs in it, so the row looks blurred while
-          the status bar (UIKit, outside the layer) stays sharp. The bar is
-          opaque base-100 instead. Nothing scrolls under this pinned header,
-          and the opaque fill still paints the notch band.
-          The wordmark keeps background-clip: text. That affects only the title.
-          Alternatives:
-            - backdrop-filter on a ::before behind the glyphs: Rejected — this
-              header sits in an overflow:hidden frame, and iOS still softens
-              contents that share a backdrop-filter tile with that ancestor.
-            - translateZ(0) on the glyphs: Rejected — they would still be
-              descendants of the filtered element. */}
+          The bar is opaque. It used to carry backdrop-filter: blur(8px) on the
+          same box as the glyphs. Chrome computed that filter; removing it did
+          not clear a later physical iPhone report, so the device compositor
+          is still unproven and this comment does not name it as the cause.
+          The top band is height env(top) and the control row starts at the
+          band. Shared shells put the first control about 2px to 10px below
+          that band and do not agree on any larger clearance, so none is added.
+          The wordmark keeps background-clip: text. */}
       <header className={`bg-base-100 border-b border-base-300/60 shrink-0 relative ${showMobileMenu ? 'z-50' : ''}`}>
         <InsetBand edge="top" />
         <div className="coarse-header-row flex items-center justify-between px-3 py-2">

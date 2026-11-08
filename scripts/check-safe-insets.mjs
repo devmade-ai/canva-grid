@@ -145,6 +145,7 @@ async function readShell(page) {
     const canvas = main?.querySelector('.relative') || main?.querySelector('[style*="height"]')
     const menu = document.querySelector('button[aria-label="Menu"]')
     const undo = document.querySelector('button[aria-label="Undo"]')
+    const back = document.querySelector('button[aria-label="Back to Editor"]')
     const doc = document.documentElement
     const rootStyle = getComputedStyle(document.documentElement)
     return {
@@ -164,6 +165,7 @@ async function readShell(page) {
       canvas: box(canvas),
       menu: box(menu),
       undo: box(undo),
+      back: box(back),
       overflowX: doc.scrollWidth - doc.clientWidth,
       coarse: matchMedia('(pointer: coarse)').matches,
       fine: matchMedia('(pointer: fine)').matches,
@@ -208,7 +210,40 @@ function assertSharp(tag, data) {
   console.log(`computed ${tag} ${summary}`)
 }
 
-function assertEdges(tag, data, insets, { mobile, zeroRow }) {
+// The first control sits one row-padding below the top band. A top inset
+// grows the band and leaves that gap unchanged. Shared measurements do not
+// pick a larger clearance, so this does not require one:
+//   Sancio: 48px row, first 44px control about 2px below the env band
+//   Knowless: 56px row, 36px control about 10px below the band
+//   Graphiki: 56px row, about 6px
+//   Borderline 405211c: opaque band height env(top), then a 48px row at
+//     top env(top), no extra padding. Formerly one fixed header at top 0.
+//   CanvaGrid after the filter removal: about 4px
+// None of these is a measured iOS compositor cause. Chrome geometry is not
+// a physical WebKit result.
+function assertControlBelowBand(tag, data, zeroGap) {
+  const control = data.undo || data.back
+  if (!control || !data.bands?.top) return
+  const gap = control.top - data.bands.top.bottom
+  const slack = gap - data.row.padTop
+  const name = data.undo ? 'undo' : 'back'
+  check(`${tag} first control is below the top band`, control.top + 1 >= data.bands.top.bottom, {
+    name, controlTop: control.top, bandBottom: data.bands.top.bottom, gap,
+  })
+  // Slack is items-center around a control shorter than the row. Measured
+  // here: coarse undo 0, compact undo about 2, desktop fine undo about 10
+  // (24px control in a py-3 row). A second inset or a guessed extra pad
+  // is well past 12.
+  check(`${tag} first control gap is row padding plus centering`, slack >= -1 && slack <= 12, {
+    name, gap, rowPad: data.row.padTop, slack, controlH: control.height,
+  })
+  if (zeroGap != null) {
+    check(`${tag} top inset does not add a second control offset`, near(gap, zeroGap, 1), { gap, zeroGap })
+  }
+  console.log(`bounds ${tag} ${name} belowBand=${gap.toFixed(2)} rowPad=${data.row.padTop} controlH=${control.height.toFixed(2)} bandH=${data.bands.top.height.toFixed(2)}`)
+}
+
+function assertEdges(tag, data, insets, { mobile, zeroRow, zeroGap }) {
   const { top, right, bottom, left } = insets
   check(`${tag} body padding stays 0`, data.bodyPad === '0px', data.bodyPad)
   check(`${tag} one band per edge`, ['top', 'bottom', 'left', 'right'].every((edge) => data.bands[edge]?.count === 1), data.bands)
@@ -246,6 +281,7 @@ function assertEdges(tag, data, insets, { mobile, zeroRow }) {
     check(`${tag} header height is independent of the top inset`, zeroRow == null || near(data.header.height, zeroRow), { header: data.header?.height, zeroRow })
   }
   assertSharp(tag, data)
+  assertControlBelowBand(tag, data, zeroGap)
 }
 
 async function closeSheet(page) {
@@ -421,6 +457,7 @@ async function assertReader(page, tag, insets) {
   await page.waitForSelector('button[aria-label="Back to Editor"]')
   const shell = await readShell(page)
   assertSharp(`${tag} reader`, shell)
+  assertControlBelowBand(`${tag} reader`, shell)
   check(`${tag} reader row padding is not the inset`, shell.row.padTop < 20 && shell.row.padTop > 0, shell.row)
   const dots = await page.evaluate(() => {
     const scroller = document.querySelector('main .overflow-x-auto')
@@ -529,6 +566,8 @@ async function run() {
         if (spec.mobile) await closeSheet(page)
         const data = await readShell(page)
         baselines[spec.tag] = spec.mobile ? data.row.height : data.header.height
+        const zeroControl = data.undo || data.back
+        baselines[`${spec.tag}:gap`] = zeroControl.top - data.bands.top.bottom
         check(`${spec.tag} matchMedia coarse=${spec.coarse}`, data.coarse === spec.coarse && data.mobileMq === spec.mobile, data)
         check(`${spec.tag} touch follows pointer`, spec.coarse ? data.touch > 0 : data.touch === 0, data.touch)
         assertEdges(spec.tag, data, ZERO, { mobile: spec.mobile, zeroRow: null })
@@ -563,7 +602,11 @@ async function run() {
       try {
         if (spec.mobile) await closeSheet(page)
         const data = await readShell(page)
-        assertEdges(spec.tag, data, spec.insets, { mobile: spec.mobile, zeroRow: baselines[spec.zero] })
+        assertEdges(spec.tag, data, spec.insets, {
+          mobile: spec.mobile,
+          zeroRow: baselines[spec.zero],
+          zeroGap: baselines[`${spec.zero}:gap`],
+        })
         if (spec.interact) await assertInteractions(page, spec.tag, spec.coarse)
         if (spec.tag === 'top47 390') await assertDialog(page, spec.tag, spec.insets)
         if (spec.tag === 'sides 844x390') await assertReader(page, spec.tag, spec.insets)
