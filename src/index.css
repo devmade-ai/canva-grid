@@ -44,27 +44,67 @@ html {
 
 body {
   margin: 0;
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: var(--app-height);
+  overflow: hidden;
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Requirement: one definition of the four safe-area edges. Bands and the
-   overlays that are not inside those bands read these. Zero on a normal
-   desktop browser, so chrome keeps its measured size.
-   Approach: the only env() calls in the app. A second env() on a component
-   would stack on the band that already consumed the variable. */
+/* Requirement: Sancio's shell tokens. The top band and the side padding use
+   env() directly. The bottom token is the one appHeight.js may set to 0px
+   when the inset is already outside the layout viewport.
+   --app-height is 100dvh only before that module measures innerHeight.
+   --nav-height is the button row. The home indicator is not part of it. */
 :root {
+  --app-height: 100dvh;
   --safe-top: env(safe-area-inset-top, 0px);
   --safe-right: env(safe-area-inset-right, 0px);
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-left: env(safe-area-inset-left, 0px);
+  --nav-height: 3.5rem;
 }
 
 #root {
-  min-height: 100vh;
-  min-height: 100dvh;
+  height: 100%;
+  overflow: hidden;
+}
+
+/* The root is the viewport. The header and the top band stay outside the
+   scroller. One canvas scrolls. A fixed nav, when present, covers the
+   bottom of that canvas, so the canvas pads by the nav row plus the bottom
+   token. Without a nav the pad is only the bottom token. */
+.shell-root {
+  height: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.shell-safe-top {
+  height: env(safe-area-inset-top, 0px);
+  flex: none;
+}
+
+.shell-header {
+  position: sticky;
+  top: 0;
+  flex: none;
+}
+
+.shell-canvas {
+  flex: 1 1 auto;
+  min-height: 0;
+  min-width: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-bottom: var(--safe-bottom);
+}
+
+.shell-has-nav .shell-canvas {
+  padding-bottom: calc(var(--nav-height) + var(--safe-bottom));
 }
 
 /* Focus ring for non-DaisyUI form elements (raw buttons, etc.).
@@ -166,25 +206,30 @@ textarea:not(.textarea):focus-visible {
   }
 }
 
-/* Requirement: the bottom nav stays in the column so side bands inset it
-   and the canvas ends above it. DaisyUI's dock is position:fixed and adds
-   env(safe-area-inset-bottom) to both height and padding-bottom. The frame's
-   bottom band is the only bottom owner, so those additions are cleared.
-   The 3.5rem box is dock-sm's height at a zero inset (padding-bottom 0,
-   because the env() override replaces the .5rem shorthand). Unlayered so it
-   beats DaisyUI's layered .dock / .dock-sm.
+/* Requirement: the bottom nav is anchored to the viewport, with the safe
+   area under the buttons, the way Sancio's shell-nav-bottom is.
+   Approach: fixed to the bottom edge, full width. The border box is the
+   3.5rem button row plus --safe-bottom once. DaisyUI adds env() to both
+   height and padding; this replaces that with the token, so a phantom
+   inset zeroed by appHeight.js does not leave a dead band. The scrolling
+   canvas pads by the same sum, which is the space this bar covers, not a
+   second gap. Unlayered so it beats DaisyUI's layered .dock / .dock-sm.
+   The bar stays z-40, above the sheet, so CanvaGrid's tabs stay tappable.
    Alternatives:
-     - Leave the dock fixed and pad the canvas: Rejected — left:0; right:0
-       ignores the side bands, so landscape notches still cover the tabs.
-     - Keep daisy's padding and skip the band: Rejected — the fixed dock
-       covers the canvas, and a later band would double the inset. */
+     - An in-flow dock plus a separate bottom band: Rejected — on a short
+       viewport the column pushed the bar off the screen, and on device the
+       deployed nav still does not sit on the bottom edge.
+     - Daisy's raw env() padding: Rejected — it ignores the phantom-inset
+       token and doubles when a band is added as well. */
 nav.dock {
-  position: relative;
-  inset: auto;
-  width: 100%;
-  height: 3.5rem;
-  padding-bottom: 0;
-  flex-shrink: 0;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: auto;
+  height: calc(var(--nav-height) + var(--safe-bottom));
+  padding-bottom: var(--safe-bottom);
+  background-color: var(--color-base-100);
   z-index: 40;
 }
 

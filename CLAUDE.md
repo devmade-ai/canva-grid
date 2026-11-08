@@ -496,7 +496,7 @@ Sidebar (tab content) | Main (platform selector + canvas + export)
 
 ### Mobile layout (< 1024px, detected by `useIsMobile` hook)
 
-Fixed viewport with edge-to-edge canvas. Tab content lives in a touch-draggable BottomSheet with three snap points (closed/half/full). Navigation is the in-flow MobileNav dock at the bottom of the safe-area column. The header and dock stay pinned; the context bar, canvas, and platform strip scroll between them when a short landscape viewport cannot fit that chrome above the home-indicator band.
+The shell is Sancio's: measured `--app-height`, a direct `env(safe-area-inset-top)` band above the header, body padding for the side insets, and one scrolling canvas. The bottom nav is fixed to the viewport; its button row is 3.5rem and `--safe-bottom` sits under that row. The canvas pads by that same sum so content clears the bar. Tab content lives in a touch-draggable BottomSheet with three snap points (closed/half/full).
 
 ```
 Compact Header (grid icon + app name [gradient] + undo/redo + burger menu: Help, Install, Update, Refresh, Reader, Save, Shortcuts + dark/light toggle + theme list)
@@ -504,7 +504,7 @@ Platform Info Strip (current format name + dimensions)
 Canvas (edge-to-edge, swipe left/right for page navigation)
 ContextBar (page thumbnails + cell grid — consolidated single row)
 BottomSheet (active tab content, drag to resize — Presets opens by default on load)
-MobileNav (in-flow dock: Presets, Media, Content, Structure, Style, Export; home-indicator band below it)
+MobileNav (fixed dock: Presets, Media, Content, Structure, Style, Export; home-indicator padding under the row)
 ```
 
 Export is a dedicated tab on mobile (vs. sidebar section on desktop) containing only download controls — platform selection lives in the Presets tab. Tapping the active tab toggles the bottom sheet open/closed. Presets bottom sheet opens by default on load so users see it's active.

@@ -4,6 +4,9 @@ import './index.css'
 import App from './App.jsx'
 import { mountDebugPill } from './components/DebugPill.jsx'
 import { cleanupOldCaches } from './utils/pwaCleanup'
+import { attachAppHeight } from './utils/appHeight.js'
+
+attachAppHeight()
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>

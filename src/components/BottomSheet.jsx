@@ -238,13 +238,12 @@ export default function BottomSheet({ isOpen, onClose, children, snapPoint, onSn
       className="fixed bottom-0 left-0 right-0 z-30 bg-base-100 rounded-t-2xl shadow-[0_-4px_20px_rgba(0,0,0,0.12)] flex flex-col will-change-transform"
       style={{
         height: `${SNAP_FULL}vh`,
-        maxHeight: `calc(100dvh - ${SHEET_CAP_REM}rem)`,
-        // At a full snap the sheet bottom is the viewport bottom, so this
-        // padding keeps that tail above the dock and the band. At a half snap
-        // the same padding is translated below the viewport; the scroller
-        // max-height is what keeps content above the dock there.
-        // One copy of the inset. Sides match the column.
-        paddingBottom: 'calc(3.5rem + var(--safe-bottom))',
+        maxHeight: `calc(var(--app-height) - ${SHEET_CAP_REM}rem)`,
+        // The sheet is fixed, so it does not inherit body side padding.
+        // The bottom padding is the same nav row plus bottom token the
+        // dock occupies. At a half snap that padding is translated off
+        // screen and the scroller max-height is what stays above the dock.
+        paddingBottom: 'calc(var(--nav-height) + var(--safe-bottom))',
         left: 'var(--safe-left)',
         right: 'var(--safe-right)',
         // Start off-screen; useEffect will animate in
@@ -268,7 +267,7 @@ export default function BottomSheet({ isOpen, onClose, children, snapPoint, onSn
         ref={contentRef}
         className="overflow-y-auto overscroll-contain px-4 pb-4"
         style={{
-          maxHeight: `max(0px, calc(min(${SNAP_FULL}vh, 100dvh - ${SHEET_CAP_REM}rem) - ${SNAP_FULL - effectiveSnap}vh - ${HANDLE_AND_NAV_REM}rem - var(--safe-bottom)))`,
+          maxHeight: `max(0px, calc(min(${SNAP_FULL}vh, var(--app-height) - ${SHEET_CAP_REM}rem) - ${SNAP_FULL - effectiveSnap}vh - ${HANDLE_AND_NAV_REM}rem - var(--safe-bottom)))`,
         }}
       >
         {children}

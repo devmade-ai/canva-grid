@@ -64,7 +64,9 @@
          Auto-rewritten by scripts/generate-theme-meta.mjs from default combo. -->
     <meta name="theme-color" content="#6d0076" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- No apple-mobile-web-app-status-bar-style. Sancio ships none. An
+         explicit "default" forces an opaque bar and a zero top inset, so the
+         direct env() band above the header never gets a height. -->
     <meta name="apple-mobile-web-app-title" content="CanvaGrid" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <link rel="icon" type="image/svg+xml" href="/icon.svg" />

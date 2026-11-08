@@ -12,7 +12,7 @@ import QuickActionsBar from './QuickActionsBar'
 import UndoRedoButtons from './UndoRedoButtons'
 import { useToast } from './Toast'
 import { describeUpdateCheckResult } from '../utils/pwaHelpers'
-import ViewportFrame, { InsetBand } from './ViewportFrame'
+import ViewportFrame from './ViewportFrame'
 
 // Requirement: Consistent header button styling across desktop layout.
 // Approach: Extract repeated className pattern to a small component.
@@ -97,17 +97,11 @@ export default function DesktopLayout({
   }
 
   return (
-    <ViewportFrame className="min-h-screen">
+    <ViewportFrame className="bg-base-200">
       {/* crossOrigin makes cssRules JS-readable — see CLAUDE.md "Font embedding for export". */}
       {fontsToLoad.map((font) => <link key={font.id} rel="stylesheet" href={font.url} crossOrigin="anonymous" />)}
 
-      {/* Top band is a sibling of the header so it can stay stuck when the
-          header scrolls away. Height 0 when the inset is 0. */}
-      <InsetBand edge="top" className="sticky top-0 z-30 bg-base-100" />
-
-      {/* Header */}
-      {/* Opaque on purpose. backdrop-filter on this bar blurred its own glyphs on iOS. See the MobileLayout header. */}
-      <header className="bg-base-100 border-b border-base-300/60 px-4 py-3">
+      <header className="shell-header bg-base-100 border-b border-base-300/60 px-4 py-3 z-20">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <div className="flex items-center justify-center sm:justify-start gap-2">
             <h1 className="text-lg font-display font-bold tracking-tight bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">CanvaGrid</h1>
@@ -185,7 +179,7 @@ export default function DesktopLayout({
 
       {/* Tab nav bar — desktop only */}
       {/* Opaque on purpose. A frost blur on this sticky bar is the same backdrop-filter layer as the header bug. */}
-      <nav ref={tabNavRef} className="bg-base-100 border-b border-base-300/60 sticky z-20" style={{ top: 'var(--safe-top)' }}>
+      <nav ref={tabNavRef} className="bg-base-100 border-b border-base-300/60 z-20 shrink-0">
         <div className="flex items-center">
           <div className="flex overflow-x-auto scrollbar-thin">
             {sections.map((section) => (
@@ -205,6 +199,7 @@ export default function DesktopLayout({
       </ErrorBoundary>
 
       {/* Desktop-only path: always >= 1024px, no responsive prefixes needed */}
+      <div className="shell-canvas">
       <div className="flex flex-row items-stretch">
         <aside className="w-96 p-5 pr-0 pb-5">
           <div className="bg-base-100 rounded-xl border border-base-300/80 shadow-card p-5">
@@ -242,6 +237,7 @@ export default function DesktopLayout({
             </div>
           </div>
         </main>
+      </div>
       </div>
 
       {modals}
