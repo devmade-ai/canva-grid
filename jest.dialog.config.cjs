@@ -5,6 +5,7 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/jest.dialog.setup.cjs'],
   testMatch: [
     '<rootDir>/src/components/__tests__/ConfirmButton.dialog.test.js',
+    '<rootDir>/src/components/__tests__/SaveLoadModal.load-row-keydown.test.js',
     '<rootDir>/src/hooks/__tests__/useDialogSync.persist.test.js',
   ],
   transform: {

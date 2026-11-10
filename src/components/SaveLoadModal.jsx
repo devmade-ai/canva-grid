@@ -216,7 +216,13 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                     tabIndex={0}
                     aria-label={`Load design "${design.name}"`}
                     onClick={() => !loading && handleLoad(design.id)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' && !loading) handleLoad(design.id) }}
+                    onKeyDown={(e) => {
+                      // Requirement: Enter on nested Delete must not bubble into row load.
+                      // Approach: only activate the row when the row itself is focused (ARIA
+                      //   composite pattern — child controls keep their own Enter/Space).
+                      if (e.key !== 'Enter' || loading || e.target !== e.currentTarget) return
+                      handleLoad(design.id)
+                    }}
                     className={`w-full p-3 rounded-lg bg-base-200 hover:bg-base-300 active:bg-base-300/80 text-left group transition-colors cursor-pointer ${loading ? 'opacity-50 pointer-events-none' : ''}`}
                   >
                     <div className="flex items-center justify-between">

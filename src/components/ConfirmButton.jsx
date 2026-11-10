@@ -106,6 +106,7 @@ export default function ConfirmButton({
           <button
             type="button"
             onClick={handleClick}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation() }}
             className={confirmClassName || 'btn btn-error btn-xs'}
           >
             {confirmLabel}
@@ -113,6 +114,7 @@ export default function ConfirmButton({
           <button
             type="button"
             onClick={cancelConfirm}
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation() }}
             className="btn btn-ghost btn-xs"
           >
             Cancel
@@ -123,6 +125,7 @@ export default function ConfirmButton({
           ref={triggerRef}
           type="button"
           onClick={handleClick}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation() }}
           disabled={disabled}
           title={title}
           className={className}
