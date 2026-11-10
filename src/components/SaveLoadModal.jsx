@@ -12,10 +12,14 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import ConfirmButton from './ConfirmButton'
 import { useToast } from './Toast'
 import { useDialogSync } from '../hooks/useDialogSync'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 
 export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelete, getSavedDesigns }) {
   const { addToast } = useToast()
   const dialogRef = useRef(null)
+  const modalBoxRef = useRef(null)
+  const pendingInlineConfirmRef = useRef(false)
+  const dismissPendingConfirmRef = useRef(null)
   const [designs, setDesigns] = useState([])
   const [saveName, setSaveName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -39,7 +43,11 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     setError(null)
   }, [refreshDesigns])
 
-  const { handleBackdropClick } = useDialogSync(dialogRef, isOpen, onClose, handleOpen)
+  const { handleBackdropClick } = useDialogSync(dialogRef, isOpen, onClose, handleOpen, {
+    shouldBlockClose: () => pendingInlineConfirmRef.current,
+    onBlockedCancel: () => dismissPendingConfirmRef.current?.(),
+  })
+  useFocusTrap(modalBoxRef, isOpen)
 
   // Cleanup activeRef when modal closes to prevent stale IDB query updates
   useEffect(() => {
@@ -110,7 +118,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
       className="modal modal-bottom sm:modal-middle"
       onClick={handleBackdropClick}
     >
-      <div className="modal-box max-w-md flex flex-col max-h-[80vh]">
+      <div ref={modalBoxRef} className="modal-box max-w-md flex flex-col max-h-[80vh] min-w-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-base-content">Saved Designs</h3>
@@ -167,7 +175,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                   value={saveName}
                   onChange={(e) => setSaveName(e.target.value)}
                   placeholder="My Design"
-                  className="input input-bordered w-full"
+                  className="input input-bordered w-full min-w-0 text-base"
                 />
               </div>
               <button
@@ -218,6 +226,8 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                       </div>
                       <ConfirmButton
                         onConfirm={() => handleDelete(design.id)}
+                        onConfirmingChange={(v) => { pendingInlineConfirmRef.current = v }}
+                        dismissRef={dismissPendingConfirmRef}
                         confirmLabel="Delete?"
                         className="p-2 rounded-lg opacity-50 sm:opacity-0 group-hover:opacity-100 hover:bg-base-300 active:bg-base-300 text-error transition-all"
                         title="Delete design"
