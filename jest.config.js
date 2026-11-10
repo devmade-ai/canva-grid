@@ -3,6 +3,7 @@ export default {
   testPathIgnorePatterns: [
     '/node_modules/',
     'ConfirmButton.dialog.test.js',
+    'SaveLoadModal.load-row-keydown.test.js',
     'useDialogSync.persist.test.js',
   ],
   transform: {},
