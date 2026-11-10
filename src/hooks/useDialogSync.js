@@ -1,10 +1,10 @@
 // Requirement: Sync native <dialog> open/close with React state across all DaisyUI modals.
 // Approach: Shared hook eliminates duplicated dialog sync code from 4 modal components.
-//   Handles showModal()/close(), native close event (Escape key), backdrop click,
-//   opener focus restore, and optional cancel blocking for nested inline confirms.
+//   Callback refs keep listener effect stable — SaveLoadModal stays mounted with inline
+//   onClose/options; re-attaching listeners must not call dialog.close() on cleanup.
 // Alternatives:
 //   - Inline useEffect in each modal: Rejected — identical pattern duplicated 4 times.
-//   - Third-party modal library: Rejected — adds dependency for simple native <dialog> sync.
+//   - Deps on onClose/options: Rejected — caused production Save/Load flash-close (PR166).
 
 import { useEffect, useCallback, useRef } from 'react'
 import { focusIfConnected } from '../utils/dialogFocus'
@@ -18,8 +18,15 @@ import { focusIfConnected } from '../utils/dialogFocus'
  */
 export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
   const openerRef = useRef(null)
-  const shouldBlockClose = options?.shouldBlockClose
-  const onBlockedCancel = options?.onBlockedCancel
+  const onCloseRef = useRef(onClose)
+  const onOpenRef = useRef(onOpen)
+  const shouldBlockCloseRef = useRef(options?.shouldBlockClose)
+  const onBlockedCancelRef = useRef(options?.onBlockedCancel)
+
+  onCloseRef.current = onClose
+  onOpenRef.current = onOpen
+  shouldBlockCloseRef.current = options?.shouldBlockClose
+  onBlockedCancelRef.current = options?.onBlockedCancel
 
   // Sync React isOpen → native dialog.showModal()/close()
   useEffect(() => {
@@ -27,29 +34,29 @@ export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
     if (!dialog) return
 
     if (isOpen && !dialog.open) {
-      onOpen?.()
+      onOpenRef.current?.()
       openerRef.current = document.activeElement
       dialog.showModal()
     } else if (!isOpen && dialog.open) {
       dialog.close()
     }
-  }, [isOpen, dialogRef, onOpen])
+  }, [isOpen, dialogRef])
 
-  // Sync native close → React state; block Escape when inline confirm is pending
+  // Native close/cancel listeners — attach once per dialog node; never close on effect cleanup
   useEffect(() => {
     const dialog = dialogRef.current
     if (!dialog) return
 
     const handleClose = () => {
       const opener = openerRef.current
-      onClose()
+      onCloseRef.current()
       requestAnimationFrame(() => focusIfConnected(opener))
     }
 
     const handleCancel = (e) => {
-      if (!shouldBlockClose?.()) return
+      if (!shouldBlockCloseRef.current?.()) return
       e.preventDefault()
-      onBlockedCancel?.()
+      onBlockedCancelRef.current?.()
     }
 
     dialog.addEventListener('close', handleClose)
@@ -57,18 +64,12 @@ export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
     return () => {
       dialog.removeEventListener('close', handleClose)
       dialog.removeEventListener('cancel', handleCancel)
-      if (dialog.open) {
-        const opener = openerRef.current
-        dialog.close()
-        focusIfConnected(opener)
-      }
     }
-  }, [onClose, dialogRef, shouldBlockClose, onBlockedCancel])
+  }, [dialogRef])
 
-  // Backdrop click handler — close when clicking the <dialog> backdrop (not modal-box)
   const handleBackdropClick = useCallback((e) => {
-    if (e.target === dialogRef.current) onClose()
-  }, [onClose, dialogRef])
+    if (e.target === dialogRef.current) onCloseRef.current()
+  }, [dialogRef])
 
   return { handleBackdropClick }
 }

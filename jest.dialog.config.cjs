@@ -3,7 +3,10 @@
 module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/jest.dialog.setup.cjs'],
-  testMatch: ['<rootDir>/src/components/__tests__/ConfirmButton.dialog.test.js'],
+  testMatch: [
+    '<rootDir>/src/components/__tests__/ConfirmButton.dialog.test.js',
+    '<rootDir>/src/hooks/__tests__/useDialogSync.persist.test.js',
+  ],
   transform: {
     '^.+\\.(js|jsx)$': 'babel-jest',
   },
