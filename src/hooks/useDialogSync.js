@@ -6,7 +6,7 @@
 //   - Inline useEffect in each modal: Rejected — identical pattern duplicated 4 times.
 //   - Deps on onClose/options: Rejected — caused production Save/Load flash-close (PR166).
 
-import { useEffect, useCallback, useRef } from 'react'
+import { useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import { focusIfConnected } from '../utils/dialogFocus'
 
 /**
@@ -23,10 +23,14 @@ export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
   const shouldBlockCloseRef = useRef(options?.shouldBlockClose)
   const onBlockedCancelRef = useRef(options?.onBlockedCancel)
 
-  onCloseRef.current = onClose
-  onOpenRef.current = onOpen
-  shouldBlockCloseRef.current = options?.shouldBlockClose
-  onBlockedCancelRef.current = options?.onBlockedCancel
+  // Sync latest callbacks after commit — avoids render-phase ref writes (react-hooks/refs)
+  // and keeps listener effect deps stable so always-mounted modals are not flash-closed.
+  useLayoutEffect(() => {
+    onCloseRef.current = onClose
+    onOpenRef.current = onOpen
+    shouldBlockCloseRef.current = options?.shouldBlockClose
+    onBlockedCancelRef.current = options?.onBlockedCancel
+  })
 
   // Sync React isOpen → native dialog.showModal()/close()
   useEffect(() => {
