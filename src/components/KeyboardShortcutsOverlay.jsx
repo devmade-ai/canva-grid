@@ -8,12 +8,15 @@
 
 import { useRef } from 'react'
 import { useDialogSync } from '../hooks/useDialogSync'
+import { useFocusTrap } from '../hooks/useFocusTrap'
 
 export default function KeyboardShortcutsOverlay({ onClose }) {
   const dialogRef = useRef(null)
+  const modalBoxRef = useRef(null)
 
   // Always open — component is only rendered when visible
   const { handleBackdropClick } = useDialogSync(dialogRef, true, onClose)
+  useFocusTrap(modalBoxRef, true)
 
   return (
     <dialog
@@ -21,7 +24,7 @@ export default function KeyboardShortcutsOverlay({ onClose }) {
       className="modal modal-bottom sm:modal-middle"
       onClick={handleBackdropClick}
     >
-      <div className="modal-box max-w-sm">
+      <div ref={modalBoxRef} className="modal-box max-w-sm">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-base-content">Keyboard Shortcuts</h3>
           <button
@@ -42,9 +45,9 @@ export default function KeyboardShortcutsOverlay({ onClose }) {
             ['Ctrl + Y', 'Redo'],
             ['1 – 5', 'Switch tabs (Presets, Media, Content, Structure, Style)'],
           ].map(([key, desc]) => (
-            <div key={key} className="flex items-center justify-between text-sm">
-              <span className="text-base-content/70">{desc}</span>
-              <kbd className="kbd kbd-sm">{key}</kbd>
+            <div key={key} className="flex items-start gap-2 text-sm min-w-0">
+              <span className="text-base-content/70 flex-1 min-w-0 leading-snug">{desc}</span>
+              <kbd className="kbd kbd-sm shrink-0 whitespace-nowrap self-center">{key}</kbd>
             </div>
           ))}
           <div className="divider my-2"></div>
@@ -53,9 +56,9 @@ export default function KeyboardShortcutsOverlay({ onClose }) {
             ['← →', 'Previous / Next page'],
             ['Esc', 'Exit reader mode'],
           ].map(([key, desc]) => (
-            <div key={key} className="flex items-center justify-between text-sm mb-1">
-              <span className="text-base-content/70">{desc}</span>
-              <kbd className="kbd kbd-sm">{key}</kbd>
+            <div key={key} className="flex items-start gap-2 text-sm min-w-0 mb-1">
+              <span className="text-base-content/70 flex-1 min-w-0 leading-snug">{desc}</span>
+              <kbd className="kbd kbd-sm shrink-0 whitespace-nowrap self-center">{key}</kbd>
             </div>
           ))}
         </div>

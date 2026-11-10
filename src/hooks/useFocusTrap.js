@@ -7,35 +7,17 @@
 //   - Manual tabIndex management: Rejected — brittle, breaks when container content changes.
 
 import { useEffect } from 'react'
-
-const FOCUSABLE = 'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
+import { handleDialogTabWrap } from '../utils/dialogFocus'
 
 export function useFocusTrap(containerRef, isActive = true) {
   useEffect(() => {
     if (!isActive || !containerRef.current) return
 
     const handleKeyDown = (e) => {
-      if (e.key !== 'Tab') return
-      const elements = containerRef.current?.querySelectorAll(FOCUSABLE)
-      if (!elements || elements.length === 0) return
-
-      const first = elements[0]
-      const last = elements[elements.length - 1]
-
-      if (e.shiftKey) {
-        if (document.activeElement === first) {
-          e.preventDefault()
-          last.focus()
-        }
-      } else {
-        if (document.activeElement === last) {
-          e.preventDefault()
-          first.focus()
-        }
-      }
+      handleDialogTabWrap(e, containerRef.current)
     }
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    document.addEventListener('keydown', handleKeyDown, true)
+    return () => document.removeEventListener('keydown', handleKeyDown, true)
   }, [isActive, containerRef])
 }
