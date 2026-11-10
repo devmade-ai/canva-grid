@@ -14,11 +14,12 @@ import { focusIfConnected } from '../utils/dialogFocus'
  * @param {boolean} isOpen - Whether the dialog should be open
  * @param {Function} onClose - Called when the dialog closes (Escape, backdrop click)
  * @param {Function} [onOpen] - Optional callback fired when dialog opens (e.g., reset state)
- * @param {{ shouldBlockClose?: () => boolean }} [options]
+ * @param {{ shouldBlockClose?: () => boolean, onBlockedCancel?: () => void }} [options]
  */
 export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
   const openerRef = useRef(null)
   const shouldBlockClose = options?.shouldBlockClose
+  const onBlockedCancel = options?.onBlockedCancel
 
   // Sync React isOpen → native dialog.showModal()/close()
   useEffect(() => {
@@ -46,9 +47,9 @@ export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
     }
 
     const handleCancel = (e) => {
-      if (shouldBlockClose?.()) {
-        e.preventDefault()
-      }
+      if (!shouldBlockClose?.()) return
+      e.preventDefault()
+      onBlockedCancel?.()
     }
 
     dialog.addEventListener('close', handleClose)
@@ -62,7 +63,7 @@ export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
         focusIfConnected(opener)
       }
     }
-  }, [onClose, dialogRef, shouldBlockClose])
+  }, [onClose, dialogRef, shouldBlockClose, onBlockedCancel])
 
   // Backdrop click handler — close when clicking the <dialog> backdrop (not modal-box)
   const handleBackdropClick = useCallback((e) => {

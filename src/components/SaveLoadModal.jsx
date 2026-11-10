@@ -19,6 +19,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
   const dialogRef = useRef(null)
   const modalBoxRef = useRef(null)
   const pendingInlineConfirmRef = useRef(false)
+  const dismissPendingConfirmRef = useRef(null)
   const [designs, setDesigns] = useState([])
   const [saveName, setSaveName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -44,6 +45,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
 
   const { handleBackdropClick } = useDialogSync(dialogRef, isOpen, onClose, handleOpen, {
     shouldBlockClose: () => pendingInlineConfirmRef.current,
+    onBlockedCancel: () => dismissPendingConfirmRef.current?.(),
   })
   useFocusTrap(modalBoxRef, isOpen)
 
@@ -225,6 +227,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                       <ConfirmButton
                         onConfirm={() => handleDelete(design.id)}
                         onConfirmingChange={(v) => { pendingInlineConfirmRef.current = v }}
+                        dismissRef={dismissPendingConfirmRef}
                         confirmLabel="Delete?"
                         className="p-2 rounded-lg opacity-50 sm:opacity-0 group-hover:opacity-100 hover:bg-base-300 active:bg-base-300 text-error transition-all"
                         title="Delete design"
