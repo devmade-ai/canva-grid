@@ -7,6 +7,7 @@ module.exports = {
     '<rootDir>/src/components/__tests__/ConfirmButton.dialog.test.js',
     '<rootDir>/src/components/__tests__/SaveLoadModal.load-row-keydown.test.js',
     '<rootDir>/src/hooks/__tests__/useDialogSync.persist.test.js',
+    '<rootDir>/src/hooks/__tests__/useDialogSync.focus-restore.test.js',
   ],
   transform: {
     '^.+\\.(js|jsx)$': 'babel-jest',

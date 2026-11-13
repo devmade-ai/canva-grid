@@ -8,15 +8,19 @@
 
 import { useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import { focusIfConnected } from '../utils/dialogFocus'
+import { useFocusTrap } from './useFocusTrap'
 
 /**
  * @param {React.RefObject} dialogRef - Ref to the <dialog> element
  * @param {boolean} isOpen - Whether the dialog should be open
  * @param {Function} onClose - Called when the dialog closes (Escape, backdrop click)
  * @param {Function} [onOpen] - Optional callback fired when dialog opens (e.g., reset state)
- * @param {{ shouldBlockClose?: () => boolean, onBlockedCancel?: () => void }} [options]
+ * @param {{ shouldBlockClose?: () => boolean, onBlockedCancel?: () => void, trapRootRef?: React.RefObject<Element | null> }} [options]
  */
 export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
+  const trapRootRef = options?.trapRootRef ?? dialogRef
+  useFocusTrap(trapRootRef, isOpen)
+
   const openerRef = useRef(null)
   const onCloseRef = useRef(onClose)
   const onOpenRef = useRef(onOpen)
@@ -71,9 +75,20 @@ export function useDialogSync(dialogRef, isOpen, onClose, onOpen, options) {
     }
   }, [dialogRef])
 
-  const handleBackdropClick = useCallback((e) => {
-    if (e.target === dialogRef.current) onCloseRef.current()
+  // Requirement: Every dismiss path must call dialog.close() so the native `close`
+  // event runs opener restore (Enter/click on Close, Got it, backdrop — not only Escape).
+  // Approach: requestClose → dialog.close() → handleClose → onClose + rAF focus restore.
+  // Alternatives:
+  //   - Parent onClose only: Rejected — conditionally mounted overlays unmount before close fires.
+  const requestClose = useCallback(() => {
+    const dialog = dialogRef.current
+    if (dialog?.open) dialog.close()
+    else onCloseRef.current()
   }, [dialogRef])
 
-  return { handleBackdropClick }
+  const handleBackdropClick = useCallback((e) => {
+    if (e.target === dialogRef.current) requestClose()
+  }, [dialogRef, requestClose])
+
+  return { handleBackdropClick, requestClose }
 }
