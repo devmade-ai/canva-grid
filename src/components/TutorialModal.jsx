@@ -220,9 +220,12 @@ const tutorialSteps = [
 export default memo(function TutorialModal({ isOpen, onClose }) {
   const [currentStep, setCurrentStep] = useState(0)
   const dialogRef = useRef(null)
+  const modalBoxRef = useRef(null)
 
   const handleOpen = useCallback(() => setCurrentStep(0), [])
-  const { handleBackdropClick } = useDialogSync(dialogRef, isOpen, onClose, handleOpen)
+  const { handleBackdropClick, requestClose } = useDialogSync(dialogRef, isOpen, onClose, handleOpen, {
+    trapRootRef: modalBoxRef,
+  })
 
   const step = tutorialSteps[currentStep]
   const isFirst = currentStep === 0
@@ -234,7 +237,7 @@ export default memo(function TutorialModal({ isOpen, onClose }) {
       className="modal modal-bottom sm:modal-middle"
       onClick={handleBackdropClick}
     >
-      <div className="modal-box max-w-lg flex flex-col max-h-[80vh]">
+      <div ref={modalBoxRef} className="modal-box max-w-lg flex flex-col max-h-[80vh]">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
@@ -242,7 +245,7 @@ export default memo(function TutorialModal({ isOpen, onClose }) {
             <h3 className="text-lg font-semibold text-base-content">{step?.title}</h3>
           </div>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Close dialog"
             className="btn btn-sm btn-circle btn-ghost"
           >
@@ -294,7 +297,7 @@ export default memo(function TutorialModal({ isOpen, onClose }) {
             )}
             {isLast ? (
               <button
-                onClick={onClose}
+                onClick={requestClose}
                 className="btn btn-primary btn-sm"
               >
                 Get Started

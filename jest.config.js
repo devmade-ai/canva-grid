@@ -5,6 +5,7 @@ export default {
     'ConfirmButton.dialog.test.js',
     'SaveLoadModal.load-row-keydown.test.js',
     'useDialogSync.persist.test.js',
+    'useDialogSync.focus-restore.test.js',
   ],
   transform: {},
   moduleNameMapper: {

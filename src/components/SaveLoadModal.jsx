@@ -12,7 +12,6 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import ConfirmButton from './ConfirmButton'
 import { useToast } from './Toast'
 import { useDialogSync } from '../hooks/useDialogSync'
-import { useFocusTrap } from '../hooks/useFocusTrap'
 
 export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelete, getSavedDesigns }) {
   const { addToast } = useToast()
@@ -43,11 +42,11 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     setError(null)
   }, [refreshDesigns])
 
-  const { handleBackdropClick } = useDialogSync(dialogRef, isOpen, onClose, handleOpen, {
+  const { handleBackdropClick, requestClose } = useDialogSync(dialogRef, isOpen, onClose, handleOpen, {
     shouldBlockClose: () => pendingInlineConfirmRef.current,
     onBlockedCancel: () => dismissPendingConfirmRef.current?.(),
+    trapRootRef: modalBoxRef,
   })
-  useFocusTrap(modalBoxRef, isOpen)
 
   // Cleanup activeRef when modal closes to prevent stale IDB query updates
   useEffect(() => {
@@ -77,7 +76,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     const result = await onLoad(designId)
     setLoading(false)
     if (result.success) {
-      onClose()
+      requestClose()
     } else {
       setError(result.error || 'Failed to load design')
     }
@@ -123,7 +122,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold text-base-content">Saved Designs</h3>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Close dialog"
             className="btn btn-sm btn-circle btn-ghost"
           >

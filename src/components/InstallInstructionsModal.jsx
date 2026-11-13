@@ -51,9 +51,16 @@ function getReinstallSteps() {
 
 export default memo(function InstallInstructionsModal({ isOpen, onClose, instructions }) {
   const dialogRef = useRef(null)
+  const modalBoxRef = useRef(null)
 
   // Guard: only sync when instructions data is available
-  const { handleBackdropClick } = useDialogSync(dialogRef, isOpen && !!instructions, onClose)
+  const { handleBackdropClick, requestClose } = useDialogSync(
+    dialogRef,
+    isOpen && !!instructions,
+    onClose,
+    undefined,
+    { trapRootRef: modalBoxRef },
+  )
 
   if (!instructions) return null
 
@@ -63,9 +70,9 @@ export default memo(function InstallInstructionsModal({ isOpen, onClose, instruc
       className="modal modal-bottom sm:modal-middle"
       onClick={handleBackdropClick}
     >
-      <div className="modal-box max-w-md">
+      <div ref={modalBoxRef} className="modal-box max-w-md">
         <button
-          onClick={onClose}
+          onClick={requestClose}
           aria-label="Close dialog"
           className="btn btn-sm btn-circle btn-ghost absolute right-4 top-4"
         >
@@ -165,7 +172,7 @@ export default memo(function InstallInstructionsModal({ isOpen, onClose, instruc
         {/* Close button */}
         <div className="modal-action">
           <button
-            onClick={onClose}
+            onClick={requestClose}
             className="btn btn-primary w-full"
           >
             Got it

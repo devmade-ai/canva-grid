@@ -8,15 +8,15 @@
 
 import { useRef } from 'react'
 import { useDialogSync } from '../hooks/useDialogSync'
-import { useFocusTrap } from '../hooks/useFocusTrap'
 
 export default function KeyboardShortcutsOverlay({ onClose }) {
   const dialogRef = useRef(null)
   const modalBoxRef = useRef(null)
 
   // Always open — component is only rendered when visible
-  const { handleBackdropClick } = useDialogSync(dialogRef, true, onClose)
-  useFocusTrap(modalBoxRef, true)
+  const { handleBackdropClick, requestClose } = useDialogSync(dialogRef, true, onClose, undefined, {
+    trapRootRef: modalBoxRef,
+  })
 
   return (
     <dialog
@@ -28,7 +28,7 @@ export default function KeyboardShortcutsOverlay({ onClose }) {
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-semibold text-base-content">Keyboard Shortcuts</h3>
           <button
-            onClick={onClose}
+            onClick={requestClose}
             aria-label="Close dialog"
             className="btn btn-sm btn-circle btn-ghost"
           >
