@@ -217,7 +217,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
         )}
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overflow-x-hidden min-w-0">
           {activeTab === 'save' && (
             <div className="space-y-4">
               <div>
@@ -284,19 +284,26 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                       if (e.key !== 'Enter' || loading || e.target !== e.currentTarget) return
                       handleLoad(design.id)
                     }}
-                    className={`w-full p-3 rounded-lg bg-base-200 hover:bg-base-300 active:bg-base-300/80 text-left group transition-colors cursor-pointer ${loading ? 'opacity-50 pointer-events-none' : ''}`}
+                    className={`w-full min-w-0 p-3 rounded-lg bg-base-200 hover:bg-base-300 active:bg-base-300/80 text-left group transition-colors cursor-pointer ${loading ? 'opacity-50 pointer-events-none' : ''}`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-medium text-base-content">{design.name}</div>
-                        <div className="text-xs text-base-content/70">{formatDate(design.savedAt)}</div>
+                    {/* Requirement: Long names must not overflow the row or hide Delete.
+                        Approach: flex min-w-0 + truncate; full name in title and row aria-label. */}
+                    <div className="flex items-center justify-between gap-2 min-w-0">
+                      <div className="min-w-0 flex-1">
+                        <div
+                          className="font-medium text-base-content truncate"
+                          title={design.name}
+                        >
+                          {design.name}
+                        </div>
+                        <div className="text-xs text-base-content/70 truncate">{formatDate(design.savedAt)}</div>
                       </div>
                       <ConfirmButton
                         onConfirm={() => handleDelete(design.id)}
                         onConfirmingChange={(v) => { pendingInlineConfirmRef.current = v }}
                         dismissRef={dismissPendingConfirmRef}
                         confirmLabel="Delete?"
-                        className="p-2 rounded-lg opacity-50 sm:opacity-0 group-hover:opacity-100 hover:bg-base-300 active:bg-base-300 text-error transition-all"
+                        className="shrink-0 p-2 rounded-lg opacity-50 sm:opacity-0 group-hover:opacity-100 hover:bg-base-300 active:bg-base-300 text-error transition-all"
                         title="Delete design"
                       >
                         <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

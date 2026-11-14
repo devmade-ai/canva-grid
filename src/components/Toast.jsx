@@ -99,14 +99,16 @@ function ToastItem({ toast, onRemove }) {
 
   return (
     <div
-      className={`alert ${ALERT_CLASSES[toast.type] || ALERT_CLASSES.info} text-sm py-2 shadow-lg transition-all duration-200 ${
+      className={`alert ${ALERT_CLASSES[toast.type] || ALERT_CLASSES.info} text-sm py-2 shadow-lg overflow-hidden transition-all duration-200 ${
         isExiting ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
       }`}
       role={toast.type === 'error' ? 'alert' : 'status'}
       aria-live={toast.type === 'error' ? 'assertive' : 'polite'}
     >
       {icons[toast.type]}
-      <span>{toast.message}</span>
+      <span className="min-w-0 flex-1 truncate" title={toast.message}>
+        {toast.message}
+      </span>
       <button
         onClick={() => setIsExiting(true)}
         className="btn btn-ghost btn-xs btn-circle"

@@ -83,7 +83,10 @@ export async function gotoAppReady(page) {
 /**
  * @param {import('@playwright/test').Page} page
  */
-export async function openSaveLoadLoadTab(page) {
+/**
+ * @param {import('@playwright/test').Page} page
+ */
+export async function openSaveLoadModal(page) {
   const saveLoadBtn = page.locator('button[title="Save or load"]')
   if (await saveLoadBtn.count()) {
     await saveLoadBtn.click()
@@ -93,8 +96,64 @@ export async function openSaveLoadLoadTab(page) {
   }
   const dialog = page.getByRole('dialog')
   await dialog.waitFor({ state: 'visible' })
+  return dialog
+}
+
+export async function openSaveLoadLoadTab(page) {
+  const dialog = await openSaveLoadModal(page)
   await dialog.getByRole('tab', { name: /^Load/ }).click()
   return dialog
+}
+
+/**
+ * Save the current design from the modal; lands on Load tab after success.
+ * @param {import('@playwright/test').Page} page
+ * @param {string} name
+ */
+export async function saveDesignFromModal(page, name) {
+  const dialog = await openSaveLoadModal(page)
+  await dialog.getByRole('tab', { name: 'Save Current' }).click()
+  await dialog.getByPlaceholder('My Design').fill(name)
+  await dialog.getByRole('button', { name: 'Save Design', exact: true }).click()
+  await dialog.getByRole('button', { name: `Load design "${name}"` }).waitFor({ state: 'visible' })
+  return dialog
+}
+
+/**
+ * @param {import('@playwright/test').Locator} dialog
+ */
+export async function expectDialogNoHorizontalOverflow(dialog) {
+  const metrics = await dialog.evaluate((el) => ({
+    scrollWidth: el.scrollWidth,
+    clientWidth: el.clientWidth,
+  }))
+  if (metrics.scrollWidth > metrics.clientWidth) {
+    throw new Error(
+      `Dialog horizontal overflow: scrollWidth=${metrics.scrollWidth} clientWidth=${metrics.clientWidth}`,
+    )
+  }
+}
+
+/**
+ * @param {import('@playwright/test').Locator} locator
+ */
+export async function expectFullyInViewport(locator) {
+  const ok = await locator.evaluate((el) => {
+    const r = el.getBoundingClientRect()
+    const vw = window.innerWidth
+    const vh = window.innerHeight
+    return (
+      r.width > 0
+      && r.height > 0
+      && r.left >= 0
+      && r.top >= 0
+      && r.right <= vw
+      && r.bottom <= vh
+    )
+  })
+  if (!ok) {
+    throw new Error('Element is not fully inside the viewport')
+  }
 }
 
 /**
