@@ -8,7 +8,7 @@
 //     provides consistent underline-style tab switching with proper ARIA.
 //   - Custom error div: Replaced — DaisyUI alert-error-soft for theme-aware styling.
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import ConfirmButton from './ConfirmButton'
 import { useToast } from './Toast'
 import { useDialogSync } from '../hooks/useDialogSync'
@@ -20,6 +20,7 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
   const modalBoxRef = useRef(null)
   const pendingInlineConfirmRef = useRef(false)
   const dismissPendingConfirmRef = useRef(null)
+  const pendingDeleteFocusRef = useRef(null)
   const [designs, setDesigns] = useState([])
   const [saveName, setSaveName] = useState('')
   const [searchQuery, setSearchQuery] = useState('')
@@ -83,19 +84,23 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     }
   }
 
+  const visibleDesigns = useCallback(() => {
+    const q = searchQuery.trim().toLowerCase()
+    return designs.filter((d) => !q || d.name.toLowerCase().includes(q))
+  }, [designs, searchQuery])
+
   const handleDelete = async (designId) => {
-    const deletedIndex = designs.findIndex((d) => d.id === designId)
-    const prevLength = designs.length
+    const visible = visibleDesigns()
+    const deletedIndex = visible.findIndex((d) => d.id === designId)
+    const prevLength = visible.length
     setError(null)
     const result = await onDelete(designId)
     if (result.success) {
       await refreshDesigns()
       addToast('Design deleted', { type: 'info' })
-      requestAnimationFrame(() => {
-        if (deletedIndex >= 0) {
-          focusNeighbourAfterDelete(deletedIndex, prevLength)
-        }
-      })
+      if (deletedIndex >= 0) {
+        pendingDeleteFocusRef.current = { deletedIndex, prevLength }
+      }
     } else {
       setError(result.error || 'Failed to delete design')
     }
@@ -136,6 +141,17 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
     const deleteBtn = row.querySelector('button[title="Delete design"]')
     focusIfConnected(deleteBtn ?? row)
   }, [])
+
+  // Requirement: Post-delete focus after React repaints rows — not first rAF (body flash).
+  // Approach: pending ref + useLayoutEffect on designs; index is within filtered visible rows.
+  // Alternatives:
+  //   - rAF in handleDelete: Rejected — setDesigns from refresh has not committed yet at rAF1.
+  useLayoutEffect(() => {
+    const pending = pendingDeleteFocusRef.current
+    if (!pending || !isOpen || activeTab !== 'load') return
+    pendingDeleteFocusRef.current = null
+    focusNeighbourAfterDelete(pending.deletedIndex, pending.prevLength)
+  }, [designs, isOpen, activeTab, focusNeighbourAfterDelete])
 
   useEffect(() => {
     if (isOpen && activeTab === 'save') {
