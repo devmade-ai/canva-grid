@@ -8,7 +8,7 @@
 //   - Modal dialog: Rejected — too heavy for simple destructive actions.
 //   - Browser confirm(): Rejected — not accessible, ugly, no styling control.
 
-import { useState, useEffect, useCallback, useRef } from 'react'
+import { useState, useEffect, useLayoutEffect, useCallback, useRef } from 'react'
 import { focusIfConnected } from '../utils/dialogFocus'
 import { bindDialogCancelDismiss, captureDialogHost } from '../utils/inlineConfirmEscape'
 
@@ -28,8 +28,18 @@ export default function ConfirmButton({
   const confirmingRef = useRef(false)
   const rootRef = useRef(null)
   const triggerRef = useRef(null)
+  const cancelRef = useRef(null)
   const dialogHostRef = useRef(null)
   const focusReturnRef = useRef(null)
+
+  // Requirement: Inline confirm must land keyboard focus on Cancel (safe default).
+  // Approach: useLayoutEffect after trigger unmounts — rAF was too late for Tab order audits.
+  // Alternatives:
+  //   - focus in enterConfirming before setState: Rejected — confirm buttons are not mounted yet.
+  useLayoutEffect(() => {
+    if (!confirming) return
+    focusIfConnected(cancelRef.current)
+  }, [confirming])
 
   useEffect(() => {
     confirmingRef.current = confirming
@@ -112,6 +122,7 @@ export default function ConfirmButton({
             {confirmLabel}
           </button>
           <button
+            ref={cancelRef}
             type="button"
             onClick={cancelConfirm}
             onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') e.stopPropagation() }}

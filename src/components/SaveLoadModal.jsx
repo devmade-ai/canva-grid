@@ -12,6 +12,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import ConfirmButton from './ConfirmButton'
 import { useToast } from './Toast'
 import { useDialogSync } from '../hooks/useDialogSync'
+import { focusIfConnected } from '../utils/dialogFocus'
 
 export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelete, getSavedDesigns }) {
   const { addToast } = useToast()
@@ -83,11 +84,18 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
   }
 
   const handleDelete = async (designId) => {
+    const deletedIndex = designs.findIndex((d) => d.id === designId)
+    const prevLength = designs.length
     setError(null)
     const result = await onDelete(designId)
     if (result.success) {
       await refreshDesigns()
       addToast('Design deleted', { type: 'info' })
+      requestAnimationFrame(() => {
+        if (deletedIndex >= 0) {
+          focusNeighbourAfterDelete(deletedIndex, prevLength)
+        }
+      })
     } else {
       setError(result.error || 'Failed to delete design')
     }
@@ -104,6 +112,31 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
   //   is after <dialog>.showModal()'s native auto-focus resolves. Previously used
   //   setTimeout(50) as a timing guess; rAF is the semantic browser API for "after DOM settles".
   const saveInputRef = useRef(null)
+  const savedDesignsHeadingRef = useRef(null)
+  const loadEmptyRef = useRef(null)
+
+  // Requirement: After delete, focus a sensible neighbour — not Close dialog / body.
+  // Approach: Query post-refresh rows in modalBox; next row at same index, else previous.
+  // Alternatives:
+  //   - React state index after setDesigns: Rejected — timing vs rAF is brittle.
+  const focusNeighbourAfterDelete = useCallback((deletedIndex, prevLength) => {
+    const root = modalBoxRef.current
+    if (!root) return
+    const rows = root.querySelectorAll('[data-design-row]')
+    if (rows.length === 0) {
+      focusIfConnected(loadEmptyRef.current ?? savedDesignsHeadingRef.current)
+      return
+    }
+    let idx = deletedIndex
+    if (deletedIndex >= prevLength - 1) {
+      idx = deletedIndex - 1
+    }
+    idx = Math.max(0, Math.min(idx, rows.length - 1))
+    const row = rows[idx]
+    const deleteBtn = row.querySelector('button[title="Delete design"]')
+    focusIfConnected(deleteBtn ?? row)
+  }, [])
+
   useEffect(() => {
     if (isOpen && activeTab === 'save') {
       const raf = requestAnimationFrame(() => saveInputRef.current?.focus())
@@ -120,7 +153,14 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
       <div ref={modalBoxRef} className="modal-box max-w-md flex flex-col max-h-[80vh] min-w-0">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-base-content">Saved Designs</h3>
+          <h3
+            ref={savedDesignsHeadingRef}
+            tabIndex={-1}
+            data-saved-designs-heading
+            className="text-lg font-semibold text-base-content outline-none"
+          >
+            Saved Designs
+          </h3>
           <button
             onClick={requestClose}
             aria-label="Close dialog"
@@ -204,13 +244,19 @@ export default function SaveLoadModal({ isOpen, onClose, onSave, onLoad, onDelet
                 />
               )}
               {designs.length === 0 ? (
-                <p className="text-center text-base-content/70 py-8">
+                <p
+                  ref={loadEmptyRef}
+                  tabIndex={-1}
+                  data-load-empty
+                  className="text-center text-base-content/70 py-8 outline-none"
+                >
                   No saved designs yet.
                 </p>
               ) : (
                 designs.filter((d) => !searchQuery || d.name.toLowerCase().includes(searchQuery.toLowerCase())).map((design) => (
                   <div
                     key={design.id}
+                    data-design-row
                     role="button"
                     tabIndex={0}
                     aria-label={`Load design "${design.name}"`}

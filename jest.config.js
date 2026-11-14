@@ -2,6 +2,7 @@ export default {
   testEnvironment: 'node',
   testPathIgnorePatterns: [
     '/node_modules/',
+    '/e2e/',
     'ConfirmButton.dialog.test.js',
     'SaveLoadModal.load-row-keydown.test.js',
     'useDialogSync.persist.test.js',
