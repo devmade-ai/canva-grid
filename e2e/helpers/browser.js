@@ -106,3 +106,23 @@ export function deleteButtonForDesign(page, designName) {
     .getByRole('button', { name: `Load design "${designName}"` })
     .getByRole('button', { name: 'Delete design' })
 }
+
+/**
+ * Requirement: Assert dismiss does not leave focus on body at the first animation frame.
+ * Playwright's toBeFocused() retries past a one-frame body flash — this catches that.
+ * @param {import('@playwright/test').Page} page
+ * @param {() => Promise<void>} action
+ */
+export async function expectFocusNotBodyOnFirstRaf(page, action) {
+  await action()
+  const bodyAtRaf1 = await page.evaluate(
+    () => new Promise((resolve) => {
+      requestAnimationFrame(() => {
+        resolve(document.activeElement === document.body)
+      })
+    }),
+  )
+  if (bodyAtRaf1 !== false) {
+    throw new Error(`Expected focus not on body at first rAF after action, bodyAtRaf1=${bodyAtRaf1}`)
+  }
+}

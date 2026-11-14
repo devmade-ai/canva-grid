@@ -30,15 +30,23 @@ export default function ConfirmButton({
   const triggerRef = useRef(null)
   const cancelRef = useRef(null)
   const dialogHostRef = useRef(null)
-  const focusReturnRef = useRef(null)
+  const restoreTriggerOnExitRef = useRef(false)
 
-  // Requirement: Inline confirm must land keyboard focus on Cancel (safe default).
-  // Approach: useLayoutEffect after trigger unmounts — rAF was too late for Tab order audits.
+  // Requirement: Inline confirm must land keyboard focus on Cancel; dismiss paths must
+  //   restore the Delete trigger without a body focus flash (stale rAF + unmounted trigger).
+  // Approach: useLayoutEffect on confirming toggles — focus Cancel after mount, focus trigger
+  //   after remount when restoreTriggerOnExitRef is set (dismiss only, not successful confirm).
   // Alternatives:
+  //   - rAF + focusReturnRef: Rejected — trigger unmounts during confirm; first rAF hits body.
   //   - focus in enterConfirming before setState: Rejected — confirm buttons are not mounted yet.
   useLayoutEffect(() => {
-    if (!confirming) return
-    focusIfConnected(cancelRef.current)
+    if (confirming) {
+      focusIfConnected(cancelRef.current)
+      return
+    }
+    if (!restoreTriggerOnExitRef.current) return
+    restoreTriggerOnExitRef.current = false
+    focusIfConnected(triggerRef.current)
   }, [confirming])
 
   useEffect(() => {
@@ -55,8 +63,8 @@ export default function ConfirmButton({
 
   const dismissConfirming = useCallback(() => {
     if (!confirmingRef.current) return false
+    restoreTriggerOnExitRef.current = true
     setConfirmingState(false)
-    requestAnimationFrame(() => focusIfConnected(triggerRef.current ?? focusReturnRef.current))
     return true
   }, [setConfirmingState])
 
@@ -71,7 +79,10 @@ export default function ConfirmButton({
   // Auto-reset after timeout so the button doesn't stay in confirm state forever
   useEffect(() => {
     if (!confirming || autoResetMs <= 0) return
-    const timer = setTimeout(() => setConfirmingState(false), autoResetMs)
+    const timer = setTimeout(() => {
+      restoreTriggerOnExitRef.current = true
+      setConfirmingState(false)
+    }, autoResetMs)
     return () => clearTimeout(timer)
   }, [confirming, autoResetMs, setConfirmingState])
 
@@ -80,8 +91,8 @@ export default function ConfirmButton({
     if (!confirming) return
     const host = dialogHostRef.current
     const unbind = bindDialogCancelDismiss(host, () => {
+      restoreTriggerOnExitRef.current = true
       setConfirmingState(false)
-      requestAnimationFrame(() => focusIfConnected(triggerRef.current ?? focusReturnRef.current))
     })
     return unbind
   }, [confirming, setConfirmingState])
@@ -89,19 +100,20 @@ export default function ConfirmButton({
   const enterConfirming = useCallback(() => {
     const host = captureDialogHost(triggerRef.current, rootRef.current)
     dialogHostRef.current = host
-    focusReturnRef.current = triggerRef.current
     setConfirmingState(true)
   }, [setConfirmingState])
 
   const cancelConfirm = useCallback((e) => {
     e.stopPropagation()
+    restoreTriggerOnExitRef.current = true
     setConfirmingState(false)
-    requestAnimationFrame(() => focusIfConnected(triggerRef.current ?? focusReturnRef.current))
   }, [setConfirmingState])
 
   const handleClick = useCallback((e) => {
     e.stopPropagation()
     if (confirming) {
+      // Keep focus on the row while the async onConfirm runs (e.g. delete); parent may move it.
+      restoreTriggerOnExitRef.current = true
       setConfirmingState(false)
       onConfirm?.(e)
     } else {
